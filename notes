@@ -1,0 +1,61 @@
+Mariadb port: 3306
+#Dont even store anything like this
+username, key: find in keypass
+
+API Runner:
+port: 5000
+
+Route for registering:
+localhost/api/auth <- POST BODY
+localhost/api/register <- POST BODY
+
+
+
+
+Database: https://hub.docker.com/r/linuxserver/mariadb
+
+Connecting to DB with sqlalchemy: https://docs.sqlalchemy.org/en/latest/core/engines.html
+
+mysql -u root -p
+
+ZJJFt7rqeg8eMPreru69NX9W9yMfhyechc8Yzz4ogtdEfUB
+2Bqp89ypxcXewWNEGfRwQvmyg5vFKVuJ6xW6KowkHCvtQ2h
+
+
+
+init SQL:
+1) CREATE USER apirunner@localhost IDENTIFIED BY ; <- user root
+2) GRANT ALL PRIVILEGES ON *.* TO apirunner@localhost IDENTIFIED BY ;
+3) Login to user account
+4) CREATE DATABASE project1;
+5) use project1;
+6) CREATE TABLE user(username varchar(150) not null, password varchar(255) not null, primary key(username));
+
+
+
+
+
+API resources:
+https://stackoverflow.com/questions/48095713/accepting-multiple-parameters-in-flask-restful-add-resource MULTIPLE fields
+
+
+
+Add nodes
+Delete users
+Change nodes
+Add labels to nodes
+
+Add users
+Delete users
+Change users information
+Change user privilege
+Get userid
+
+Add labels <-
+Delete labels
+Change label text
+get labels and single <-
+
+Add Metadata
+Change Metadata
+Delete metadata

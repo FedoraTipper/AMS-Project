@@ -1,0 +1,14 @@
+docker create \
+  --name=mariadb \
+  -e PUID=1002 \
+  -e PGID=1002 \
+  -e MYSQL_ROOT_PASSWORD=""\
+  -e TZ=Johannesburg/Africa \
+  -p 3306:3306 \
+  -v /home/admin/Documents/Project/.docker/.config/mariadb:/config \
+  --restart unless-stopped \
+  linuxserver/mariadb
+
+
+Run after:
+  chmod 777 /var/run/docker.sock

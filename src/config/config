@@ -1,0 +1,10 @@
+[DATABASE]
+Host = localhost
+Port = 3306
+Database = project1
+Username = apirunner
+Password = ZJJFt7rqeg8eMPreru69NX9W9yMfhyechc8Yzz4ogtdEfUB
+
+[JWT]
+Secret = Verysecretpassword
+Algorithm = HS256
