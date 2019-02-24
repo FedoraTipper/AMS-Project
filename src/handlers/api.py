@@ -11,6 +11,7 @@ import utilities.label as LabelUtil
 import utilities.node as NodeUtil
 import utilities.link as LinkUtil
 import utilities.error as ErrorUtil
+import utilities.meta as MetaUtil
 
 
 Logger = LoggerHandler.Logger()
@@ -250,10 +251,29 @@ class Link(RequestHandler):
 
 class Metadata(RequestHandler):
     def get(self):
-        return None
+        if len(self.request.body) != 0:
+            body = self.request.body.decode()
+            json_body = json.loads(body)
+            if "meta_id" in json_body:
+                self.write(LinkUtil.get_link(json_body["meta_id"]))
+                return None
+        self.write(LinkUtil.get_links())
 
     def post(self):
-        return None
+        if JWTHandler.authorize_action(self, 1) is None:
+            return None
+
+        body = self.request.body.decode()
+        json_body = json.loads(body)
+
+        body_categories = {"node_id_1": 1, "node_id_2": 1}
+        link_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+        
+        if link_dict is None:
+            return None
+
+        LinkUtil.create_link(link_dict)
+        self.write({"message":"Success"})
 
     def put(self):
         return None
