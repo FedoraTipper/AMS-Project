@@ -27,3 +27,7 @@ def build_insert_statement(table, statement_dict):
 			query += "{}, ".format(statement_dict[key])
 
 	return (query[:-2] + ");")
+
+def build_delete_statement(table, statement_dict):
+	#DELETE FROM Customers WHERE CustomerName='Alfreds Futterkiste';
+	query = "DELETE FROM % table "

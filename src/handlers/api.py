@@ -1,82 +1,76 @@
 from tornado.web import RequestHandler
+import json
+
 import handlers.mysqldb as DBHandler
 import handlers.logger as LoggerHandler
 import handlers.config as ConfigHandler
+import handlers.jwt as  JWTHandler
+
 import utilities.user as UserUtil
 import utilities.label as LabelUtil
 import utilities.node as NodeUtil
-import utilities.jwt as  JWTUtil
 import utilities.link as LinkUtil
 import utilities.error as ErrorUtil
-import json
+
 
 Logger = LoggerHandler.Logger()
-
 
 class Authenticate(RequestHandler):
     def get(self):        
         body = self.request.body.decode()
         json_body = json.loads(body)
-        username = json_body["username"]
-        password = json_body["password"]
 
-        if len(password) == 0 and len(username) == 0:
-            self.write({'message': "Empty strings"})
+        body_categories = {"username": 1, "password": 1}
+        user_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+
+        if user_dict is None:
             return None
 
-        if(UserUtil.compare_password(username, password) == False):
+        if(UserUtil.compare_password(user_dict["username"], user_dict["password"]) == False):
             self.write({"message":"Authentication failed"})
+            return None
 
+        username = user_dict["username"]
         token = JWTUtil.create_token(UserUtil.get_uid(username), username,  (UserUtil.get_privilege(username) + 1))
 
         self.add_header("Authorization", token)
         self.write({"message":"Authenticated"})
 
-
-
 class Register(RequestHandler):
     def post(self):
         body = self.request.body.decode()
         json_body = json.loads(body)
-        username = json_body["username"]
-        password = json_body["password"]
-        admin = 1 if int(json_body["privilege"]) == 1 else 0
 
-        if len(password) == 0 and len(username) == 0:
-            self.write({'message': "Empty username/password"})
+        body_categories = {"username": 1, "password": 1, "privilege": 0}
+        user_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+
+        if user_dict is None:
             return None
 
-        if UserUtil.user_exists(username):
+        if UserUtil.user_exists(user_dict["username"]):
             self.write({'message': "Username exists"})
             return None
 
-        UserUtil.create_user(username, password, admin)
-
+        UserUtil.create_user(user_dict)
+        username = user_dict["username"]
         token = JWTUtil.create_token(UserUtil.get_uid(username), username,  UserUtil.get_privilege(username) + 1)
         self.add_header("token", token)
         self.write({'message': "Success"})
 
 class User(RequestHandler):
     def get(self):
-
-        encoded_token = self.request.headers["Authorization"] if "Authorization" in self.request.headers else ""
-
-        if JWTUtil.determine_privilege(encoded_token) == 0:
-            self.write({"message":"Authorization failed"})
-            self.add_header("Authorization", "")
+        if JWTUtil.authorize_action(self, 2) is None:
             return None
 
         body = self.request.body.decode()
         json_body = json.loads(body)
-        username = json_body["username"]
+        body_categories = {"username": 1}
+        user_dict = ErrorUtil.check_fields(json_body, body_categories, self)
 
-        if len(username) == 0:
-            self.write({'message': "Empty strings"})
+        if user_dict is None:
             return None
 
-        user_id = UserUtil.get_uid(username)
-
-        self.write({"user_id": user_id})
+        self.write({"user_id": UserUtil.get_uid(user_dict["username"])})
 
     """
     Change user information
@@ -110,28 +104,23 @@ class Label(RequestHandler):
     Only admins may create new labels/collections
     """
     def post(self):
-
-        encoded_token = self.request.headers["Authorization"] if "Authorization" in self.request.headers else ""
-
-        if JWTUtil.determine_privilege(encoded_token) == 0:
-            self.write({"message":"Authorization failed"})
-            self.add_header("Authorization", "")
+        if JWTUtil.authorize_action(self, 2) is None:
             return None
 
         body = self.request.body.decode()
         json_body = json.loads(body)
 
-        label_text = json_body["label_text"]
+        body_categories = {"label_text": 1}
+        label_dict = ErrorUtil.check_fields(json_body, body_categories, self)
 
-        if len(label_text) == 0:
-            self.write({'message': "Empty label text/type"})
+        if label_dict is None:
             return None
 
-        if LabelUtil.label_exists(label_text):
+        if LabelUtil.label_exists(label_dict["label_text"]):
             self.write({'message': "Label exists"})
             return None
 
-        LabelUtil.create_label(label_text)
+        LabelUtil.create_label(label_dict)
         self.write({"message": "Success"})
 
     def put(self):
@@ -145,7 +134,7 @@ class Label(RequestHandler):
         body_categories = {"label_id": 1, "label_text": 1}
         label_dict = ErrorUtil.check_fields(json_body, body_categories, self)
 
-        if node_dict is None:
+        if label_dict is None:
             return None
 
         label_id = json_body["label_id"]
@@ -168,34 +157,28 @@ class Node(RequestHandler):
         self.write(NodeUtil.get_nodes())
 
     def post(self):
-        encoded_token = self.request.headers["Authorization"] if "Authorization" in self.request.headers else ""
-
-        decoded_token = JWTUtil.decode_token(encoded_token) if encoded_token != "" else 0
-        print(decoded_token)
-        if decoded_token["privilege"] == 0:
-            self.write({"message":"Authorization failed"})
-            self.add_header("Authorization", "")
+        if JWTUtil.authorize_action(self, 1) is None:
             return None
 
         body = self.request.body.decode()
         json_body = json.loads(body)
-        node_type = json_body["type"]
 
-        if len(node_type) == 0:
-            self.write({'message': "Empty node type"})
+        body_categories = {"type": 1, "label_id": 0}
+        node_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+        
+        if node_dict is None:
             return None
 
-        if NodeUtil.node_exists(node_type):
-            self.write({'message': "Node exists"})
-            return None        
+        if NodeUtil.node_exists(node_dict["type"]):
+            self.write({"message": "Node exists"})
+            return None
 
-        NodeUtil.create_node(node_type)
+        NodeUtil.create_node(node_dict)
         self.write({"message": "Success"})
 
 
     def put(self):
-        decoded_token = JWTUtil.authorize_action(self, 2)
-        if decoded_token == None:
+        if JWTUtil.authorize_action(self, 2) is None:
             return None
 
         body = self.request.body.decode()
@@ -228,8 +211,7 @@ class Link(RequestHandler):
 
     def post(self):
         #User level privilege
-        decoded_token = JWTUtil.authorize_action(self, 1)
-        if decoded_token == None:
+        if JWTUtil.authorize_action(self, 1) is None:
             return None
 
         body = self.request.body.decode()
@@ -245,8 +227,7 @@ class Link(RequestHandler):
         self.write({"message":"Success"})
 
     def put(self):
-        decoded_token = JWTUtil.authorize_action(self, 1)
-        if decoded_token == None:
+        if JWTUtil.authorize_action(self, 1) is None:
             return None
 
         body = self.request.body.decode()

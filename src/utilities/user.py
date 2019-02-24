@@ -1,4 +1,5 @@
 import handlers.mysqldb as DBHandler
+import utilities.sql as SQLUtil
 
 conn = DBHandler.create_connection()
 
@@ -19,8 +20,8 @@ def get_privilege(username):
 def user_exists(username):
 	return int(conn.execute("SELECT COUNT(username) FROM %s WHERE username = '%s';" % (TABLE, username)).fetchall()[0][0]) != 0
 
-def create_user(username, password, admin):
-	conn.execute("INSERT INTO %s (username, password, privilege) VALUES ('%s', '%s', %d);" % (TABLE, username, password, 0))
+def create_user(user_dict):
+	conn.execute(SQLUtil.build_insert_statement(TABLE, user_dict))
 
 """
 Function that is able to change user information values besides 
