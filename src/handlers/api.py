@@ -31,7 +31,7 @@ class Authenticate(RequestHandler):
             return None
 
         username = user_dict["username"]
-        token = JWTUtil.create_token(UserUtil.get_uid(username), username,  (UserUtil.get_privilege(username) + 1))
+        token = JWTHandler.create_token(UserUtil.get_uid(username), username,  (UserUtil.get_privilege(username) + 1))
 
         self.add_header("Authorization", token)
         self.write({"message":"Authenticated"})
@@ -53,13 +53,13 @@ class Register(RequestHandler):
 
         UserUtil.create_user(user_dict)
         username = user_dict["username"]
-        token = JWTUtil.create_token(UserUtil.get_uid(username), username,  UserUtil.get_privilege(username) + 1)
+        token = JWTHandler.create_token(UserUtil.get_uid(username), username,  UserUtil.get_privilege(username) + 1)
         self.add_header("token", token)
         self.write({'message': "Success"})
 
 class User(RequestHandler):
     def get(self):
-        if JWTUtil.authorize_action(self, 2) is None:
+        if JWTHandler.authorize_action(self, 2) is None:
             return None
 
         body = self.request.body.decode()
@@ -104,7 +104,7 @@ class Label(RequestHandler):
     Only admins may create new labels/collections
     """
     def post(self):
-        if JWTUtil.authorize_action(self, 2) is None:
+        if JWTHandler.authorize_action(self, 2) is None:
             return None
 
         body = self.request.body.decode()
@@ -124,7 +124,7 @@ class Label(RequestHandler):
         self.write({"message": "Success"})
 
     def put(self):
-        decoded_token = JWTUtil.authorize_action(self, 2)
+        decoded_token = JWTHandler.authorize_action(self, 2)
         if decoded_token == None:
             return None
 
@@ -157,7 +157,7 @@ class Node(RequestHandler):
         self.write(NodeUtil.get_nodes())
 
     def post(self):
-        if JWTUtil.authorize_action(self, 1) is None:
+        if JWTHandler.authorize_action(self, 1) is None:
             return None
 
         body = self.request.body.decode()
@@ -178,7 +178,7 @@ class Node(RequestHandler):
 
 
     def put(self):
-        if JWTUtil.authorize_action(self, 2) is None:
+        if JWTHandler.authorize_action(self, 2) is None:
             return None
 
         body = self.request.body.decode()
@@ -211,7 +211,7 @@ class Link(RequestHandler):
 
     def post(self):
         #User level privilege
-        if JWTUtil.authorize_action(self, 1) is None:
+        if JWTHandler.authorize_action(self, 1) is None:
             return None
 
         body = self.request.body.decode()
@@ -227,7 +227,7 @@ class Link(RequestHandler):
         self.write({"message":"Success"})
 
     def put(self):
-        if JWTUtil.authorize_action(self, 1) is None:
+        if JWTHandler.authorize_action(self, 1) is None:
             return None
 
         body = self.request.body.decode()
