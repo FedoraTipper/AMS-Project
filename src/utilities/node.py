@@ -4,8 +4,8 @@ conn = DBHandler.create_connection()
 
 TABLE = "nodes"
 
-def create_node(node_type, user_id):
-	conn.execute("INSERT INTO %s (type, user_id) VALUES ('%s', %d);" % (TABLE, node_type, int(user_id)))
+def create_node(node_type):
+	conn.execute("INSERT INTO %s (type) VALUES ('%s');" % (TABLE, node_type))
 
 def node_exists(node_type):
 	return int(conn.execute("SELECT COUNT(node_id) FROM %s WHERE type = '%s';" %(TABLE, node_type)).fetchall()[0][0]) != 0

@@ -1,5 +1,5 @@
 [DATABASE]
-Host = localhost
+Host = 139.59.172.124
 Port = 3306
 Database = project1
 Username = apirunner

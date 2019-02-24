@@ -6,13 +6,14 @@ import utilities.user as UserUtil
 import utilities.label as LabelUtil
 import utilities.node as NodeUtil
 import utilities.jwt as  JWTUtil
+import utilities.link as LinkUtil
 import json
 
 Logger = LoggerHandler.Logger()
 
 
 class Authenticate(RequestHandler):
-    def post(self):        
+    def get(self):        
         body = self.request.body.decode()
         json_body = json.loads(body)
         username = json_body["username"]
@@ -38,7 +39,7 @@ class Register(RequestHandler):
         json_body = json.loads(body)
         username = json_body["username"]
         password = json_body["password"]
-        admin = int(json_body["admin"]) if json_body["admin"] == "1" else 0
+        admin = 1 if int(json_body["privilege"]) == 1 else 0
 
         if len(password) == 0 and len(username) == 0:
             self.write({'message': "Empty username/password"})
@@ -119,7 +120,6 @@ class Label(RequestHandler):
         body = self.request.body.decode()
         json_body = json.loads(body)
 
-        uid = UserUtil.get_uid(JWTUtil.decode_token(encoded_token)["username"])
         label_text = json_body["label_text"]
 
         if len(label_text) == 0:
@@ -130,7 +130,7 @@ class Label(RequestHandler):
             self.write({'message': "Label exists"})
             return None
 
-        LabelUtil.create_label(label_text, uid)
+        LabelUtil.create_label(label_text)
         self.write({"message": "Success"})
 
     def put(self):
@@ -184,7 +184,6 @@ class Node(RequestHandler):
 
         body = self.request.body.decode()
         json_body = json.loads(body)
-        uid = decoded_token["uid"]
         node_type = json_body["type"]
 
         if len(node_type) == 0:
@@ -195,7 +194,7 @@ class Node(RequestHandler):
             self.write({'message': "Node exists"})
             return None        
 
-        NodeUtil.create_node(node_type, uid)
+        NodeUtil.create_node(node_type)
         self.write({"message": "Success"})
 
 
@@ -229,7 +228,13 @@ class Node(RequestHandler):
   
 class Link(RequestHandler):
     def get(self):
-        return None
+        if len(self.request.body) != 0:
+            body = self.request.body.decode()
+            json_body = json.loads(body)
+            if "link_id" in json_body:
+                self.write(LinkUtil.get_link(json_body["link_id"]))
+                return None
+        self.write(LinkUtil.get_links())
 
     def post(self):
         #Handle user authorisation
@@ -240,7 +245,7 @@ class Link(RequestHandler):
         body = self.request.body.decode()
         json_body = json.loads(body)
 
-        body_categories = {"node_id_1": 1, "node_id_2": 1, "label_id": 0}
+        body_categories = {"node_id_1": 1, "node_id_2": 1}
         node_dict = {}
 
         for category in body_categories:
@@ -252,8 +257,8 @@ class Link(RequestHandler):
             else:
                 node_dict[category] = json_body[category]
 
-        uid = decoded_token["uid"]
-        
+        LinkUtil.create_link(node_dict)
+        self.write({"message":"Success"})
 
     def put(self):
         return None

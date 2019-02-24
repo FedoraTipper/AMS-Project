@@ -14,13 +14,13 @@ def get_uid(username):
 	return int(conn.execute("SELECT user_id FROM %s WHERE username = '%s';" % (TABLE, username)).fetchall()[0][0])
 
 def get_privilege(username):
-	return int(conn.execute("SELECT admin FROM %s WHERE username = '%s';" % (TABLE, username)).fetchall()[0][0])
+	return int(conn.execute("SELECT privilege FROM %s WHERE username = '%s';" % (TABLE, username)).fetchall()[0][0])
 
 def user_exists(username):
 	return int(conn.execute("SELECT COUNT(username) FROM %s WHERE username = '%s';" % (TABLE, username)).fetchall()[0][0]) != 0
 
 def create_user(username, password, admin):
-	conn.execute("INSERT INTO %s (username, password, admin) VALUES ('%s', '%s', %d);" % (TABLE, username, password, 0))
+	conn.execute("INSERT INTO %s (username, password, privilege) VALUES ('%s', '%s', %d);" % (TABLE, username, password, 0))
 
 """
 Function that is able to change user information values besides 

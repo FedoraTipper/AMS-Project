@@ -10,8 +10,6 @@ localhost/api/auth <- POST BODY
 localhost/api/register <- POST BODY
 
 
-
-
 Database: https://hub.docker.com/r/linuxserver/mariadb
 
 Connecting to DB with sqlalchemy: https://docs.sqlalchemy.org/en/latest/core/engines.html
@@ -20,6 +18,11 @@ mysql -u root -p
 
 ZJJFt7rqeg8eMPreru69NX9W9yMfhyechc8Yzz4ogtdEfUB
 2Bqp89ypxcXewWNEGfRwQvmyg5vFKVuJ6xW6KowkHCvtQ2h
+
+ac7ad832372f0b21fb2f793ce74a2589ef81b6cf29e8ff61
+admin_mysql_pass="c9ab71b6301ba1e21c75195f1b51d4d1fac6cf4e1161dee3"
+app_mysql_pass="778da81f393942f1777426f1daae3a9a2840760926b7f2fc"
+
 
 
 

@@ -6,7 +6,7 @@ conn = DBHandler.create_connection()
 TABLE = "labels"
 
 def create_label(label_text, uid):
-	conn.execute("INSERT INTO %s (label_text, user_id) VALUES ('%s', %d);" % (TABLE, label_text, uid))
+	conn.execute("INSERT INTO %s (label_text) VALUES ('%s', %d);" % (TABLE, label_text))
 
 
 def label_exists(label_text):
