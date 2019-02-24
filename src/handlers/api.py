@@ -7,6 +7,7 @@ import utilities.label as LabelUtil
 import utilities.node as NodeUtil
 import utilities.jwt as  JWTUtil
 import utilities.link as LinkUtil
+import utilities.error as ErrorUtil
 import json
 
 Logger = LoggerHandler.Logger()
@@ -26,7 +27,7 @@ class Authenticate(RequestHandler):
         if(UserUtil.compare_password(username, password) == False):
             self.write({"message":"Authentication failed"})
 
-        token = JWTUtil.create_token(UserUtil.get_uid(username), username,  UserUtil.get_privilege(username))
+        token = JWTUtil.create_token(UserUtil.get_uid(username), username,  (UserUtil.get_privilege(username) + 1))
 
         self.add_header("Authorization", token)
         self.write({"message":"Authenticated"})
@@ -51,7 +52,7 @@ class Register(RequestHandler):
 
         UserUtil.create_user(username, password, admin)
 
-        token = JWTUtil.create_token(UserUtil.get_uid(username), username,  UserUtil.get_privilege(username))
+        token = JWTUtil.create_token(UserUtil.get_uid(username), username,  UserUtil.get_privilege(username) + 1)
         self.add_header("token", token)
         self.write({'message': "Success"})
 
@@ -134,7 +135,7 @@ class Label(RequestHandler):
         self.write({"message": "Success"})
 
     def put(self):
-        decoded_token = JWTUtil.authorize_action(self)
+        decoded_token = JWTUtil.authorize_action(self, 2)
         if decoded_token == None:
             return None
 
@@ -142,16 +143,10 @@ class Label(RequestHandler):
         json_body = json.loads(body)
 
         body_categories = {"label_id": 1, "label_text": 1}
-        label_dict = {}
+        label_dict = ErrorUtil.check_fields(json_body, body_categories, self)
 
-        for category in body_categories:
-            if category not in json_body and body_categories[category] == 1:
-                self.write({"message":"Missing fields"})
-                return None
-            elif category not in json_body and body_categories[category] == 0:
-                pass
-            else:
-                label_dict[category] = json_body[category]
+        if node_dict is None:
+            return None
 
         label_id = json_body["label_id"]
         del label_dict["label_id"]
@@ -199,7 +194,7 @@ class Node(RequestHandler):
 
 
     def put(self):
-        decoded_token = JWTUtil.authorize_action(self)
+        decoded_token = JWTUtil.authorize_action(self, 2)
         if decoded_token == None:
             return None
 
@@ -207,19 +202,14 @@ class Node(RequestHandler):
         json_body = json.loads(body)
 
         body_categories = {"type": 0, "node_id": 1, "label_id": 0}
-        node_dict = {}
+        node_dict = ErrorUtil.check_fields(json_body, body_categories, self)
 
-        for category in body_categories:
-            if category not in json_body and body_categories[category] == 1:
-                self.write({"message":"Missing fields"})
-                return None
-            elif category not in json_body and body_categories[category] == 0:
-                pass
-            else:
-                node_dict[category] = json_body[category]
+        if node_dict is None:
+            return None
 
         node_id = json_body["node_id"]
         del node_dict["node_id"]
+
         NodeUtil.change_node(node_id, node_dict)
         self.write({"message":"Success"})
 
@@ -237,8 +227,8 @@ class Link(RequestHandler):
         self.write(LinkUtil.get_links())
 
     def post(self):
-        #Handle user authorisation
-        decoded_token = JWTUtil.authorize_action(self)
+        #User level privilege
+        decoded_token = JWTUtil.authorize_action(self, 1)
         if decoded_token == None:
             return None
 
@@ -246,22 +236,33 @@ class Link(RequestHandler):
         json_body = json.loads(body)
 
         body_categories = {"node_id_1": 1, "node_id_2": 1}
-        node_dict = {}
+        link_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+        
+        if link_dict is None:
+            return None
 
-        for category in body_categories:
-            if category not in json_body and body_categories[category] == 1:
-                self.write({"message":"Missing fields: {}".format(category)})
-                return None
-            elif category not in json_body and body_categories[category] == 0:
-                pass
-            else:
-                node_dict[category] = json_body[category]
-
-        LinkUtil.create_link(node_dict)
+        LinkUtil.create_link(link_dict)
         self.write({"message":"Success"})
 
     def put(self):
-        return None
+        decoded_token = JWTUtil.authorize_action(self, 1)
+        if decoded_token == None:
+            return None
+
+        body = self.request.body.decode()
+        json_body = json.loads(body)
+
+        body_categories = {"link_id": 1, "node_id_1": 0, "node_id_2": 0, "label_id": 0}
+        link_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+
+        if link_dict is None:
+            return None
+
+        link_id = link_dict["link_id"]
+        del link_dict["link_id"]
+
+        LinkUtil.change_link(link_id, link_dict)
+        self.write({"message":"Success"})
 
     def delete(self):
         return None

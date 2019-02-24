@@ -22,10 +22,15 @@ def determine_privilege(encode):
 	else:
 		return int(decoded_token["privilege"])
 
-def authorize_action(torn):
+"""
+0: Any level
+1: User level privilege
+2: Admin level privilege
+"""
+def authorize_action(torn, priv_level = 1):
 	encoded_token = torn.request.headers["Authorization"] if "Authorization" in torn.request.headers else ""
 
-	if determine_privilege(encoded_token) == 0:
+	if determine_privilege(encoded_token) < priv_level:
 		torn.write({"message":"Authorization failed"})
 		torn.add_header("Authorization", "")
 		return None

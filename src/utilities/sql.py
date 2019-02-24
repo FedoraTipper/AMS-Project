@@ -1,6 +1,6 @@
 """
 Functions to build base SQL statements. Conditions of statements are left out,
-and added on outside of the function.
+and added on, outside of functions.
 """
 
 def build_update_statement(table, statement_dict):
