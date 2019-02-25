@@ -1,11 +1,18 @@
+import json
+
 def check_fields(result_body, categories, torn, result_dict = {}):
+	if len(result_body) == 0:
+		torn.write({"message":"Missing response body"})		
+		return None
+		
+	json_results = json.loads(result_body)
+
 	for category in categories:
-		if category not in result_body and categories[category] == 1:
+		if category not in json_results and categories[category] == 1:
 			torn.write({"message":"Missing fields: {}".format(category)})
 			return None
-		elif category not in result_body and categories[category] == 0:
+		elif category not in json_results and categories[category] == 0:
 			pass
 		else:
-			result_dict[category] = result_body[category]
+			result_dict[category] = json_results[category]
 	return result_dict
-

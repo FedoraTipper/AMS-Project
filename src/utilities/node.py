@@ -5,7 +5,11 @@ conn = DBHandler.create_connection()
 TABLE = "nodes"
 
 def create_node(node_dict):
+	if node_exists(node_dict["type"]):
+		torn.write({'message': "Node type exists"})
+		return None
 	conn.execute(SQLUtil.build_insert_statement(TABLE, node_dict))
+	return ""
 
 def node_exists(node_type):
 	return int(conn.execute("SELECT COUNT(node_id) FROM %s WHERE type = '%s';" %(TABLE, node_type)).fetchall()[0][0]) != 0
@@ -21,7 +25,10 @@ def get_node(node_id):
 def add_label(node_id, label_id):
 	conn.execute("UPDATE %s SET label_id = '%s'")
 
-
-def change_node(node_id, node_dict):
+def change_node(node_id, node_dict, torn):
+	if node_exists(node_id) == False:
+		torn.write({'message': "Node does not exist"})
+		return None
 	statement = SQLUtil.build_update_statement(TABLE, node_dict) + " WHERE node_id = %d;" % node_id
 	conn.execute(statement)
+	return ""

@@ -1,5 +1,4 @@
 from tornado.web import RequestHandler
-import json
 
 import handlers.mysqldb as DBHandler
 import handlers.logger as LoggerHandler
@@ -18,11 +17,8 @@ Logger = LoggerHandler.Logger()
 
 class Authenticate(RequestHandler):
     def get(self):        
-        body = self.request.body.decode()
-        json_body = json.loads(body)
-
         body_categories = {"username": 1, "password": 1}
-        user_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+        user_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if user_dict is None:
             return None
@@ -39,17 +35,14 @@ class Authenticate(RequestHandler):
 
 class Register(RequestHandler):
     def post(self):
-        body = self.request.body.decode()
-        json_body = json.loads(body)
-
         body_categories = {"username": 1, "password": 1, "privilege": 0}
-        user_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+        user_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if user_dict is None:
             return None
 
         if UserUtil.user_exists(user_dict["username"]):
-            self.write({'message': "Username exists"})
+            self.write({'message': "User does not exists"})
             return None
 
         UserUtil.create_user(user_dict)
@@ -63,10 +56,8 @@ class User(RequestHandler):
         if JWTHandler.authorize_action(self, 2) is None:
             return None
 
-        body = self.request.body.decode()
-        json_body = json.loads(body)
         body_categories = {"username": 1}
-        user_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+        user_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if user_dict is None:
             return None
@@ -108,20 +99,15 @@ class Label(RequestHandler):
         if JWTHandler.authorize_action(self, 2) is None:
             return None
 
-        body = self.request.body.decode()
-        json_body = json.loads(body)
-
         body_categories = {"label_text": 1}
-        label_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+        label_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if label_dict is None:
             return None
 
-        if LabelUtil.label_exists(label_dict["label_text"]):
-            self.write({'message': "Label exists"})
+        if LabelUtil.create_label(label_dict, self) is None:
             return None
 
-        LabelUtil.create_label(label_dict)
         self.write({"message": "Success"})
 
     def put(self):
@@ -129,18 +115,17 @@ class Label(RequestHandler):
         if decoded_token == None:
             return None
 
-        body = self.request.body.decode()
-        json_body = json.loads(body)
-
         body_categories = {"label_id": 1, "label_text": 1}
-        label_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+        label_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if label_dict is None:
             return None
 
         label_id = json_body["label_id"]
         del label_dict["label_id"]
-        LabelUtil.change_label(label_id, label_dict)
+        if LabelUtil.change_label(label_id, label_dict, self) is None:
+            return None
+
         self.write({"message":"Success"})
 
 
@@ -161,20 +146,15 @@ class Node(RequestHandler):
         if JWTHandler.authorize_action(self, 1) is None:
             return None
 
-        body = self.request.body.decode()
-        json_body = json.loads(body)
-
         body_categories = {"type": 1, "label_id": 0}
-        node_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+        node_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
         
         if node_dict is None:
             return None
 
-        if NodeUtil.node_exists(node_dict["type"]):
-            self.write({"message": "Node exists"})
+        if NodeUtil.create_node(node_dict, self):
             return None
 
-        NodeUtil.create_node(node_dict)
         self.write({"message": "Success"})
 
 
@@ -182,11 +162,8 @@ class Node(RequestHandler):
         if JWTHandler.authorize_action(self, 2) is None:
             return None
 
-        body = self.request.body.decode()
-        json_body = json.loads(body)
-
         body_categories = {"type": 0, "node_id": 1, "label_id": 0}
-        node_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+        node_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if node_dict is None:
             return None
@@ -194,7 +171,9 @@ class Node(RequestHandler):
         node_id = json_body["node_id"]
         del node_dict["node_id"]
 
-        NodeUtil.change_node(node_id, node_dict)
+        if NodeUtil.change_node(node_id, node_dict, self) is None:
+            return None
+
         self.write({"message":"Success"})
 
     def delete(self):  
@@ -215,11 +194,8 @@ class Link(RequestHandler):
         if JWTHandler.authorize_action(self, 1) is None:
             return None
 
-        body = self.request.body.decode()
-        json_body = json.loads(body)
-
         body_categories = {"node_id_1": 1, "node_id_2": 1}
-        link_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+        link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
         
         if link_dict is None:
             return None
@@ -231,11 +207,8 @@ class Link(RequestHandler):
         if JWTHandler.authorize_action(self, 1) is None:
             return None
 
-        body = self.request.body.decode()
-        json_body = json.loads(body)
-
         body_categories = {"link_id": 1, "node_id_1": 0, "node_id_2": 0, "label_id": 0}
-        link_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+        link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if link_dict is None:
             return None
@@ -263,11 +236,8 @@ class Metadata(RequestHandler):
         if JWTHandler.authorize_action(self, 1) is None:
             return None
 
-        body = self.request.body.decode()
-        json_body = json.loads(body)
-
         body_categories = {"node_id_1": 1, "node_id_2": 1}
-        link_dict = ErrorUtil.check_fields(json_body, body_categories, self)
+        link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
         
         if link_dict is None:
             return None
