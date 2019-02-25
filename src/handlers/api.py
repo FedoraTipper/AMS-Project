@@ -193,13 +193,12 @@ class Link(RequestHandler):
         if JWTHandler.authorize_action(self, 1) is None:
             return None
 
-        body_categories = {"node_id_1": 1, "node_id_2": 1}
+        body_categories = {"node_id_1": 1, "node_id_2": 1, "label_id":0}
         link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
-        
-        if link_dict is None:
+
+        if link_dict is None or LinkUtil.create_link(link_dict, self) is None:
             return None
 
-        LinkUtil.create_link(link_dict)
         self.write({"message":"Success"})
 
     def put(self):
@@ -215,7 +214,9 @@ class Link(RequestHandler):
         link_id = link_dict["link_id"]
         del link_dict["link_id"]
 
-        LinkUtil.change_link(link_id, link_dict)
+        if LinkUtil.change_link(link_id, link_dict, self) is None:
+            return None
+
         self.write({"message":"Success"})
 
     def delete(self):
