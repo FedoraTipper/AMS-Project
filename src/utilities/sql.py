@@ -8,6 +8,8 @@ def build_update_statement(table, statement_dict):
 	for key in statement_dict:
 		if isinstance(statement_dict[key], str):
 			query += " {} = '{}',".format(key, statement_dict[key])
+		elif statement_dict[key] is None:
+			query += " {} = NULL,".format(key)
 		else:
 			query += " {} = {},".format(key, statement_dict[key])
 	return query[:-1]
@@ -31,3 +33,10 @@ def build_insert_statement(table, statement_dict):
 def build_delete_statement(table, statement_dict):
 	#DELETE FROM Customers WHERE CustomerName='Alfreds Futterkiste';
 	query = "DELETE FROM % table "
+
+def build_nullify_statements(tables, statement_dict):
+	statement_list = list()
+	for table in tables:
+		for key in statement_dict:
+			statement.append(build_update_statement(table, statement_dict))
+	return statement_list

@@ -1,4 +1,5 @@
 from tornado.web import RequestHandler
+import json
 
 import handlers.mysqldb as DBHandler
 import handlers.logger as LoggerHandler
@@ -38,14 +39,9 @@ class Register(RequestHandler):
         body_categories = {"username": 1, "password": 1, "privilege": 0}
         user_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
-        if user_dict is None:
+        if UserUtil.create_user(user_dict, self) is None:
             return None
 
-        if UserUtil.user_exists(user_dict["username"]):
-            self.write({'message': "User does not exists"})
-            return None
-
-        UserUtil.create_user(user_dict)
         username = user_dict["username"]
         token = JWTHandler.create_token(UserUtil.get_uid(username), username,  UserUtil.get_privilege(username) + 1)
         self.add_header("token", token)
@@ -69,16 +65,19 @@ class User(RequestHandler):
     Come back
     """
     def put(self):
-        body = self.request.body.decode()
-        json_body = json.loads(body)
-        username = json_body["username"]
-        del json_body["username"]
-        #Handle administration access
-        if UserUtil.user_exists(username):
-            uid = UserUtil.get_uid(username)
-            UserUtil.change_user_information(uid, json_body)
-        else:
-            self.write({'message': "Username does not exist"})
+        if JWTHandler.authorize_action(self, 2) is None:
+            return None
+
+        body_categories = {"username": 1, "password": 0, "admin": 0}
+        user_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+
+        if user_dict is None:
+            return None
+
+        if UserUtil.change_user_fields(user_dict, self) is None:
+            return None
+
+        self.write({'message': "Success"})
 
     def delete(self):
         return None
@@ -121,7 +120,7 @@ class Label(RequestHandler):
         if label_dict is None:
             return None
 
-        label_id = json_body["label_id"]
+        label_id = label_dict["label_id"]
         del label_dict["label_id"]
         if LabelUtil.change_label(label_id, label_dict, self) is None:
             return None
@@ -152,7 +151,7 @@ class Node(RequestHandler):
         if node_dict is None:
             return None
 
-        if NodeUtil.create_node(node_dict, self):
+        if NodeUtil.create_node(node_dict, self) is None:
             return None
 
         self.write({"message": "Success"})
@@ -168,7 +167,7 @@ class Node(RequestHandler):
         if node_dict is None:
             return None
 
-        node_id = json_body["node_id"]
+        node_id = node_dict["node_id"]
         del node_dict["node_id"]
 
         if NodeUtil.change_node(node_id, node_dict, self) is None:

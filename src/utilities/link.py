@@ -54,7 +54,7 @@ def sort_node_ids(link_dict):
 		link_dict["node_id_2"] = temp
 	return link_dict
 
-def delete_link(link_id):
+def delete_link(link_id, torn):
 	if link_exists(link_id) == False:
 		torn.write({"message":"Link does not exist"})
 		return None
