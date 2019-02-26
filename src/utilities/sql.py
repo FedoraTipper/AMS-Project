@@ -38,5 +38,5 @@ def build_nullify_statements(tables, statement_dict):
 	statement_list = list()
 	for table in tables:
 		for key in statement_dict:
-			statement.append(build_update_statement(table, statement_dict))
+			statement_list.append(build_update_statement(table, statement_dict))
 	return statement_list

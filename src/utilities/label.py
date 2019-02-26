@@ -43,12 +43,12 @@ def change_label(label_id, label_dict, torn):
 	return ""
 
 
-def delete_label(label_id):
+def delete_label(label_id, torn):
 	if label_id_exists(label_id) == False:
 		torn.write({"message": "Label does not exist"})
 		return None
 	tables = {"links", "nodes", "logs"}
-	null_dict = {"link_id": None}
+	null_dict = {"label_id": None}
 	statements = SQLUtil.build_nullify_statements(tables, null_dict)
 	statements.append("DELETE FROM {}".format(TABLE))
 	

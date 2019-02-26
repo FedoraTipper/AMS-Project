@@ -84,13 +84,16 @@ class User(RequestHandler):
 
 class Label(RequestHandler):
     def get(self):
-        if len(self.request.body) != 0:
-            body = self.request.body.decode()
-            json_body = json.loads(body)
-            if "label_id" in json_body:
-                self.write(LabelUtil.get_label(json_body["label_id"]))
-                return None
-        self.write(LabelUtil.get_labels())
+        body_categories = {"label_id":0}
+        label_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+
+        if label_dict is None:
+            self.write(LabelUtil.get_labels())
+            return None
+
+        if "label_id" in label_dict:
+            self.write(LabelUtil.get_label(label_dict["label_id"]))
+
     """
     Only admins may create new labels/collections
     """
@@ -129,17 +132,32 @@ class Label(RequestHandler):
 
 
     def delete(self):
-        return None
+        if JWTHandler.authorize_action(self, 2) is None:
+            return None
+
+        body_categories = {"label_id": 1}
+        label_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+
+        if label_dict is None:
+            return None
+
+        if LabelUtil.delete_label(label_dict["label_id"], self) is None:
+            return None
+
+        self.write({"message":"Success"})
+
 
 class Node(RequestHandler):
     def get(self):
-        if len(self.request.body) != 0:
-            body = self.request.body.decode()
-            json_body = json.loads(body)
-            if "node_id" in json_body:
-                self.write(NodeUtil.get_node(json_body["node_id"]))
-                return None
-        self.write(NodeUtil.get_nodes())
+        body_categories = {"node_id":0}
+        node_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+
+        if node_dict is None:
+            self.write(NodeUtil.get_nodes())
+            return None
+
+        if "node_id" in node_dict:
+            self.write(NodeUtil.get_node(node_dict["node_id"]))
 
     def post(self):
         if JWTHandler.authorize_action(self, 1) is None:
@@ -155,7 +173,6 @@ class Node(RequestHandler):
             return None
 
         self.write({"message": "Success"})
-
 
     def put(self):
         if JWTHandler.authorize_action(self, 2) is None:
@@ -180,13 +197,15 @@ class Node(RequestHandler):
   
 class Link(RequestHandler):
     def get(self):
-        if len(self.request.body) != 0:
-            body = self.request.body.decode()
-            json_body = json.loads(body)
-            if "link_id" in json_body:
-                self.write(LinkUtil.get_link(json_body["link_id"]))
-                return None
-        self.write(LinkUtil.get_links())
+        body_categories = {"link_id":0}
+        link_dict = ErrorUtil.check_fields(self.request.body.decode(),body_categories, self)
+
+        if link_dict is None:
+            self.write(LinkUtil.get_links())
+            return None
+
+        if "link_id" in link_dict:
+            self.write(LinkUtil.get_link(link_dict["link_id"]))
 
     def post(self):
         #User level privilege
@@ -220,7 +239,19 @@ class Link(RequestHandler):
         self.write({"message":"Success"})
 
     def delete(self):
-        return None
+        if JWTHandler.authorize_action(self, 1) is None:
+            return None
+
+        body_categories = {"link_id": 1}
+        link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+
+        if link_dict is None:
+            return None
+
+        if LinkUtil.delete_link(link_dict["link_id"], self) is None:
+            return None
+
+        self.write({"message":"Success"})
 
 class Metadata(RequestHandler):
     def get(self):
