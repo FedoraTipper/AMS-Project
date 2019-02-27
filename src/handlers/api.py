@@ -5,6 +5,7 @@ import handlers.mysqldb as DBHandler
 import handlers.logger as LoggerHandler
 import handlers.config as ConfigHandler
 import handlers.jwt as  JWTHandler
+from handlers.headers import SetDefaultHeaders
 
 import utilities.user as UserUtil
 import utilities.label as LabelUtil
@@ -16,12 +17,16 @@ import utilities.meta as MetaUtil
 
 Logger = LoggerHandler.Logger()
 
-class Authenticate(RequestHandler):
-    def get(self):        
+class Authenticate(SetDefaultHeaders):
+    def post(self):        
         body_categories = {"username": 1, "password": 1}
         user_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if user_dict is None:
+            return None
+
+        if UserUtil.user_exists(user_dict["username"]) == False:
+            self.write({"message":"Authentication failed"})
             return None
 
         if(UserUtil.compare_password(user_dict["username"], user_dict["password"]) == False):
@@ -34,7 +39,7 @@ class Authenticate(RequestHandler):
         self.add_header("Authorization", token)
         self.write({"message":"Authenticated"})
 
-class Register(RequestHandler):
+class Register(SetDefaultHeaders):
     def post(self):
         body_categories = {"username": 1, "password": 1, "privilege": 0}
         user_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
@@ -47,13 +52,13 @@ class Register(RequestHandler):
         self.add_header("token", token)
         self.write({'message': "Success"})
 
-class User(RequestHandler):
+class User(SetDefaultHeaders):
     def get(self):
         if JWTHandler.authorize_action(self, 2) is None:
             return None
 
         body_categories = {"username": 1}
-        user_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+        user_dict = ErrorUtil.check_fields(self.request.arguments, body_categories, self)
 
         if user_dict is None:
             return None
@@ -82,10 +87,10 @@ class User(RequestHandler):
     def delete(self):
         return None
 
-class Label(RequestHandler):
+class Label(SetDefaultHeaders):
     def get(self):
         body_categories = {"label_id":0}
-        label_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+        label_dict = ErrorUtil.check_fields(self.request.arguments, body_categories, self)
 
         if label_dict is None:
             self.write(LabelUtil.get_labels())
@@ -147,10 +152,10 @@ class Label(RequestHandler):
         self.write({"message":"Success"})
 
 
-class Node(RequestHandler):
+class Node(SetDefaultHeaders):
     def get(self):
         body_categories = {"node_id":0}
-        node_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+        node_dict = ErrorUtil.check_fields(self.request.arguments, body_categories, self)
 
         if node_dict is None:
             self.write(NodeUtil.get_nodes())
@@ -195,10 +200,10 @@ class Node(RequestHandler):
     def delete(self):  
         return None
   
-class Link(RequestHandler):
+class Link(SetDefaultHeaders):
     def get(self):
         body_categories = {"link_id":0}
-        link_dict = ErrorUtil.check_fields(self.request.body.decode(),body_categories, self)
+        link_dict = ErrorUtil.check_fields(self.request.arguments, body_categories, self)
 
         if link_dict is None:
             self.write(LinkUtil.get_links())
@@ -253,7 +258,7 @@ class Link(RequestHandler):
 
         self.write({"message":"Success"})
 
-class Metadata(RequestHandler):
+class Metadata(SetDefaultHeaders):
     def get(self):
         if len(self.request.body) != 0:
             body = self.request.body.decode()

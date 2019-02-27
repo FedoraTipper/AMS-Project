@@ -3,7 +3,7 @@ from tornado.ioloop import IOLoop
 import handlers.api as APIHandler
 
 def make_app():
-  urls = [("/api/auth/", APIHandler.Authenticate),
+  urls = [("/api/auth", APIHandler.Authenticate),
           ("/api/register/", APIHandler.Register),
           ("/api/user", APIHandler.User),
           ("/api/node", APIHandler.Node),
