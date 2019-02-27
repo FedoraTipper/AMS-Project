@@ -2,7 +2,9 @@ import json
 import re
 
 def check_fields(result_body, categories, torn, result_dict = {}):
-	if len(result_body) == 0:
+	if isinstance(result_body, dict) and (len(result_body) == 0):
+		return None
+	elif len(result_body) == 0:
 		torn.write({"message":"Missing response body"})
 		return None
 

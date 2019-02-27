@@ -156,7 +156,6 @@ class Node(SetDefaultHeaders):
     def get(self):
         body_categories = {"node_id":0}
         node_dict = ErrorUtil.check_fields(self.request.arguments, body_categories, self)
-
         if node_dict is None:
             self.write(NodeUtil.get_nodes())
             return None
