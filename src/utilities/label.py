@@ -38,7 +38,7 @@ def change_label(label_id, label_dict, torn):
 	if label_exists(label_dict["label_text"]):
 		torn.write({"message": "New label text already exists"})
 		return None
-	statement = SQLUtil.build_update_statement(TABLE, label_dict) + " WHERE label_id = %d;" % label_id
+	statement = SQLUtil.build_update_statement(TABLE, label_dict) + " WHERE label_id = %d;" % int(label_id)
 	conn.execute(statement)
 	return ""
 

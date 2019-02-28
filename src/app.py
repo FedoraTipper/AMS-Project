@@ -9,7 +9,8 @@ def make_app():
           ("/api/node/", APIHandler.Node),
           ("/api/link/", APIHandler.Link),
           ("/api/label/", APIHandler.Label),
-          ("/api/metadata/", APIHandler.Metadata)]
+          ("/api/metadata/", APIHandler.Metadata),
+          ("/api/relationship/", APIHandler.Relationship)]
   return Application(urls, debug=True)
   
 if __name__ == '__main__':

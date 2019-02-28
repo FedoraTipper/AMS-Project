@@ -13,7 +13,7 @@ import utilities.node as NodeUtil
 import utilities.link as LinkUtil
 import utilities.error as ErrorUtil
 import utilities.meta as MetaUtil
-
+import utilities.relationship as RelationshipUtil
 
 Logger = LoggerHandler.Logger()
 
@@ -151,7 +151,6 @@ class Label(SetDefaultHeaders):
 
         self.write({"message":"Success"})
 
-
 class Node(SetDefaultHeaders):
     def get(self):
         body_categories = {"node_id":0}
@@ -216,7 +215,7 @@ class Link(SetDefaultHeaders):
         if JWTHandler.authorize_action(self, 1) is None:
             return None
 
-        body_categories = {"node_id_1": 1, "node_id_2": 1, "label_id":0}
+        body_categories = {"node_id_1": 1, "node_id_2": 1, "label_id":0, "relationship_id":0}
         link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if link_dict is None or LinkUtil.create_link(link_dict, self) is None:
@@ -228,7 +227,7 @@ class Link(SetDefaultHeaders):
         if JWTHandler.authorize_action(self, 1) is None:
             return None
 
-        body_categories = {"link_id": 1, "node_id_1": 0, "node_id_2": 0, "label_id": 0}
+        body_categories = {"link_id": 1, "node_id_1": 0, "node_id_2": 0, "label_id": 0, "relationship":0}
         link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if link_dict is None:
@@ -286,4 +285,61 @@ class Metadata(SetDefaultHeaders):
     def delete(self):
         return None
 
+class Relationship(SetDefaultHeaders):
+    def get(self):
+        if JWTHandler.authorize_action(self, 1) is None:
+            return None
 
+        body_categories = {"relationship_id": 0}
+        relationship_dict = ErrorUtil.check_fields(self.request.arguments, body_categories, self)
+
+        if relationship_dict is None:
+            self.write(RelationshipUtil.get_relationships())
+            return None
+
+        if "relationship_id" in relationship_dict:
+            self.write(RelationshipUtil.get_relationships(relationship_dict["relationship_id"])) 
+
+    def post(self):
+        if JWTHandler.authorize_action(self, 2) is None:
+            return None
+        body_categories = {"message": 1}
+        relationship_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+
+        if relationship_dict is None or RelationshipUtil.create_relationship(relationship_dict, self) is None:
+            return None
+
+        self.write({"message":"Success"})
+
+    def put(self):
+        if JWTHandler.authorize_action(self, 2) is None:
+            return None
+
+        body_categories = {"relationship_id": 1, "message": 1}
+        relationship_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+
+        if relationship_dict is None:
+            return None
+
+        relationship_id = relationship_dict["relationship_id"]
+        del relationship_dict["relationship_id"]
+
+        if RelationshipUtil.change_relationship(relationship_id, relationship_dict, self) is None:
+            return None
+
+        self.write({"message":"Success"})
+
+    def delete(self):
+        if JWTHandler.authorize_action(self, 2) is None:
+            return None
+
+        body_categories = {"relationship_id": 1}
+        relationship_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+
+        if relationship_dict is None:
+            return None
+
+        if RelationshipUtil.delete_link(relationship_dict["relationship_id"], self) is None:
+            return None
+
+        self.write({"message":"Success"})

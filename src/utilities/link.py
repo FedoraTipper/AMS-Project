@@ -2,6 +2,7 @@ import handlers.mysqldb as DBHandler
 import utilities.sql as SQLUtil
 import utilities.node as NodeUtil
 import utilities.label as LabelUtil
+import utilities.relationship as RelationshipUtil
 conn = DBHandler.create_connection()
 
 
@@ -11,7 +12,6 @@ TABLE = "links"
 Node ids are stored in ascending order
 """
 def create_link(link_dict, torn):
-
 	if check_nodes_exist(link_dict["node_id_1"], link_dict["node_id_2"]) == False:
 		torn.write({"message":"One of nodes in the the link does not exist"})
 		return None
@@ -22,7 +22,7 @@ def create_link(link_dict, torn):
 		torn.write({"message":"Links from and to the same node are not allowed"})
 		return None
 
-	if relationship_exists(link_dict["node_id_1"], link_dict["node_id_2"]):
+	if link_relation_exists(link_dict["node_id_1"], link_dict["node_id_2"]):
 		torn.write({"message":"Link between the two nodes already exists"})
 		return None
 
@@ -31,13 +31,18 @@ def create_link(link_dict, torn):
 			torn.write({"message":"Label does not exist"})
 			return None
 
+	if "relationship_id" in link_dict:
+		if RelationshipUtil.relationship_id_exists(link_dict["relationship_id"]) == False:
+			torn.write({"message":"Relationship does not exist"})
+			return None
+
 	conn.execute(SQLUtil.build_insert_statement(TABLE, link_dict))
 	return ""
 
 def link_exists(link_id):
 	return int(conn.execute("SELECT COUNT(link_id) FROM {} WHERE link_id = {};".format(TABLE, int(link_id))).fetchall()[0][0]) != 0
 
-def relationship_exists(node_id_1, node_id_2):
+def link_relation_exists(node_id_1, node_id_2):
 	return int(conn.execute("SELECT COUNT(link_id) FROM {} WHERE node_id_1 = {} AND node_id_2 = {}".format(TABLE, node_id_1, node_id_2)).fetchall()[0][0]) != 0
 
 def get_links():
@@ -74,7 +79,7 @@ def change_link(link_id, link_dict, torn):
 
 	link_dict = sort_node_ids(link_dict)
 
-	if relationship_exists(link_dict["node_id_1"], link_dict["node_id_2"]):
+	if link_relation_exists(link_dict["node_id_1"], link_dict["node_id_2"]):
 		torn.write({"message":"Link between the two nodes already exists"})
 		return None
 	conn.execute(SQLUtil.build_update_statement(TABLE, link_dict) + " WHERE link_id = %d;" % (int(link_id)))

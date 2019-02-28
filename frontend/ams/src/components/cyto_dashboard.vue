@@ -29,8 +29,9 @@ export default {
           },
           {
             selector: "edge",
-            css: {
-              "line-color": "#f92411"
+            style: {
+              "line-color": "#f92411",
+              label: "data(name)"
             }
           }
         ]
@@ -39,44 +40,68 @@ export default {
   },
   methods: {
     cyUpdate() {
-      var nodes = [];
-      var links = [];
-      var labels = [];
       this.$cytoscape.instance.then(cy => {
-        this.axios
-          .get("http://127.0.0.1:5000/api/node/")
-          .then(
-            response => {
-              nodes = response.data["data"];
-              //   console.log(response.data["data"][i]["node_id"]);
-              for (var i = 0; i < response.data["data"].length; i++) {
-                var py = i * 2 + 10;
-                var px = i * 2 + 10;
-                cy.add({
-                  group: "nodes",
-                  data: {
-                    id: response.data["data"][i]["node_id"],
-                    name: response.data["data"][i]["type"],
-                    locked: false
-                  }
-                });
+        let nodes = [];
+        let links = [];
+        let relationships = {};
+        let relationship_dict = {};
+        const auth_header = {
+          Authorization: localStorage.getItem("Authorization")
+        };
+        const requests = [
+          this.axios({
+            url: "http://127.0.0.1:5000/api/node/",
+            headers: auth_header,
+            method: "get"
+          }),
+          this.axios({
+            url: "http://127.0.0.1:5000/api/link/",
+            headers: auth_header,
+            method: "get"
+          }),
+          this.axios({
+            url: "http://127.0.0.1:5000/api/relationship/",
+            headers: auth_header,
+            method: "get"
+          })
+        ];
+        Promise.all(requests).then(values => {
+          nodes = values[0].data["data"];
+          links = values[1].data["data"];
+          let relation_response = values[2].data["data"];
+          for (var i = 0; i < relation_response; i++) {
+            relationships[relation_response[i]["relationship_id"]] =
+              relation_response[i]["message"];
+          }
+
+          for (var i = 0; i < nodes.length; i++) {
+            console.log("b");
+            var py = i * 2 + 10;
+            var px = i * 2 + 10;
+            cy.add({
+              group: "nodes",
+              data: {
+                id: nodes[i]["node_id"],
+                name: nodes[i]["type"],
+                locked: false
               }
-            },
-            this.axios.get("http://127.0.0.1:5000/api/link/").then(response => {
-              for (var i = 0; i < response.data["data"].length; i++) {
-                links = response.data["data"];
-                cy.add({
-                  group: "edges",
-                  data: {
-                    id: "l" + response.data["data"][i]["link_id"],
-                    source: response.data["data"][i]["node_id_1"],
-                    target: response.data["data"][i]["node_id_2"]
-                  }
-                });
+            });
+          }
+          for (var i = 0; i < links.length; i++) {
+            console.log("c");
+            cy.add({
+              group: "edges",
+              data: {
+                id: "l" + links[i]["link_id"],
+                source: links[i]["node_id_1"],
+                target: links[i]["node_id_2"],
+                label: relationships[links[i]["relationship_id"]]
               }
-            })
-          )
-          .catch(error => console.log(error));
+            });
+          }
+        });
+        // console.log("a");
+        // console.log(nodes.length);
       });
     },
     preConfig(cytoscape) {
@@ -87,6 +112,9 @@ export default {
     }
   },
   mounted: function() {
+    document.querySelectorAll("canvas").forEach(canvas => {
+      canvas.style.left = "0";
+    });
     this.$nextTick(this.cyUpdate);
   }
 };
@@ -97,6 +125,5 @@ export default {
   width: 100%;
   height: 100%;
   position: absolute;
-  right: 25%;
 }
 </style>
