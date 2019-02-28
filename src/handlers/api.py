@@ -227,7 +227,7 @@ class Link(SetDefaultHeaders):
         if JWTHandler.authorize_action(self, 1) is None:
             return None
 
-        body_categories = {"link_id": 1, "node_id_1": 0, "node_id_2": 0, "label_id": 0, "relationship":0}
+        body_categories = {"link_id": 1, "node_id_1": 0, "node_id_2": 0, "label_id": 0, "relationship_id":0}
         link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if link_dict is None:

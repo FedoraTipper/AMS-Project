@@ -1,6 +1,24 @@
 <template>
   <div id="holder">
     <cytoscape :config="config" :preConfig="preConfig"></cytoscape>
+
+    <b-card no-body>
+      <b-tabs card>
+        <b-tab title="Nodes" active>
+          <b-form @submit="addNode">
+            <b-input-group prepend="Type" required class="mt-3">
+              <b-form-input v-model="form.node_type" required/>
+            </b-input-group>
+            <b-form-group id="Label_id_group" label="Labels:" label-for="label_dropdown">
+              <b-form-select id="label_dropdown" :options="labels_form" v-model="form.node_label"/>
+            </b-form-group>
+            <b-button type="submit" variant="primary">Add Node</b-button>
+          </b-form>
+        </b-tab>
+        <b-tab title="Links"></b-tab>
+        <b-tab title="Label"></b-tab>
+      </b-tabs>
+    </b-card>
   </div>
 </template>
 
@@ -11,26 +29,39 @@ import cola from "cytoscape-cola";
 export default {
   data() {
     return {
+      form: {
+        node_type: "",
+        node_label: ""
+      },
+      auth_header: {
+        Authorization: localStorage.getItem("Authorization")
+      },
+      labels_form: [],
+      labels_dict: {},
       config: {
-        autounselectify: true,
         panningEnabled: true,
-        boxSelectionEnabled: false,
-        layout: {
-          name: "cola"
-        },
+        fit: true,
+        animate: true,
+        boxSelectionEnabled: true,
         style: [
           {
             selector: "node",
             style: {
               shape: "hexagon",
-              "background-color": "red",
+              "background-color": "#0d47a1",
               label: "data(name)"
             }
           },
           {
             selector: "edge",
             style: {
-              "line-color": "#f92411",
+              "line-color": "#42a5f5",
+              label: "data(name)"
+            }
+          },
+          {
+            selector: "edge[name]",
+            style: {
               label: "data(name)"
             }
           }
@@ -41,27 +72,29 @@ export default {
   methods: {
     cyUpdate() {
       this.$cytoscape.instance.then(cy => {
+        cy.elements().remove();
         let nodes = [];
         let links = [];
         let relationships = {};
-        let relationship_dict = {};
-        const auth_header = {
-          Authorization: localStorage.getItem("Authorization")
-        };
         const requests = [
           this.axios({
             url: "http://127.0.0.1:5000/api/node/",
-            headers: auth_header,
+            headers: this.auth_header,
             method: "get"
           }),
           this.axios({
             url: "http://127.0.0.1:5000/api/link/",
-            headers: auth_header,
+            headers: this.auth_header,
             method: "get"
           }),
           this.axios({
             url: "http://127.0.0.1:5000/api/relationship/",
-            headers: auth_header,
+            headers: this.auth_header,
+            method: "get"
+          }),
+          this.axios({
+            url: "http://127.0.0.1:5000/api/label/",
+            headers: this.auth_header,
             method: "get"
           })
         ];
@@ -69,46 +102,62 @@ export default {
           nodes = values[0].data["data"];
           links = values[1].data["data"];
           let relation_response = values[2].data["data"];
-          for (var i = 0; i < relation_response; i++) {
+          for (var i = 0; i < relation_response.length; i++) {
             relationships[relation_response[i]["relationship_id"]] =
               relation_response[i]["message"];
           }
 
           for (var i = 0; i < nodes.length; i++) {
-            console.log("b");
-            var py = i * 2 + 10;
-            var px = i * 2 + 10;
             cy.add({
               group: "nodes",
               data: {
                 id: nodes[i]["node_id"],
-                name: nodes[i]["type"],
-                locked: false
+                name: nodes[i]["type"]
               }
             });
           }
           for (var i = 0; i < links.length; i++) {
-            console.log("c");
             cy.add({
               group: "edges",
               data: {
                 id: "l" + links[i]["link_id"],
                 source: links[i]["node_id_1"],
                 target: links[i]["node_id_2"],
-                label: relationships[links[i]["relationship_id"]]
+                name: relationships[links[i]["relationship_id"]]
               }
             });
           }
+          let labels = values[3].data["data"];
+          for (var i = 0; i < labels.length; i++) {
+            this.labels_form.push(labels[i]["label_text"]);
+            this.labels_dict[labels[i]["label_text"]] = labels[i]["label_id"];
+          }
+          cy.center();
+          cy.layout({ name: "circle" }).run();
         });
-        // console.log("a");
-        // console.log(nodes.length);
       });
     },
     preConfig(cytoscape) {
-      console.log("calling pre-config");
-      // cytoscape: this is the cytoscape constructor
       cytoscape.use(cola);
-      cytoscape.use(automove);
+    },
+    addNode() {
+      let node_details = {
+        type: this.form.node_type
+      };
+      if (this.form.node_label) {
+        node_details["label_id"] = this.label_dict[this.form.node_label];
+      }
+      this.axios({
+        url: "http://127.0.0.1:5000/api/node/",
+        headers: this.auth_header,
+        method: "post",
+        data: node_details
+      }).then(response => {
+        if (response.data["message"].includes("Success")) {
+          alert("Added Node");
+          this.cyUpdate();
+        }
+      });
     }
   },
   mounted: function() {
@@ -123,7 +172,8 @@ export default {
 <style>
 #holder {
   width: 100%;
-  height: 100%;
+  height: 50%;
   position: absolute;
+  background-color: #cfd8dc;
 }
 </style>
