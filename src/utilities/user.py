@@ -1,6 +1,7 @@
 import handlers.mysqldb as DBHandler
 import utilities.sql as SQLUtil
-
+from passlib.utils import pbkdf2
+import handlers.config as ConfigHandler
 conn = DBHandler.create_connection()
 
 _table_ = "user"
@@ -26,6 +27,8 @@ def create_user(user_dict, torn):
 		return None
 	if "privilege" not in user_dict:
 		user_dict["privilege"] = 0
+	cfg_list = ConfigHandlers.get_keys("PBKDF2")
+	user_dict["password"] = pbkdf2.pbkdf2(cfg_list[0], )
 	conn.execute(SQLUtil.build_insert_statement(_table_, user_dict))
 	return ""
 

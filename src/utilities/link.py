@@ -53,9 +53,8 @@ def get_link(link_id):
 	link = conn.execute("SELECT link_id, node_id_1, node_id_2, label_id, relationship_id FROM %s WHERE link_id = %d" % (_table_, int(link_id)))
 	return {'data': [dict(zip(tuple (link.keys()) ,i)) for i in link.cursor]}
 
-
 def get_link_id(node_id_1, node_id_2):
-	return conn.execute("SELECT link_id FROM %s WHERE node_id_1 = {} AND node_id_2 = {}" % (_table_, int(node_id_1), int(node_id_2))).fetchall()[0][0]
+	return conn.execute("SELECT link_id FROM {} WHERE node_id_1 = {} AND node_id_2 = {}".format(_table_, int(node_id_1), int(node_id_2))).fetchall()[0][0]
 
 def change_link(link_id, link_dict, torn):
 

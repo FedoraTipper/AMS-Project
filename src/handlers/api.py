@@ -214,7 +214,7 @@ class Node(SetDefaultHeaders):
             return None
 
         formatted_message = LoggerHandler.form_message_dictionary(userdata, 
-                                                                "nodes", 
+                                                                "node", 
                                                                 NodeUtil.get_node_id(node_dict["type"]),
                                                                 node_dict)
 
@@ -244,9 +244,9 @@ class Node(SetDefaultHeaders):
             return None
 
         formatted_message = LoggerHandler.form_message_dictionary(userdata, 
-                                                                "nodes", 
-                                                                label_id,
-                                                                label_dict)
+                                                                "node", 
+                                                                node_id,
+                                                                node_dict)
         try:
             LoggerHandler.log_message("change", formatted_message)
         except:
@@ -287,7 +287,7 @@ class Link(SetDefaultHeaders):
 
         formatted_message = LoggerHandler.form_message_dictionary(userdata, 
                                                                 "links", 
-                                                                LinkUtil.get_link_id(link_dict["nodes_id_1"], link_dict["node_id_2"]),
+                                                                LinkUtil.get_link_id(link_dict["node_id_1"], link_dict["node_id_2"]),
                                                                 link_dict)
 
         try:
@@ -400,11 +400,24 @@ class Relationship(SetDefaultHeaders):
     def post(self):
         if JWTHandler.authorize_action(self, 2) is None:
             return None
+
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
+
         body_categories = {"message": 1}
         relationship_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if relationship_dict is None or RelationshipUtil.create_relationship(relationship_dict, self) is None:
             return None
+
+        formatted_message = LoggerHandler.form_message_dictionary(userdata, 
+                                                                "relationship", 
+                                                                RelationshipUtil.get_relationship_id(message),
+                                                                relationship_dict)
+
+        try:
+            LoggerHandler.log_message("add", formatted_message)
+        except:
+            pass
 
         self.write({"message":"Success"})
 
@@ -415,6 +428,8 @@ class Relationship(SetDefaultHeaders):
         body_categories = {"relationship_id": 1, "message": 1}
         relationship_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
+
         if relationship_dict is None:
             return None
 
@@ -424,11 +439,23 @@ class Relationship(SetDefaultHeaders):
         if RelationshipUtil.change_relationship(relationship_id, relationship_dict, self) is None:
             return None
 
+        formatted_message = LoggerHandler.form_message_dictionary(userdata, 
+                                                                "relationship", 
+                                                                relationship_id,
+                                                                relationship_dict)
+
+        try:
+            LoggerHandler.log_message("change", formatted_message)
+        except:
+            pass
+
         self.write({"message":"Success"})
 
     def delete(self):
         if JWTHandler.authorize_action(self, 2) is None:
             return None
+
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
         body_categories = {"relationship_id": 1}
         relationship_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
@@ -439,4 +466,17 @@ class Relationship(SetDefaultHeaders):
         if RelationshipUtil.delete_link(relationship_dict["relationship_id"], self) is None:
             return None
 
+        formatted_message = LoggerHandler.form_delete_message_dictionary(userdata, 
+                                                                        "relationship", 
+                                                                        relationship_dict["relationship_id"])
+
+        try:
+            LoggerHandler.log_message("delete", formatted_message)
+        except:
+            pass
+
         self.write({"message":"Success"})
+
+class Log(SetDefaultHeaders):
+    def get(self):
+        pass

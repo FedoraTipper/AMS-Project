@@ -3,8 +3,7 @@ import utilities.sql as SQLUtil
 
 conn = DBHandler.create_connection()
 
-
-__table__ = "relationship"
+_table_ = "relationship"
 
 def get_relationship(relationship_id):
 	relationship = conn.execute("SELECT relationship_id, message FROM {} WHERE relationship_id = {}" % (_table_, int(relationship_id)))
@@ -13,6 +12,9 @@ def get_relationship(relationship_id):
 def get_relationships():
 	relationships = conn.execute("SELECT relationship_id, message FROM %s" % (_table_))
 	return {'data': [dict(zip(tuple (relationships.keys()) ,i)) for i in relationships.cursor]}
+
+def get_relationship_id(message):
+	return conn.execute("SELECT relationship_id FROM {} WHERE message = {}".format(_table_, message)).fetchall()[0][0]
 
 def create_relationship(relationship_dict, torn):
 	if relationship_exists(relationship_dict["message"]):

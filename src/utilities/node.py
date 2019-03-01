@@ -27,7 +27,7 @@ def get_node(node_id):
 	return {'data': [dict(zip(tuple (node.keys()) ,i)) for i in node.cursor]}
 
 def get_node_id(node_type):
-	return(conn.execute("SELECT node_id FROM {} WHERE node_type = '{}'".format(_table_, node_type)).fetchall()[0][0])
+	return(conn.execute("SELECT node_id FROM {} WHERE type = '{}'".format(_table_, node_type)).fetchall()[0][0])
 
 def change_node(node_id, node_dict, torn):
 	if node_id_exists(node_id) == False:
