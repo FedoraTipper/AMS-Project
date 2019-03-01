@@ -15,8 +15,6 @@ import utilities.error as ErrorUtil
 import utilities.meta as MetaUtil
 import utilities.relationship as RelationshipUtil
 
-Logger = LoggerHandler.Logger()
-
 class Authenticate(SetDefaultHeaders):
     def post(self):        
         body_categories = {"username": 1, "password": 1}
@@ -89,6 +87,9 @@ class User(SetDefaultHeaders):
 
 class Label(SetDefaultHeaders):
     def get(self):
+        if JWTHandler.authorize_action(self, 1) is None:
+            return None
+
         body_categories = {"label_id":0}
         label_dict = ErrorUtil.check_fields(self.request.arguments, body_categories, self)
 
@@ -105,6 +106,8 @@ class Label(SetDefaultHeaders):
     def post(self):
         if JWTHandler.authorize_action(self, 2) is None:
             return None
+        
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
         body_categories = {"label_text": 1}
         label_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
@@ -115,12 +118,23 @@ class Label(SetDefaultHeaders):
         if LabelUtil.create_label(label_dict, self) is None:
             return None
 
+        formatted_message = LoggerHandler.form_message_dictionary(userdata, 
+                                                                "label", 
+                                                                LabelUtil.get_label_id(label_dict["label_text"]),
+                                                                label_dict)
+
+        try:
+            LoggerHandler.log_message("add", formatted_message)
+        except:
+            pass
+
         self.write({"message": "Success"})
 
     def put(self):
-        decoded_token = JWTHandler.authorize_action(self, 2)
-        if decoded_token == None:
+        if JWTHandler.authorize_action(self, 2) is None:
             return None
+
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
         body_categories = {"label_id": 1, "label_text": 1}
         label_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
@@ -133,12 +147,22 @@ class Label(SetDefaultHeaders):
         if LabelUtil.change_label(label_id, label_dict, self) is None:
             return None
 
-        self.write({"message":"Success"})
+        formatted_message = LoggerHandler.form_message_dictionary(userdata, 
+                                                                "label", 
+                                                                label_id,
+                                                                label_dict)
+        try:
+            LoggerHandler.log_message("change", formatted_message)
+        except:
+            pass
 
+        self.write({"message":"Success"})
 
     def delete(self):
         if JWTHandler.authorize_action(self, 2) is None:
             return None
+
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
         body_categories = {"label_id": 1}
         label_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
@@ -149,10 +173,22 @@ class Label(SetDefaultHeaders):
         if LabelUtil.delete_label(label_dict["label_id"], self) is None:
             return None
 
+        formatted_message = LoggerHandler.form_delete_message_dictionary(userdata, 
+                                                                "label", 
+                                                                label_dict["label_id"])
+
+        try:
+            LoggerHandler.log_message("delete", formatted_message)
+        except:
+            pass
+
         self.write({"message":"Success"})
 
 class Node(SetDefaultHeaders):
     def get(self):
+        if JWTHandler.authorize_action(self, 1) is None:
+            return None
+
         body_categories = {"node_id":0}
         node_dict = ErrorUtil.check_fields(self.request.arguments, body_categories, self)
         if node_dict is None:
@@ -166,6 +202,8 @@ class Node(SetDefaultHeaders):
         if JWTHandler.authorize_action(self, 1) is None:
             return None
 
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
+
         body_categories = {"type": 1, "label_id": 0}
         node_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
         
@@ -175,11 +213,23 @@ class Node(SetDefaultHeaders):
         if NodeUtil.create_node(node_dict, self) is None:
             return None
 
+        formatted_message = LoggerHandler.form_message_dictionary(userdata, 
+                                                                "nodes", 
+                                                                NodeUtil.get_node_id(node_dict["type"]),
+                                                                node_dict)
+
+        try:
+            LoggerHandler.log_message("add", formatted_message)
+        except:
+            pass
+
         self.write({"message": "Success"})
 
     def put(self):
-        if JWTHandler.authorize_action(self, 2) is None:
+        if JWTHandler.authorize_action(self, 1) is None:
             return None
+
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
         body_categories = {"type": 0, "node_id": 1, "label_id": 0}
         node_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
@@ -193,6 +243,15 @@ class Node(SetDefaultHeaders):
         if NodeUtil.change_node(node_id, node_dict, self) is None:
             return None
 
+        formatted_message = LoggerHandler.form_message_dictionary(userdata, 
+                                                                "nodes", 
+                                                                label_id,
+                                                                label_dict)
+        try:
+            LoggerHandler.log_message("change", formatted_message)
+        except:
+            pass
+
         self.write({"message":"Success"})
 
     def delete(self):  
@@ -200,6 +259,9 @@ class Node(SetDefaultHeaders):
   
 class Link(SetDefaultHeaders):
     def get(self):
+        if JWTHandler.authorize_action(self, 1) is None:
+            return None
+
         body_categories = {"link_id":0}
         link_dict = ErrorUtil.check_fields(self.request.arguments, body_categories, self)
 
@@ -215,17 +277,31 @@ class Link(SetDefaultHeaders):
         if JWTHandler.authorize_action(self, 1) is None:
             return None
 
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
+
         body_categories = {"node_id_1": 1, "node_id_2": 1, "label_id":0, "relationship_id":0}
         link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if link_dict is None or LinkUtil.create_link(link_dict, self) is None:
             return None
 
+        formatted_message = LoggerHandler.form_message_dictionary(userdata, 
+                                                                "links", 
+                                                                LinkUtil.get_link_id(link_dict["nodes_id_1"], link_dict["node_id_2"]),
+                                                                link_dict)
+
+        try:
+            LoggerHandler.log_message("add", formatted_message)
+        except:
+            pass
+
         self.write({"message":"Success"})
 
     def put(self):
         if JWTHandler.authorize_action(self, 1) is None:
             return None
+
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
         body_categories = {"link_id": 1, "node_id_1": 0, "node_id_2": 0, "label_id": 0, "relationship_id":0}
         link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
@@ -239,11 +315,23 @@ class Link(SetDefaultHeaders):
         if LinkUtil.change_link(link_id, link_dict, self) is None:
             return None
 
+        formatted_message = LoggerHandler.form_message_dictionary(userdata, 
+                                                                "links", 
+                                                                link_id,
+                                                                link_dict)
+
+        try:
+            LoggerHandler.log_message("change", formatted_message)
+        except:
+            pass
+
         self.write({"message":"Success"})
 
     def delete(self):
         if JWTHandler.authorize_action(self, 1) is None:
             return None
+
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
         body_categories = {"link_id": 1}
         link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
@@ -253,6 +341,15 @@ class Link(SetDefaultHeaders):
 
         if LinkUtil.delete_link(link_dict["link_id"], self) is None:
             return None
+
+        formatted_message = LoggerHandler.form_delete_message_dictionary(userdata, 
+                                                                "label", 
+                                                                label_dict["label_id"])
+
+        try:
+            LoggerHandler.log_message("delete", formatted_message)
+        except:
+            pass
 
         self.write({"message":"Success"})
 

@@ -22,6 +22,10 @@ def determine_privilege(encode):
 	else:
 		return int(decoded_token["privilege"])
 
+def decode_userdata(encode):
+	decode = jwt.decode(encode, jwt_config[0], algorithm=[jwt_config[1]])
+	return {"username": decode["username"], "uid": decode["uid"]}
+
 """
 0: Any level
 1: User level privilege

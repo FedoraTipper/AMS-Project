@@ -2,7 +2,7 @@ import handlers.mysqldb as DBHandler
 import utilities.sql as SQLUtil
 conn = DBHandler.create_connection()
 
-TABLE = "metadata"
+_table_ = "metadata"
 
 def create_metadata():
 	return None

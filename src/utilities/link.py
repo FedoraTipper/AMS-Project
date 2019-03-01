@@ -6,7 +6,7 @@ import utilities.relationship as RelationshipUtil
 conn = DBHandler.create_connection()
 
 
-TABLE = "links"
+_table_ = "links"
 
 """
 Node ids are stored in ascending order
@@ -36,22 +36,26 @@ def create_link(link_dict, torn):
 			torn.write({"message":"Relationship does not exist"})
 			return None
 
-	conn.execute(SQLUtil.build_insert_statement(TABLE, link_dict))
+	conn.execute(SQLUtil.build_insert_statement(_table_, link_dict))
 	return ""
 
 def link_exists(link_id):
-	return int(conn.execute("SELECT COUNT(link_id) FROM {} WHERE link_id = {};".format(TABLE, int(link_id))).fetchall()[0][0]) != 0
+	return int(conn.execute("SELECT COUNT(link_id) FROM {} WHERE link_id = {};".format(_table_, int(link_id))).fetchall()[0][0]) != 0
 
 def link_relation_exists(node_id_1, node_id_2):
-	return int(conn.execute("SELECT COUNT(link_id) FROM {} WHERE node_id_1 = {} AND node_id_2 = {}".format(TABLE, node_id_1, node_id_2)).fetchall()[0][0]) != 0
+	return int(conn.execute("SELECT COUNT(link_id) FROM {} WHERE node_id_1 = {} AND node_id_2 = {}".format(_table_, node_id_1, node_id_2)).fetchall()[0][0]) != 0
 
 def get_links():
-	links = conn.execute("SELECT link_id, node_id_1, node_id_2, label_id, relationship_id FROM %s" % (TABLE))
+	links = conn.execute("SELECT link_id, node_id_1, node_id_2, label_id, relationship_id FROM %s" % (_table_))
 	return {'data': [dict(zip(tuple (links.keys()) ,i)) for i in links.cursor]}
 
 def get_link(link_id):
-	link = conn.execute("SELECT link_id, node_id_1, node_id_2, label_id, relationship_id FROM %s WHERE link_id = %d" % (TABLE, int(link_id)))
+	link = conn.execute("SELECT link_id, node_id_1, node_id_2, label_id, relationship_id FROM %s WHERE link_id = %d" % (_table_, int(link_id)))
 	return {'data': [dict(zip(tuple (link.keys()) ,i)) for i in link.cursor]}
+
+
+def get_link_id(node_id_1, node_id_2):
+	return conn.execute("SELECT link_id FROM %s WHERE node_id_1 = {} AND node_id_2 = {}" % (_table_, int(node_id_1), int(node_id_2))).fetchall()[0][0]
 
 def change_link(link_id, link_dict, torn):
 
@@ -83,7 +87,7 @@ def change_link(link_id, link_dict, torn):
 		if link_relation_exists(link_dict["node_id_1"], link_dict["node_id_2"]):
 			torn.write({"message":"Link between the two nodes already exists"})
 			return None
-	conn.execute(SQLUtil.build_update_statement(TABLE, link_dict) + " WHERE link_id = %d;" % (int(link_id)))
+	conn.execute(SQLUtil.build_update_statement(_table_, link_dict) + " WHERE link_id = %d;" % (int(link_id)))
 	return ""
 
 def sort_node_ids(link_dict):
@@ -97,7 +101,7 @@ def delete_link(link_id, torn):
 	if link_exists(link_id) == False:
 		torn.write({"message":"Link does not exist"})
 		return None
-	conn.execute("DELETE FROM {} WHERE link_id = {}".format(TABLE, int(link_id)))
+	conn.execute("DELETE FROM {} WHERE link_id = {}".format(_table_, int(link_id)))
 	return ""
 
 def check_nodes_exist(node_id_1, node_id_2):
@@ -106,4 +110,4 @@ def check_nodes_exist(node_id_1, node_id_2):
 	return True
 
 def get_node_ids_in_link(link_id):
-	return conn.execute("SELECT node_id_1, node_id_2 FROM {} WHERE link_id = {}".format(TABLE, int(link_id))).fetchall()[0]
+	return conn.execute("SELECT node_id_1, node_id_2 FROM {} WHERE link_id = {}".format(_table_, int(link_id))).fetchall()[0]

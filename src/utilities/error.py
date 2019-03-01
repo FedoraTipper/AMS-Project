@@ -1,9 +1,14 @@
 import json
-import re
 
+"""
+Error checking for field validation. 
+Fields not listed in categories will be ignored. 
+Fields with dict value of 0 will be included if it was given in the response body
+Fields with dict value of 1 is required in the response body
+"""
 def check_fields(result_body, categories, torn):
 	result_dict = {}
-	
+
 	if isinstance(result_body, dict) and (len(result_body) == 0):
 		return None
 	elif len(result_body) == 0:
@@ -32,5 +37,11 @@ def check_fields(result_body, categories, torn):
 				else:
 					return None
 			else:
-				result_dict[category] = json_results[category]
+				if(not isinstance(json_results[category], int) and len(json_results[category]) != 0): 
+					result_dict[category] = json_results[category]
+				elif(isinstance(json_results[category], int)):
+					result_dict[category] = json_results[category]
+				else:
+					torn.write({"message":"Empty values for field {}".format(category)})
+					return None
 	return result_dict
