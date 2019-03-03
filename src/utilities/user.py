@@ -28,6 +28,7 @@ def create_user(user_dict, torn):
 		return None
 	if "privilege" not in user_dict:
 		user_dict["privilege"] = 0
+	user_dict["username"] = user_dict["username"].lower()
 	#salt_size 64 bits
 	#48k rounds
 	user_dict["password"] = pbkdf2_sha256.hash(user_dict["password"], salt_size=64, rounds=48000)

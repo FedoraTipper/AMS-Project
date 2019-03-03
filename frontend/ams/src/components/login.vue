@@ -38,6 +38,7 @@
 </template>
 
 <script>
+import crypto from "crypto";
 export default {
   data() {
     return {
@@ -58,9 +59,16 @@ export default {
       this.dismissCountDown = this.dismissSecs;
     },
     onSubmit(evt) {
-      var details = JSON.stringify(this.form);
+      let user_details = {
+        username: this.form.username
+      };
+      const hash = crypto.createHash("sha256");
+      user_details["password"] = hash
+        .update(this.form.password, "utf-8")
+        .digest()
+        .toString("hex");
       this.axios
-        .post("http://127.0.0.1:5000/api/auth/", details)
+        .post("http://127.0.0.1:5000/api/auth/", user_details)
         .then(response => {
           if (response.data["message"].includes("Authenticated")) {
             var auth_token = response.headers["authorization"];

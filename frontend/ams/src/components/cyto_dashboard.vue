@@ -270,7 +270,6 @@ export default {
         data: node_details
       }).then(response => {
         if (response.data["message"].includes("Success")) {
-          alert("Added Node");
           this.cyUpdate();
         } else {
           alert("Failed to create new node");

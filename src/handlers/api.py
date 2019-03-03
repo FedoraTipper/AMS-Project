@@ -31,7 +31,7 @@ class Authenticate(SetDefaultHeaders):
             self.write({"message":"Authentication failed"})
             return None
 
-        username = user_dict["username"]
+        username = user_dict["username"].lower()
         token = JWTHandler.create_token(UserUtil.get_uid(username), username,  (UserUtil.get_privilege(username) + 1))
 
         self.add_header("Authorization", token)
@@ -39,15 +39,31 @@ class Authenticate(SetDefaultHeaders):
 
 class Register(SetDefaultHeaders):
     def post(self):
+        if JWTHandler.authorize_action(self, 2) is None:
+            return None
+
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
+
         body_categories = {"username": 1, "password": 1, "privilege": 0}
         user_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
-        if UserUtil.create_user(user_dict, self) is None:
+        if user_dict is None or UserUtil.create_user(user_dict, self) is None:
             return None
 
         username = user_dict["username"]
         token = JWTHandler.create_token(UserUtil.get_uid(username), username,  UserUtil.get_privilege(username) + 1)
         self.add_header("token", token)
+
+        formatted_message = LoggerHandler.form_message_dictionary(userdata, 
+                                                        "user", 
+                                                        UserUtil.get_uid(username),
+                                                        user_dict)
+        try:
+            LoggerHandler.log_message("add", formatted_message)
+        except:
+            print("A")
+            pass
+
         self.write({'message': "Success"})
 
 class User(SetDefaultHeaders):
