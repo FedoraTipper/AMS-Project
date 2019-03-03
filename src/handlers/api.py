@@ -479,4 +479,7 @@ class Relationship(SetDefaultHeaders):
 
 class Log(SetDefaultHeaders):
     def get(self):
-        pass
+        if JWTHandler.authorize_action(self, 2) is None:
+            return None
+
+        self.write(LoggerHandler.get_logs())

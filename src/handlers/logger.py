@@ -45,3 +45,7 @@ def form_delete_message_dictionary(user_data, field, field_id):
 	result_dict["user_data"] = result_dict["user_data"][:-2]
 
 	return result_dict
+
+def get_logs():
+	logs = conn.execute("SELECT message FROM %s" % (_table_))
+	return {'data': [dict(zip(tuple (logs.keys()) ,i)) for i in logs.cursor]}

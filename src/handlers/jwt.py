@@ -16,7 +16,11 @@ def decode_token(encode):
 def determine_privilege(encode):
 	if len(encode) == 0:
 		return 0
-	decoded_token = decode_token(encode)
+	#If a token is not available, return a failed authorized response
+	try:
+		decoded_token = decode_token(encode)
+	except:
+		return 0
 	if "privilege" not in decoded_token:
 		return 0
 	else:

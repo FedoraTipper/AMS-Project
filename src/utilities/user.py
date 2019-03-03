@@ -1,13 +1,14 @@
 import handlers.mysqldb as DBHandler
 import utilities.sql as SQLUtil
-from passlib.utils import pbkdf2
-import handlers.config as ConfigHandler
+from passlib.hash import pbkdf2_sha256
 conn = DBHandler.create_connection()
 
 _table_ = "user"
 
 def compare_password(username, password):
-	return password == get_password(username)
+	stored_hash = get_password(username)
+	print(pbkdf2_sha256.verify(password,stored_hash))
+	return pbkdf2_sha256.verify(password, stored_hash)
 
 def get_password(username):
 	return conn.execute("SELECT password FROM %s WHERE username = '%s';" % (_table_, username)).fetchall()[0][0]
@@ -27,9 +28,12 @@ def create_user(user_dict, torn):
 		return None
 	if "privilege" not in user_dict:
 		user_dict["privilege"] = 0
-	cfg_list = ConfigHandlers.get_keys("PBKDF2")
-	user_dict["password"] = pbkdf2.pbkdf2(cfg_list[0], )
+	#salt_size 64 bits
+	#48k rounds
+	user_dict["password"] = pbkdf2_sha256.hash(user_dict["password"], salt_size=64, rounds=48000)
 	conn.execute(SQLUtil.build_insert_statement(_table_, user_dict))
+	#sanitize variables
+	del user_dict
 	return ""
 
 """

@@ -11,7 +11,9 @@ def make_app():
           ("/api/link/", APIHandler.Link),
           ("/api/label/", APIHandler.Label),
           ("/api/metadata/", APIHandler.Metadata),
-          ("/api/relationship/", APIHandler.Relationship)]
+          ("/api/relationship/", APIHandler.Relationship),
+            ("/api/logs/", APIHandler.Log)]
+
   return Application(urls,
   ssl_options = {
     "certfile": os.path.join("certs/server.crt"),

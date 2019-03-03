@@ -58,7 +58,6 @@ export default {
       this.dismissCountDown = this.dismissSecs;
     },
     onSubmit(evt) {
-      evt.preventDefault();
       var details = JSON.stringify(this.form);
       this.axios
         .post("http://127.0.0.1:5000/api/auth/", details)

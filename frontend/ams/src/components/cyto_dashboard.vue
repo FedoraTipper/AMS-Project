@@ -1,126 +1,130 @@
 <template>
-  <div id="holder">
-    <cytoscape :config="config" :preConfig="preConfig"></cytoscape>
-
-    <b-card no-body>
-      <b-tabs card>
-        <b-tab title="Nodes" active>
-          <b-card no-body>
-            <b-tabs card>
-              <b-tab title="Add" active>
-                <b-form @submit="addNode">
-                  <b-input-group prepend="Type" required class="mt-3">
-                    <b-form-input v-model="form.node_type" required/>
-                  </b-input-group>
-                  <b-form-group
-                    id="Label_id_group"
-                    label="Collection label:"
-                    label-for="label_dropdown"
-                  >
-                    <b-form-select
-                      id="label_dropdown"
-                      :options="labels_form"
-                      v-model="form.node_label"
-                    />
-                  </b-form-group>
-                  <b-button type="submit" variant="primary">Add Node</b-button>
-                </b-form>
-              </b-tab>
-              <b-tab title="Change">
-                <b-form @submit="changeNode">
-                  <b-form-group
-                    id="Node_Type_group"
-                    label="Select node:"
-                    required
-                    label-for="node_dropdown"
-                  >
-                    <b-form-select
-                      id="old_node_dropdown"
-                      :options="nodes_form"
+  <div>
+    <b-button @click="modal_show=true" variant="primary" id="overlay-button" size="lg">+</b-button>
+    <b-modal size="xl" v-model="modal_show">
+      <b-card no-body>
+        <b-tabs card>
+          <b-tab title="Nodes" active>
+            <b-card no-body>
+              <b-tabs card>
+                <b-tab title="Add" active>
+                  <b-form @submit="addNode">
+                    <b-input-group prepend="Type" required class="mt-3">
+                      <b-form-input v-model="form.node_type" required/>
+                    </b-input-group>
+                    <b-form-group
+                      id="Label_id_group"
+                      label="Collection label:"
+                      label-for="label_dropdown"
+                    >
+                      <b-form-select
+                        id="label_dropdown"
+                        :options="labels_form"
+                        v-model="form.node_label"
+                      />
+                    </b-form-group>
+                    <b-button type="submit" variant="primary">Add Node</b-button>
+                  </b-form>
+                </b-tab>
+                <b-tab title="Change">
+                  <b-form @submit="changeNode">
+                    <b-form-group
+                      id="Node_Type_group"
+                      label="Select node:"
                       required
-                      v-model="form.node_type"
-                    />
-                  </b-form-group>
-                  <b-input-group prepend="New Type" required class="mt-3">
-                    <b-form-input v-model="form.new_node_type"/>
-                  </b-input-group>
-                  <b-form-group
-                    id="Label_id_group"
-                    label="Collection label:"
-                    label-for="label_dropdown"
-                  >
-                    <b-form-select
-                      id="label_dropdown"
-                      :options="labels_form"
-                      v-model="form.node_label"
-                    />
-                  </b-form-group>
-                  <b-button type="submit" variant="primary">Change Node</b-button>
-                </b-form>
-              </b-tab>
-            </b-tabs>
-          </b-card>
-        </b-tab>
-        <b-tab title="Links">
-          <b-card no-body>
-            <b-tabs card>
-              <b-tab title="Add" active>
-                <b-form @submit="addNode">
-                  <b-input-group prepend="Type" required class="mt-3">
-                    <b-form-input v-model="form.node_type" required/>
-                  </b-input-group>
-                  <b-form-group
-                    id="Label_id_group"
-                    label="Collection label:"
-                    label-for="label_dropdown"
-                  >
-                    <b-form-select
-                      id="label_dropdown"
-                      :options="labels_form"
-                      v-model="form.node_label"
-                    />
-                  </b-form-group>
-                  <b-button type="submit" variant="primary">Add Node</b-button>
-                </b-form>
-              </b-tab>
-              <b-tab title="Change">
-                <b-form @submit="changeNode">
-                  <b-form-group
-                    id="Node_Type_group"
-                    label="Select node:"
-                    required
-                    label-for="node_dropdown"
-                  >
-                    <b-form-select
-                      id="old_node_dropdown"
-                      :options="nodes_form"
+                      label-for="node_dropdown"
+                    >
+                      <b-form-select
+                        id="old_node_dropdown"
+                        :options="nodes_form"
+                        required
+                        v-model="form.node_type"
+                      />
+                    </b-form-group>
+                    <b-input-group prepend="New Type" required class="mt-3">
+                      <b-form-input v-model="form.new_node_type"/>
+                    </b-input-group>
+                    <b-form-group
+                      id="Label_id_group"
+                      label="Collection label:"
+                      label-for="label_dropdown"
+                    >
+                      <b-form-select
+                        id="label_dropdown"
+                        :options="labels_form"
+                        v-model="form.node_label"
+                      />
+                    </b-form-group>
+                    <b-button type="submit" variant="primary">Change Node</b-button>
+                  </b-form>
+                </b-tab>
+              </b-tabs>
+            </b-card>
+          </b-tab>
+          <b-tab title="Links">
+            <b-card no-body>
+              <b-tabs card>
+                <b-tab title="Add" active>
+                  <b-form @submit="addNode">
+                    <b-input-group prepend="Type" required class="mt-3">
+                      <b-form-input v-model="form.node_type" required/>
+                    </b-input-group>
+                    <b-form-group
+                      id="Label_id_group"
+                      label="Collection label:"
+                      label-for="label_dropdown"
+                    >
+                      <b-form-select
+                        id="label_dropdown"
+                        :options="labels_form"
+                        v-model="form.node_label"
+                      />
+                    </b-form-group>
+                    <b-button type="submit" variant="primary">Add Node</b-button>
+                  </b-form>
+                </b-tab>
+                <b-tab title="Change">
+                  <b-form @submit="changeNode">
+                    <b-form-group
+                      id="Node_Type_group"
+                      label="Select node:"
                       required
-                      v-model="form.node_type"
-                    />
-                  </b-form-group>
-                  <b-input-group prepend="New Type" required class="mt-3">
-                    <b-form-input v-model="form.new_node_type"/>
-                  </b-input-group>
-                  <b-form-group
-                    id="Label_id_group"
-                    label="Collection label:"
-                    label-for="label_dropdown"
-                  >
-                    <b-form-select
-                      id="label_dropdown"
-                      :options="labels_form"
-                      v-model="form.node_label"
-                    />
-                  </b-form-group>
-                  <b-button type="submit" variant="primary">Change Node</b-button>
-                </b-form>
-              </b-tab>
-            </b-tabs>
-          </b-card>
-        </b-tab>
-        <b-tab title="Label"></b-tab>
-      </b-tabs>
-    </b-card>
+                      label-for="node_dropdown"
+                    >
+                      <b-form-select
+                        id="old_node_dropdown"
+                        :options="nodes_form"
+                        required
+                        v-model="form.node_type"
+                      />
+                    </b-form-group>
+                    <b-input-group prepend="New Type" required class="mt-3">
+                      <b-form-input v-model="form.new_node_type"/>
+                    </b-input-group>
+                    <b-form-group
+                      id="Label_id_group"
+                      label="Collection label:"
+                      label-for="label_dropdown"
+                    >
+                      <b-form-select
+                        id="label_dropdown"
+                        :options="labels_form"
+                        v-model="form.node_label"
+                      />
+                    </b-form-group>
+                    <b-button type="submit" variant="primary">Change Node</b-button>
+                  </b-form>
+                </b-tab>
+              </b-tabs>
+            </b-card>
+          </b-tab>
+          <b-tab title="Label"></b-tab>
+        </b-tabs>
+      </b-card>
+    </b-modal>
+    <div id="holder">
+      <cytoscape :config="config" :preConfig="preConfig"></cytoscape>
+    </div>
   </div>
 </template>
 
@@ -131,6 +135,7 @@ import cola from "cytoscape-cola";
 export default {
   data() {
     return {
+      modal_show: false,
       form: {
         node_type: "",
         node_label: "",
@@ -307,9 +312,15 @@ export default {
 </script>
 
 <style>
+#overlay-button {
+  position: absolute;
+  z-index: 101;
+  left: calc(100vw - 100px);
+  top: calc(100vh - 100px);
+}
 #holder {
   width: 100%;
-  height: 50%;
+  height: 95.8%;
   position: absolute;
   background-color: #cfd8dc;
 }
