@@ -51,8 +51,12 @@ class Register(SetDefaultHeaders):
             return None
 
         username = user_dict["username"]
+
         token = JWTHandler.create_token(UserUtil.get_uid(username), username,  UserUtil.get_privilege(username) + 1)
         self.add_header("token", token)
+
+        #sanitise password for logs
+        del user_dict["password"]
 
         formatted_message = LoggerHandler.form_message_dictionary(userdata, 
                                                         "user", 

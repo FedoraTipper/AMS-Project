@@ -1,6 +1,7 @@
 <template>
   <div>
     <b-button @click="modal_show=true" variant="primary" id="overlay-button" size="lg">+</b-button>
+    <b-button @click="search_show=true" variant="primary" id="overlay-button-2" size="lg">🔍</b-button>
     <b-modal size="xl" v-model="modal_show">
       <b-card no-body>
         <b-tabs card>
@@ -132,10 +133,13 @@
 <script>
 import automove from "cytoscape-automove";
 import cola from "cytoscape-cola";
+import expandcollpase from "cytoscape-expand-collapse";
+
 export default {
   data() {
     return {
       modal_show: false,
+      search_show: false,
       form: {
         node_type: "",
         node_label: "",
@@ -190,6 +194,7 @@ export default {
         let nodes = [];
         let links = [];
         let relationships = {};
+        let colletion = cy.collection();
         const requests = [
           this.axios({
             url: "http://127.0.0.1:5000/api/node/",
@@ -255,6 +260,7 @@ export default {
     },
     preConfig(cytoscape) {
       cytoscape.use(cola);
+      cytoscape.use(expandcollpase);
     },
     addNode() {
       let node_details = {
@@ -315,6 +321,12 @@ export default {
   position: absolute;
   z-index: 101;
   left: calc(100vw - 100px);
+  top: calc(100vh - 100px);
+}
+#overlay-button-2 {
+  position: absolute;
+  z-index: 101;
+  left: calc(100vw - 165px);
   top: calc(100vh - 100px);
 }
 #holder {
