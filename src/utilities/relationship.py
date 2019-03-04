@@ -44,7 +44,7 @@ def delete_relationship(relationship_id, torn):
 	if relationship_id_exists(relationship_id) == False:
 		torn.write({"message": "Relationship id does not exist"})
 		return None
-	_table_s = {"links"}
+	_table_ = {"links"}
 	null_dict = {"relationship_id": None}
 	#Create SQL statements to set relationship ID in FK _table_s to NULL
 	statements = SQLUtil.build_nullify_statements(_table_s, null_dict)

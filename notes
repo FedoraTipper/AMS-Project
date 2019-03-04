@@ -37,6 +37,9 @@ init SQL:
 
 
 
+cert passkey:
+Veryverysecurepasswordlol
+
 
 API resources:
 https://stackoverflow.com/questions/48095713/accepting-multiple-parameters-in-flask-restful-add-resource MULTIPLE fields

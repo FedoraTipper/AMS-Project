@@ -103,7 +103,10 @@ class User(SetDefaultHeaders):
         self.write({'message': "Success"})
 
     def delete(self):
-        return None
+        if JWTHandler.authorize_action(self, 2) is None:
+            return None
+
+
 
 class Label(SetDefaultHeaders):
     def get(self):
@@ -274,8 +277,28 @@ class Node(SetDefaultHeaders):
 
         self.write({"message":"Success"})
 
-    def delete(self):  
-        return None
+    def delete(self): 
+        if JWTHandler.authorize_action(self, 1) is None:
+            return None
+
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
+
+        body_categories = {"node_id":1}
+        node_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+
+        if node_dict is None or NodeUtil.delete_node(node_dict["node_id"], self) is None:
+            return None
+
+        formatted_message = LoggerHandler.form_delete_message_dictionary(userdata, 
+                                                                "nodes", 
+                                                                node_dict["node_id"])
+
+        try:
+            LoggerHandler.log_message("delete", formatted_message)
+        except:
+            pass
+
+        self.write({"message":"Success"})
   
 class Link(SetDefaultHeaders):
     def get(self):
@@ -356,15 +379,12 @@ class Link(SetDefaultHeaders):
         body_categories = {"link_id": 1}
         link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
-        if link_dict is None:
-            return None
-
-        if LinkUtil.delete_link(link_dict["link_id"], self) is None:
+        if link_dict is None or LinkUtil.delete_link(link_dict["link_id"], self) is None:
             return None
 
         formatted_message = LoggerHandler.form_delete_message_dictionary(userdata, 
-                                                                "label", 
-                                                                label_dict["label_id"])
+                                                                "link", 
+                                                                link_dict["link_id"])
 
         try:
             LoggerHandler.log_message("delete", formatted_message)

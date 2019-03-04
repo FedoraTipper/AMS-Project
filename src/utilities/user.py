@@ -7,7 +7,6 @@ _table_ = "user"
 
 def compare_password(username, password):
 	stored_hash = get_password(username)
-	print(pbkdf2_sha256.verify(password,stored_hash))
 	return pbkdf2_sha256.verify(password, stored_hash)
 
 def get_password(username):

@@ -1,6 +1,7 @@
 import handlers.mysqldb as DBHandler
 import utilities.sql as SQLUtil
 import utilities.label as LabelUtil
+
 conn = DBHandler.create_connection()
 
 _table_ = "nodes"
@@ -45,3 +46,17 @@ def change_node(node_id, node_dict, torn):
 	statement = SQLUtil.build_update_statement(_table_, node_dict) + " WHERE node_id = %d;" % node_id
 	conn.execute(statement)
 	return ""
+
+def delete_node(node_id, torn):
+	if node_id_exists(node_id) == False:
+		torn.write({"message":"Node does not exist"})
+		return 
+	#Import module in function. Not allowed to cross reference
+	import utilities.link as LinkUtil
+	#Delete all links that contain the node id
+	LinkUtil.delete_link_with_node(node_id)
+	#Delete the node
+	conn.execute("DELETE FROM {} WHERE node_id = {}".format(_table_, int(node_id)))
+	return ""
+
+	return None

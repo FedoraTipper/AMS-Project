@@ -103,6 +103,10 @@ def delete_link(link_id, torn):
 	conn.execute("DELETE FROM {} WHERE link_id = {}".format(_table_, int(link_id)))
 	return ""
 
+#Internal function
+def delete_link_with_node(node_id):
+	conn.execute("DELETE FROM {0} WHERE node_id_1 = {1} or node_id_2 = {1}".format(_table_, int(node_id)))
+
 def check_nodes_exist(node_id_1, node_id_2):
 	if NodeUtil.node_id_exists(node_id_1) == False or NodeUtil.node_id_exists(node_id_2) == False:
 		return False

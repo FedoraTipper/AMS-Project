@@ -12,7 +12,7 @@ def make_app():
           ("/api/label/", APIHandler.Label),
           ("/api/metadata/", APIHandler.Metadata),
           ("/api/relationship/", APIHandler.Relationship),
-            ("/api/logs/", APIHandler.Log)]
+          ("/api/logs/", APIHandler.Log)]
 
   return Application(urls,
   ssl_options = {
