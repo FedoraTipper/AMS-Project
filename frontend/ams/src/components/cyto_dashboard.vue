@@ -160,7 +160,7 @@
       </b-tabs>
     </b-modal>
     <div id="holder">
-      <cytoscape :config="config" :preConfig="preConfig"></cytoscape>
+      <cytoscape :config="config" :preConfig="preConfig" :afterCreated="loadModules"></cytoscape>
     </div>
   </div>
 </template>
@@ -204,7 +204,7 @@ export default {
       config: {
         panningEnabled: true,
         fit: true,
-        animate: true,
+        animate: false,
         boxSelectionEnabled: true,
         style: [
           {
@@ -252,7 +252,23 @@ export default {
       }
     };
   },
+  watch: {
+    cytoInstance: function(val) {
+      console.log("rwrqrqwr");
+    }
+  },
+  computed: {
+    cytoInstance() {
+      return this.$refs;
+    }
+  },
   methods: {
+    loadModules(cy) {
+      console.log(cy);
+      let api = cy.expandCollapse("");
+      api = cy.expandCollapse("get");
+      console.log(api);
+    },
     cyUpdate() {
       this.$cytoscape.instance.then(cy => {
         cy.elements().remove();
@@ -344,9 +360,8 @@ export default {
             this.labels_dict[labels[i]["label_text"]] = labels[i]["label_id"];
           }
           cy.center();
-          var api = cy.expandCollapse("get");
           window.cy = cy;
-          console.log(api);
+          cy = window.cy;
           cy.layout({ name: "cose-bilkent" }).run();
         });
       });
@@ -467,14 +482,21 @@ export default {
     },
     addMetadata() {},
     changeMetadata() {},
-    deleteMetadata() {}
+    deleteMetadata() {},
+    loadExpandCollapse() {
+      this.$cytoscape.instance.then(cy => {
+        let api = window.cy.expandCollapse("get");
+        console.log(api);
+      });
+    }
   },
   mounted: function() {
     document.querySelectorAll("canvas").forEach(canvas => {
       canvas.style.left = "0";
     });
     this.$nextTick(this.cyUpdate);
-  }
+  },
+  updated: () => {}
 };
 </script>
 

@@ -11,6 +11,7 @@ import utilities.user as UserUtil
 import utilities.label as LabelUtil
 import utilities.node as NodeUtil
 import utilities.link as LinkUtil
+import utilities.meta as MetadataUtil
 import utilities.error as ErrorUtil
 import utilities.meta as MetaUtil
 import utilities.relationship as RelationshipUtil
@@ -395,25 +396,41 @@ class Link(SetDefaultHeaders):
 
 class Metadata(SetDefaultHeaders):
     def get(self):
-        if len(self.request.body) != 0:
-            body = self.request.body.decode()
-            json_body = json.loads(body)
-            if "meta_id" in json_body:
-                self.write(LinkUtil.get_link(json_body["meta_id"]))
-                return None
-        self.write(LinkUtil.get_links())
+        if JWTHandler.authorize_action(self, 1) is None:
+            return None
+
+        body_categories = {"node_id":0}
+        metadata_dict = ErrorUtil.check_fields(self.request.arguments, body_categories, self)
+        if metadata_dict is None:
+            self.write(MetaUtil.get_all_metadata())
+            return None
+
+        if "node_id" in metadata_dict:
+            self.write(MetadataUtil.get_metadata(metadata_dict["node_id"]))
+
 
     def post(self):
         if JWTHandler.authorize_action(self, 1) is None:
             return None
 
-        body_categories = {"node_id_1": 1, "node_id_2": 1}
-        link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+        body_categories = {"node_id": 1,  "category" : 1, "metadata": 1}
+        metadata_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
         
-        if link_dict is None:
+        if metadata_dict is None or MetaUtil.create_category(metadata_dict, self) is None:
             return None
 
-        LinkUtil.create_link(link_dict)
+        formatted_message = LoggerHandler.form_message_dictionary(userdata, 
+                                                                "metadata", 
+                                                                int(MetaUtil.get_metadata_id(metadata_dict["category"],metadata_dict["node_id"])),
+                                                                metadata_dict)
+
+        try:
+            LoggerHandler.log_message("add", formatted_message)
+        except:
+            pass
+
         self.write({"message":"Success"})
 
     def put(self):
