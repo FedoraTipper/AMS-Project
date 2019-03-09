@@ -52,7 +52,7 @@ def delete_label(label_id, torn):
 		return None
 	_table_s = {"links", "nodes"}
 	null_dict = {"label_id": None}
-	statements = SQLUtil.build_nullify_statements(_table_s, null_dict)
+	statements = SQLUtil.build_nullify_statements(_table_, null_dict)
 	statements.append("DELETE FROM {}".format(_table_))
 	
 	for sql_statement in statements:

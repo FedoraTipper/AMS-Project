@@ -5,10 +5,12 @@ import VueAxios from 'vue-axios'
 import BootstrapVue from 'bootstrap-vue'
 import VueCytoscape from 'vue-cytoscape'
 import router from './router'
+import cytoscape from 'cytoscape'
 
 Vue.use(BootstrapVue)
 Vue.use(VueAxios, axios)
 Vue.use(VueCytoscape)
+Vue.use(cytoscape)
 
 
 import 'bootstrap/dist/css/bootstrap.css'

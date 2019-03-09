@@ -35,7 +35,31 @@ def get_metadata_id(category, node_id):
 	return(conn.execute("SELECT meta_id FROM {} WHERE node_id = {} AND category = '{}';".format(_table_, int(node_id), category)).fetchall()[0][0])
 
 def change_metadata(metadata_id, metadata_dict, torn):
-	return 
+	if metadata_exists(metadata_id) == False:
+		torn.write({"message": "Metadata ID does not exist"})
+		return None
+
+	if "node_id" in metadata_dict:
+		if NodeUtil.node_id_exists(metadata_dict["node_id"]) == False:
+			torn.write({"message": "Node does not exist"})
+			return None
+
+	if "category" in metadata_dict:
+		if category_exists(metadata_dict["category"], metadata_dict["node_id"]):
+			torn.write({"message": "Metadata category already exists"})
+			return None
+
+	statement = SQLUtil.build_update_statement(_table_, metadata_dict) + " WHERE meta_id = %d;" % metadata_id
+	conn.execute(statement)
+
+	return ""
 
 def delete_metadata(metadata_id, torn):
+	if metadata_exists(metadata_id) == False:
+		torn.write({"message": "Node does not exist"})
+		return None
+	conn.execute("DELETE FROM {} WHERE meta_id = {}".format(_table_, metadata_id))
 	return None
+
+def delete_metadata_with_node(node_id):
+	conn.execute("DELETE FROM {} WHERE node_id = {}".format(_table_, int(node_id)))

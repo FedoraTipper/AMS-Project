@@ -107,8 +107,6 @@ class User(SetDefaultHeaders):
         if JWTHandler.authorize_action(self, 2) is None:
             return None
 
-
-
 class Label(SetDefaultHeaders):
     def get(self):
         if JWTHandler.authorize_action(self, 1) is None:
@@ -408,7 +406,6 @@ class Metadata(SetDefaultHeaders):
         if "node_id" in metadata_dict:
             self.write(MetadataUtil.get_metadata(metadata_dict["node_id"]))
 
-
     def post(self):
         if JWTHandler.authorize_action(self, 1) is None:
             return None
@@ -434,10 +431,53 @@ class Metadata(SetDefaultHeaders):
         self.write({"message":"Success"})
 
     def put(self):
-        return None
+        if JWTHandler.authorize_action(self, 1) is None:
+            return None
+
+        body_categories = {"meta_id": 1, "node_id": 0,  "category" : 0, "metadata": 0}
+        metadata_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
+
+        metadata_id = metadata_dict["meta_id"]
+
+        if metadata_dict is None or MetaUtil.change_metadata(metadata_id, metadata_dict, self) is None:
+            return None
+
+        formatted_message = LoggerHandler.form_message_dictionary(userdata, 
+                                                                "metadata", 
+                                                                metadata_id,
+                                                                metadata_dict)
+
+        try:
+            LoggerHandler.log_message("add", formatted_message)
+        except:
+            pass
+
+        self.write({"message":"Success"})
 
     def delete(self):
-        return None
+        if JWTHandler.authorize_action(self, 1) is None:
+            return None
+
+        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
+
+        body_categories = {"meta_id": 1}
+        metadata_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+
+        if metadata_dict is None or MetaUtil.delete_metadata(metadata_dict["meta_id"], self) is None:
+            return None
+
+        formatted_message = LoggerHandler.form_delete_message_dictionary(userdata, 
+                                                                "link", 
+                                                                metadata_dict["meta_id"])
+
+        try:
+            LoggerHandler.log_message("delete", formatted_message)
+        except:
+            pass
+
+        self.write({"message":"Success"})
 
 class Relationship(SetDefaultHeaders):
     def get(self):

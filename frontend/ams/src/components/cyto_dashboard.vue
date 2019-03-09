@@ -160,7 +160,24 @@
       </b-tabs>
     </b-modal>
     <div id="holder">
-      <cytoscape :config="config" :preConfig="preConfig" :afterCreated="loadModules"></cytoscape>
+      <cytoscape :config="config" :preConfig="preConfig"></cytoscape>
+    </div>
+    <div id="nodeData">
+      <b-card title="Node data" tag="article" style="max-width: 20rem;" class="mb-2">
+        <b-card-text>
+          <b-input-group prepend="Node Type" class="mb-2 mr-sm-2 mb-sm-0">
+            <b-input v-model="form.NDataType" disabled placeholder="Click a node"/>
+          </b-input-group>
+          <b-input-group prepend="Collection Label" class="mb-2 mr-sm-2 mb-sm-0">
+            <b-input v-model="form.NDataCollection" disabled placeholder="None"/>
+          </b-input-group>
+        </b-card-text>
+      </b-card>
+    </div>
+    <div id="metaTable">
+      <div>
+        <!-- <b-table striped hover :fields="items" /> -->
+      </div>
     </div>
   </div>
 </template>
@@ -168,7 +185,6 @@
 
 <script>
 import jquery from "jquery";
-import automove from "cytoscape-automove";
 import cola from "cytoscape-cola";
 import expandcollapse from "cytoscape-expand-collapse";
 import cosebilkent from "cytoscape-cose-bilkent";
@@ -188,7 +204,9 @@ export default {
         link_label: "",
         new_node_type: "",
         links_name: "",
-        relationship: ""
+        relationship: "",
+        NDataType: "",
+        NDataCollection: ""
       },
       auth_header: {
         Authorization: localStorage.getItem("Authorization")
@@ -203,9 +221,9 @@ export default {
       relationship_dict: {},
       config: {
         panningEnabled: true,
-        fit: true,
+        fit: false,
         animate: false,
-        boxSelectionEnabled: true,
+        boxSelectionEnabled: false,
         style: [
           {
             selector: "node",
@@ -251,16 +269,6 @@ export default {
         ]
       }
     };
-  },
-  watch: {
-    cytoInstance: function(val) {
-      console.log("rwrqrqwr");
-    }
-  },
-  computed: {
-    cytoInstance() {
-      return this.$refs;
-    }
   },
   methods: {
     loadModules(cy) {
@@ -319,14 +327,33 @@ export default {
               relation_response[i]["message"];
           }
 
+          let labels = values[3].data["data"];
+          let labels_dict_2 = {};
+          for (var i = 0; i < labels.length; i++) {
+            this.labels_form.push(labels[i]["label_text"]);
+            labels_dict_2[labels[i]["label_id"]] = labels[i]["label_text"];
+            this.labels_dict[labels[i]["label_text"]] = labels[i]["label_id"];
+          }
+
           for (var i = 0; i < nodes.length; i++) {
             this.nodes_form.push(nodes[i]["type"]);
-            this.nodes_dict[nodes[i]["type"]] = nodes[i]["node_id"];
+            if (this.labels_dict[nodes[i]["label_id"]]) {
+              this.nodes_dict[nodes[i]["type"]] = {
+                nodes_id: nodes[i]["node_id"],
+                label_id: this.labels_dict[nodes[i]["label_id"]]
+              };
+            } else {
+              this.nodes_dict[nodes[i]["type"]] = {
+                nodes_id: nodes[i]["node_id"]
+              };
+            }
+
             cy.add({
               group: "nodes",
               data: {
                 id: nodes[i]["node_id"],
-                name: nodes[i]["type"]
+                name: nodes[i]["type"],
+                label_collection: labels_dict_2[nodes[i]["label_id"]]
               }
             });
           }
@@ -354,20 +381,22 @@ export default {
               }
             });
           }
-          let labels = values[3].data["data"];
-          for (var i = 0; i < labels.length; i++) {
-            this.labels_form.push(labels[i]["label_text"]);
-            this.labels_dict[labels[i]["label_text"]] = labels[i]["label_id"];
-          }
-          cy.center();
-          window.cy = cy;
-          cy = window.cy;
+
           cy.layout({ name: "cose-bilkent" }).run();
         });
+        cy.center();
+        window.cy = cy;
+        cy = window.cy;
+
+        //Bind clicking a node, to load collection value
+        cy.on("click", "node", evt => {
+          this.form.NDataType = evt.target.data()["name"];
+          this.form.NDataCollection = evt.target.data()["label_collection"];
+        });
+        cy.layout({ name: "cose-bilkent" }).run();
       });
     },
     preConfig(cytoscape) {
-      cytoscape.use(cola);
       cytoscape.use(expandcollapse);
       cytoscape.use(cosebilkent);
     },
@@ -393,7 +422,7 @@ export default {
     },
     changeNode() {
       let node_details = {
-        node_id: this.nodes_dict[this.form.node_type]
+        node_id: this.nodes_dict[this.form.node_type]["nodes_id"]
       };
       if (this.form.node_label) {
         node_details["label_id"] = this.labels_dict[this.form.node_label];
@@ -417,7 +446,7 @@ export default {
     },
     deleteNode() {
       let node_details = {
-        node_id: this.nodes_dict[this.form.node_type]
+        node_id: this.nodes_dict["nodes_id"][this.form.node_type]
       };
       this.axios({
         url: "http://127.0.0.1:5000/api/node/",
@@ -435,8 +464,8 @@ export default {
     },
     addLink() {
       let link_details = {
-        node_id_1: this.nodes_dict[this.form.node_type_1],
-        node_id_2: this.nodes_dict[this.form.node_type_2]
+        node_id_1: this.nodes_dict[this.form.node_type_1]["nodes_id"],
+        node_id_2: this.nodes_dict[this.form.node_type_2]["nodes_id"]
       };
       if (this.form.link_label) {
         link_details["label_id"] = this.labels_dict[this.form.link_label];
@@ -485,7 +514,7 @@ export default {
     deleteMetadata() {},
     loadExpandCollapse() {
       this.$cytoscape.instance.then(cy => {
-        let api = window.cy.expandCollapse("get");
+        let api = cy.expandCollapse("get");
         console.log(api);
       });
     }
@@ -495,8 +524,8 @@ export default {
       canvas.style.left = "0";
     });
     this.$nextTick(this.cyUpdate);
-  },
-  updated: () => {}
+    this.$nextTick(this.loadExpandCollapse);
+  }
 };
 </script>
 
@@ -518,5 +547,10 @@ export default {
   height: 95.8%;
   position: absolute;
   background-color: #cfd8dc;
+}
+#nodeData {
+  position: absolute;
+  left: calc(100vw - 350px);
+  top: calc(100vh - 300px);
 }
 </style>
