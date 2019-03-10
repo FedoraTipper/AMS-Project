@@ -14,7 +14,75 @@
       <b-dropdown-item @click="modal_link_show=true">Link</b-dropdown-item>
       <b-dropdown-item @click="modal_metadata_show=true">Metadata</b-dropdown-item>
     </b-dropdown>
-    <b-button @click="search_show=true" variant="primary" id="overlay-button-2" size="lg">🔍</b-button>
+    <b-button @click="modal_search_show=true" variant="primary" id="overlay-button-2" size="lg">🔍</b-button>
+    <b-modal size="xl" v-model="modal_search_show" title="Search">
+      <div class="d-block text-center">
+        <h3>Search for a node</h3>
+      </div>
+
+      <!-- <b-form-group>
+        <b-form-input type="email" v-model="form.email" required placeholder="Enter email"/>
+      </b-form-group>-->
+      <!-- User Interface controls -->
+      <b-card-group class="text-center" id="log_table">
+        <b-row>
+          <b-col md="8" class="my-1">
+            <b-form-group label-cols-sm="3" label="Filter" class="mb-0">
+              <b-input-group>
+                <b-form-input v-model="filter" placeholder="Type to Search"/>
+                <b-input-group-append>
+                  <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+                </b-input-group-append>
+              </b-input-group>
+            </b-form-group>
+          </b-col>
+
+          <b-col md="8" class="my-1">
+            <b-form-group label-cols-sm="3" label="Per page" class="mb-0">
+              <b-form-select :options="pageOptions" v-model="perPage"/>
+            </b-form-group>
+          </b-col>
+        </b-row>
+
+        <!-- Main table element -->
+        <b-table
+          show-empty
+          stacked="md"
+          :items="search_list"
+          :fields="search_table_fields"
+          :current-page="currentPage"
+          :per-page="perPage"
+          :filter="filter"
+          :striped="true"
+          :bordered="true"
+          :hover="true"
+          :outlines="true"
+          :dark="true"
+          @filtered="onFiltered"
+        >
+          <template slot="name" slot-scope="row">{{ row.value.first }} {{ row.value.last }}</template>
+
+          <template slot="row-details" slot-scope="row">
+            <b-card>
+              <ul>
+                <li v-for="(value, key) in row.item" :key="key">{{ key }}: {{ value }}</li>
+              </ul>
+            </b-card>
+          </template>
+        </b-table>
+
+        <b-row>
+          <b-col md="6" class="my-1">
+            <b-pagination
+              :total-rows="totalRows"
+              :per-page="perPage"
+              v-model="currentPage"
+              class="my-0"
+            />
+          </b-col>
+        </b-row>
+      </b-card-group>
+    </b-modal>
     <b-modal size="xl" v-model="modal_node_show">
       <b-tabs card>
         <b-tab title="Add" active>
@@ -188,6 +256,7 @@ import jquery from "jquery";
 import cola from "cytoscape-cola";
 import expandCollapse from "cytoscape-expand-collapse";
 import cosebilkent from "cytoscape-cose-bilkent";
+import fuze from "fuse.js";
 
 export default {
   data() {
@@ -195,7 +264,20 @@ export default {
       modal_node_show: false,
       modal_link_show: false,
       modal_metadata_show: false,
-      search_show: false,
+      modal_search_show: false,
+      totalRows: "10000",
+      currentPage: 1,
+      filter: null,
+      pageOptions: [5, 10, 15],
+      perPage: 5,
+      search_table_fields: {
+        node_id: {
+          label: "Node ID"
+        },
+        label_id: {
+          label: "Label ID"
+        }
+      },
       form: {
         node_type: "",
         node_type_1: "",
@@ -215,10 +297,19 @@ export default {
       nodes_form: [],
       links_form: [],
       relationship_form: [],
+      search_list: [],
       labels_dict: {},
       nodes_dict: {},
       links_dict: {},
       relationship_dict: {},
+      fuse_node_config: {
+        shouldSort: true,
+        threshold: 0.5,
+        location: 0,
+        distance: 100,
+        maxPatternLength: 32,
+        minMatchCharLength: 1
+      },
       config: {
         panningEnabled: true,
         fit: false,
@@ -282,6 +373,7 @@ export default {
         this.links_form = [];
         this.relationships_dict = {};
         this.relationship = [];
+        this.search_list = [];
         this.relationships_form = [];
         let nodes = [];
         let links = [];
@@ -344,10 +436,18 @@ export default {
                 nodes_id: nodes[i]["node_id"],
                 label_id: this.labels_dict[nodes[i]["label_id"]]
               };
+              this.search_list.push({
+                nodes_id: nodes[i]["node_id"],
+                label_id: this.labels_dict[nodes[i]["label_id"]]
+              });
             } else {
               this.nodes_dict[nodes[i]["type"]] = {
-                nodes_id: nodes[i]["node_id"]
+                node_id: nodes[i]["node_id"]
               };
+              this.search_list.push({
+                node_id: nodes[i]["node_id"],
+                label_id: null
+              });
             }
 
             cy.add({
@@ -387,11 +487,9 @@ export default {
           cy.layout({ name: "cose-bilkent" }).run();
         });
         cy.center();
-        window.cy = cy;
-        cy = window.cy;
-
         //Bind clicking a node, to load collection value
         cy.on("click", "node", evt => {
+          console.log(evt.target.data());
           this.form.NDataType = evt.target.data()["name"];
           this.form.NDataCollection = evt.target.data()["label_collection"];
         });
@@ -492,7 +590,6 @@ export default {
     },
     changeLink() {},
     deleteLink() {
-      console.log(this.form.links_name);
       let link_details = {
         link_id: this.links_dict[this.form.links_name]
       };
@@ -542,6 +639,10 @@ export default {
           });
         }
       });
+    },
+    onFiltered(filteredItems) {
+      this.totalRows = filteredItems.length;
+      this.currentPage = 1;
     }
   },
   mounted: function() {
@@ -557,13 +658,13 @@ export default {
 <style>
 #overlay-button {
   position: absolute;
-  z-index: 101;
+  z-index: 1000;
   left: calc(100vw - 150px);
   top: calc(100vh - 100px);
 }
 #overlay-button-2 {
   position: absolute;
-  z-index: 101;
+  z-index: 1000;
   left: calc(100vw - 215px);
   top: calc(100vh - 92px);
 }
@@ -574,6 +675,7 @@ export default {
   background-color: #cfd8dc;
 }
 #nodeData {
+  z-index: 999;
   position: absolute;
   left: calc(100vw - 350px);
   top: calc(100vh - 300px);

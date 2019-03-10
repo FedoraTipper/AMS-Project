@@ -92,8 +92,16 @@ export default {
         window.cy.add({
           group: "nodes",
           data: {
-            id: "b",
+            id: "c",
             name: "collectiuon"
+          }
+        });
+        window.cy.add({
+          group: "nodes",
+          data: {
+            id: "b",
+            name: "collectiuon",
+            parent: "c"
           }
         });
 
@@ -149,9 +157,7 @@ export default {
     }
   },
   mounted: function() {
-    //this.$nextTick(this.cyUpdate);
     expandCollapse(cytoscape, jquery);
-    // cytoscape.use(expandCollapse);
     cytoscape.use(cosebilkent);
 
     let cy = (window.cy = cytoscape({
