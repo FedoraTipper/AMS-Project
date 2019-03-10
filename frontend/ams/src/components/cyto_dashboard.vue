@@ -186,7 +186,7 @@
 <script>
 import jquery from "jquery";
 import cola from "cytoscape-cola";
-import expandcollapse from "cytoscape-expand-collapse";
+import expandCollapse from "cytoscape-expand-collapse";
 import cosebilkent from "cytoscape-cose-bilkent";
 
 export default {
@@ -271,12 +271,6 @@ export default {
     };
   },
   methods: {
-    loadModules(cy) {
-      console.log(cy);
-      let api = cy.expandCollapse("");
-      api = cy.expandCollapse("get");
-      console.log(api);
-    },
     cyUpdate() {
       this.$cytoscape.instance.then(cy => {
         cy.elements().remove();
@@ -292,7 +286,6 @@ export default {
         let nodes = [];
         let links = [];
         let relationships = {};
-        let colletion = cy.collection();
         const requests = [
           this.axios({
             url: "http://127.0.0.1:5000/api/node/",
@@ -333,6 +326,15 @@ export default {
             this.labels_form.push(labels[i]["label_text"]);
             labels_dict_2[labels[i]["label_id"]] = labels[i]["label_text"];
             this.labels_dict[labels[i]["label_text"]] = labels[i]["label_id"];
+
+            cy.add({
+              group: "nodes",
+              data: {
+                id: "label_" + labels[i]["label_id"],
+                name: labels[i]["label_text"],
+                label_collection: labels[i]["label_text"]
+              }
+            });
           }
 
           for (var i = 0; i < nodes.length; i++) {
@@ -353,6 +355,7 @@ export default {
               data: {
                 id: nodes[i]["node_id"],
                 name: nodes[i]["type"],
+                parent: "label_" + nodes[i]["label_id"],
                 label_collection: labels_dict_2[nodes[i]["label_id"]]
               }
             });
@@ -381,7 +384,6 @@ export default {
               }
             });
           }
-
           cy.layout({ name: "cose-bilkent" }).run();
         });
         cy.center();
@@ -393,11 +395,10 @@ export default {
           this.form.NDataType = evt.target.data()["name"];
           this.form.NDataCollection = evt.target.data()["label_collection"];
         });
-        cy.layout({ name: "cose-bilkent" }).run();
       });
     },
     preConfig(cytoscape) {
-      cytoscape.use(expandcollapse);
+      expandCollapse(cytoscape, jquery);
       cytoscape.use(cosebilkent);
     },
     addNode() {
@@ -514,8 +515,32 @@ export default {
     deleteMetadata() {},
     loadExpandCollapse() {
       this.$cytoscape.instance.then(cy => {
-        let api = cy.expandCollapse("get");
-        console.log(api);
+        let api = "";
+        try {
+          api = window.api = cy.expandCollapse({
+            layoutBy: {
+              name: "cose-bilkent",
+              animate: "end",
+              randomize: false,
+              fit: true
+            },
+            fisheye: true,
+            animate: true,
+            undoable: false
+          });
+        } catch {
+          api = window.api = cy.expandCollapse({
+            layoutBy: {
+              name: "cose-bilkent",
+              animate: "end",
+              randomize: false,
+              fit: true
+            },
+            fisheye: true,
+            animate: true,
+            undoable: false
+          });
+        }
       });
     }
   },
