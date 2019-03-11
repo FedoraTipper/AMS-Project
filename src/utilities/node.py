@@ -20,11 +20,11 @@ def node_id_exists(node_id):
 	return int(conn.execute("SELECT COUNT(node_id) FROM %s WHERE node_id = %d;" %(_table_, int(node_id))).fetchall()[0][0]) != 0
 
 def get_nodes():
-	nodes = conn.execute("SELECT node_id, type, label_id FROM %s" % (_table_))
+	nodes = conn.execute("SELECT node_id, type, label_id, icon FROM %s" % (_table_))
 	return {'data': [dict(zip(tuple (nodes.keys()) ,i)) for i in nodes.cursor]}
 
 def get_node(node_id):
-	node = conn.execute("SELECT node_id, type, label_id FROM %s WHERE node_id = %d" % (_table_, int(node_id)))
+	node = conn.execute("SELECT node_id, type, label_id, icon FROM %s WHERE node_id = %d" % (_table_, int(node_id)))
 	return {'data': [dict(zip(tuple (node.keys()) ,i)) for i in node.cursor]}
 
 def get_node_id(node_type):

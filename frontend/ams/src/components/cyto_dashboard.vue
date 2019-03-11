@@ -93,6 +93,9 @@
             <b-input-group prepend="Type" required class="mt-3">
               <b-form-input v-model="form.node_type" required/>
             </b-input-group>
+            <b-input-group prepend="Icon" required class="mt-3">
+              <b-form-input v-model="form.icon" required/>
+            </b-input-group>
             <b-form-group id="Label_id_group" label="Collection label:" label-for="label_dropdown">
               <b-form-select
                 id="label_dropdown"
@@ -118,8 +121,11 @@
                 v-model="form.node_type"
               />
             </b-form-group>
-            <b-input-group prepend="New Type" required class="mt-3">
+            <b-input-group prepend="New Type" class="mt-3">
               <b-form-input v-model="form.new_node_type"/>
+            </b-input-group>
+            <b-input-group prepend="Icon" class="mt-3">
+              <b-form-input v-model="form.icon"/>
             </b-input-group>
             <b-form-group id="Label_id_group" label="Collection label:" label-for="label_dropdown">
               <b-form-select
@@ -397,7 +403,8 @@ export default {
         links_name: "",
         relationship: "",
         NDataType: "",
-        NDataCollection: ""
+        NDataCollection: "",
+        icon: ""
       },
       auth_header: {
         Authorization: localStorage.getItem("Authorization")
@@ -562,6 +569,13 @@ export default {
                 label_id: "Null"
               });
             }
+            let icon_link = "";
+            if (nodes[i]["icon"]) {
+              icon_link = nodes[i]["icon"];
+            } else {
+              icon_link = "null";
+            }
+
             cy.add({
               group: "nodes",
               data: {
@@ -569,8 +583,7 @@ export default {
                 name: nodes[i]["type"],
                 parent: "label_" + nodes[i]["label_id"],
                 label_collection: labels_dict_2[nodes[i]["label_id"]],
-                imglink:
-                  "https://farm8.staticflickr.com/7272/7633179468_3e19e45a0c_b.jpg"
+                imglink: icon_link
               }
             });
           }
@@ -619,6 +632,9 @@ export default {
       if (this.selected.node_label) {
         node_details["label_id"] = this.labels_dict[this.selected.node_label];
       }
+      if (this.form.icon) {
+        node_details["icon"] = this.form.icon;
+      }
       this.axios({
         url: "http://127.0.0.1:5000/api/node/",
         headers: this.auth_header,
@@ -636,7 +652,7 @@ export default {
     },
     changeNode() {
       let node_details = {
-        node_id: this.nodes_dict[this.form.node_type]["nodes_id"]
+        node_id: this.nodes_dict[this.form.node_type]["node_id"]
       };
       if (this.selected.node_label) {
         node_details["label_id"] = this.labels_dict[this.selected.node_label];
@@ -644,6 +660,10 @@ export default {
       if (this.form.new_node_type) {
         node_details["type"] = this.form.new_node_type;
       }
+      if (this.form.icon) {
+        node_details["icon"] = this.form.icon;
+      }
+
       this.axios({
         url: "http://127.0.0.1:5000/api/node/",
         headers: this.auth_header,

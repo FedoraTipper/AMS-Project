@@ -1,11 +1,16 @@
 import json
 
+
 """
-Error checking for field validation. 
-Fields not listed in categories will be ignored. 
-Fields with dict value of 0 will be included if it was given in the response body
-Fields with dict value of 1 is required in the response body
+Function to check/validate response body or uri parameters of an API request
+Inputs: response body or uri parameters; dictionary of categories that need to be checked; tornado object to write any messages
+Output: None if there is an user error; Dictionary of all fields and corresponding values
+Caveats: 
+	Fields not listed in categories will be ignored. 
+	Fields with dict value of 0 will be included if it was given in the response body
+	Fields with dict value of 1 is required in the response body
 """
+
 def check_fields(result_body, categories, torn):
 	result_dict = {}
 

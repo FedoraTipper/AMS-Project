@@ -84,10 +84,6 @@ class User(SetDefaultHeaders):
 
         self.write({"user_id": UserUtil.get_uid(user_dict["username"])})
 
-    """
-    Change user information
-    Come back
-    """
     def put(self):
         if JWTHandler.authorize_action(self, 2) is None:
             return None
@@ -226,7 +222,7 @@ class Node(SetDefaultHeaders):
 
         userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
-        body_categories = {"type": 1, "label_id": 0}
+        body_categories = {"type": 1, "label_id": 0, "icon":0}
         node_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
         
         if node_dict is None:
@@ -253,7 +249,7 @@ class Node(SetDefaultHeaders):
 
         userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
-        body_categories = {"type": 0, "node_id": 1, "label_id": 0}
+        body_categories = {"type": 0, "node_id": 1, "label_id": 0, "icon":0}
         node_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if node_dict is None:

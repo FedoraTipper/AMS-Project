@@ -2,6 +2,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import handlers.config as ConfigHandlers
 
+"""
+Function to create SQLAlchemy engine object
+Inputs: None
+Output: SQLAlchemy connection object
+Caveats: Predefined config variables
+"""
 def create_connection():
 	db_cfg_list = ConfigHandlers.get_keys("DATABASE")
 	engine = create_engine("mysql+pymysql://%s:%s@%s:%s/%s" % (
