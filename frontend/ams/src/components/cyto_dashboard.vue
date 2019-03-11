@@ -15,73 +15,76 @@
       <b-dropdown-item @click="modal_metadata_show=true">Metadata</b-dropdown-item>
     </b-dropdown>
     <b-button @click="modal_search_show=true" variant="primary" id="overlay-button-2" size="lg">🔍</b-button>
-    <b-modal size="xl" v-model="modal_search_show" title="Search">
+    <b-modal size="xl" v-model="modal_search_show" title="Search" ok-only>
       <div class="d-block text-center">
         <h3>Search for a node</h3>
       </div>
-
-      <!-- <b-form-group>
-        <b-form-input type="email" v-model="form.email" required placeholder="Enter email"/>
-      </b-form-group>-->
       <!-- User Interface controls -->
-      <b-card-group class="text-center" id="log_table">
-        <b-row>
-          <b-col md="8" class="my-1">
-            <b-form-group label-cols-sm="3" label="Filter" class="mb-0">
-              <b-input-group>
-                <b-form-input v-model="filter" placeholder="Type to Search"/>
-                <b-input-group-append>
-                  <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
-                </b-input-group-append>
-              </b-input-group>
-            </b-form-group>
-          </b-col>
+      <div id="container">
+        <b-container fluid>
+          <b-card-group class="text-center" id="log_table">
+            <b-row>
+              <b-col md="10" class="my-1">
+                <b-form-group label-cols-sm="3" label="Filter" class="mb-0">
+                  <b-input-group>
+                    <b-form-input v-model="filter" placeholder="Type to Search"/>
+                    <b-input-group-append>
+                      <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+                    </b-input-group-append>
+                  </b-input-group>
+                </b-form-group>
+              </b-col>
+              <b-col md="10" class="my-1">
+                <b-form-group label-cols-sm="3" label="Per page" class="mb-0">
+                  <b-form-select :options="pageOptions" v-model="perPage"/>
+                </b-form-group>
+              </b-col>
+            </b-row>
 
-          <b-col md="8" class="my-1">
-            <b-form-group label-cols-sm="3" label="Per page" class="mb-0">
-              <b-form-select :options="pageOptions" v-model="perPage"/>
-            </b-form-group>
-          </b-col>
-        </b-row>
-
-        <!-- Main table element -->
-        <b-table
-          show-empty
-          stacked="md"
-          :items="search_list"
-          :fields="search_table_fields"
-          :current-page="currentPage"
-          :per-page="perPage"
-          :filter="filter"
-          :striped="true"
-          :bordered="true"
-          :hover="true"
-          :outlines="true"
-          :dark="true"
-          @filtered="onFiltered"
-        >
-          <template slot="name" slot-scope="row">{{ row.value.first }} {{ row.value.last }}</template>
-
-          <template slot="row-details" slot-scope="row">
-            <b-card>
-              <ul>
-                <li v-for="(value, key) in row.item" :key="key">{{ key }}: {{ value }}</li>
-              </ul>
-            </b-card>
-          </template>
-        </b-table>
-
-        <b-row>
-          <b-col md="6" class="my-1">
-            <b-pagination
-              :total-rows="totalRows"
+            <!-- Main table element -->
+            <b-table
+              show-empty
+              stacked="md"
+              :items="search_list"
+              :fields="search_table_fields"
+              :current-page="currentPage"
               :per-page="perPage"
-              v-model="currentPage"
-              class="my-0"
-            />
-          </b-col>
-        </b-row>
-      </b-card-group>
+              :filter="filter"
+              :striped="true"
+              :bordered="true"
+              :hover="true"
+              :outlines="true"
+              :dark="true"
+              selectable
+              :select-mode="select_mode"
+              selectedVariant="default"
+              @row-selected="focusNode"
+              @filtered="onFiltered"
+            >
+              <template slot="name" slot-scope="row">{{ row.value.first }} {{ row.value.last }}</template>
+
+              <template slot="row-details" slot-scope="row">
+                <b-card>
+                  <ul>
+                    <li v-for="(value, key) in row.item" :key="key">{{ key }}: {{ value }}</li>
+                  </ul>
+                </b-card>
+              </template>
+            </b-table>
+
+            <b-row>
+              <b-col md="6" class="my-1">
+                <b-pagination
+                  :total-rows="totalRows"
+                  :per-page="perPage"
+                  v-model="currentPage"
+                  class="my-0"
+                />
+              </b-col>
+            </b-row>
+          </b-card-group>
+        </b-container>
+      </div>
     </b-modal>
     <b-modal size="xl" v-model="modal_node_show">
       <b-tabs card>
@@ -256,7 +259,6 @@ import jquery from "jquery";
 import cola from "cytoscape-cola";
 import expandCollapse from "cytoscape-expand-collapse";
 import cosebilkent from "cytoscape-cose-bilkent";
-import fuze from "fuse.js";
 
 export default {
   data() {
@@ -270,9 +272,13 @@ export default {
       filter: null,
       pageOptions: [5, 10, 15],
       perPage: 5,
+      select_mode: "single",
       search_table_fields: {
         node_id: {
           label: "Node ID"
+        },
+        node_type: {
+          label: "Node Type"
         },
         label_id: {
           label: "Label ID"
@@ -302,14 +308,6 @@ export default {
       nodes_dict: {},
       links_dict: {},
       relationship_dict: {},
-      fuse_node_config: {
-        shouldSort: true,
-        threshold: 0.5,
-        location: 0,
-        distance: 100,
-        maxPatternLength: 32,
-        minMatchCharLength: 1
-      },
       config: {
         panningEnabled: true,
         fit: false,
@@ -364,20 +362,13 @@ export default {
   methods: {
     cyUpdate() {
       this.$cytoscape.instance.then(cy => {
+        window.cy = cy;
         cy.elements().remove();
-        this.nodes_form = [];
-        this.nodes_dict = {};
-        this.labels_form = [];
-        this.labels_dict = {};
-        this.links_dict = {};
-        this.links_form = [];
-        this.relationships_dict = {};
-        this.relationship = [];
-        this.search_list = [];
-        this.relationships_form = [];
+        this.resetVariables;
         let nodes = [];
         let links = [];
         let relationships = {};
+
         const requests = [
           this.axios({
             url: "http://127.0.0.1:5000/api/node/",
@@ -428,25 +419,29 @@ export default {
               }
             });
           }
-
+          this.totalRows = nodes.length;
           for (var i = 0; i < nodes.length; i++) {
             this.nodes_form.push(nodes[i]["type"]);
-            if (this.labels_dict[nodes[i]["label_id"]]) {
+            if (labels_dict_2[nodes[i]["label_id"]]) {
               this.nodes_dict[nodes[i]["type"]] = {
                 nodes_id: nodes[i]["node_id"],
-                label_id: this.labels_dict[nodes[i]["label_id"]]
-              };
-              this.search_list.push({
-                nodes_id: nodes[i]["node_id"],
-                label_id: this.labels_dict[nodes[i]["label_id"]]
-              });
-            } else {
-              this.nodes_dict[nodes[i]["type"]] = {
-                node_id: nodes[i]["node_id"]
+                node_type: nodes[i]["type"],
+                label_id: labels_dict_2[nodes[i]["label_id"]]
               };
               this.search_list.push({
                 node_id: nodes[i]["node_id"],
-                label_id: null
+                node_type: nodes[i]["type"],
+                label_id: labels_dict_2[nodes[i]["label_id"]]
+              });
+            } else {
+              this.nodes_dict[nodes[i]["type"]] = {
+                node_id: nodes[i]["node_id"],
+                node_type: nodes[i]["type"]
+              };
+              this.search_list.push({
+                node_id: nodes[i]["node_id"],
+                node_type: nodes[i]["type"],
+                label_id: "Null"
               });
             }
 
@@ -489,7 +484,6 @@ export default {
         cy.center();
         //Bind clicking a node, to load collection value
         cy.on("click", "node", evt => {
-          console.log(evt.target.data());
           this.form.NDataType = evt.target.data()["name"];
           this.form.NDataCollection = evt.target.data()["label_collection"];
         });
@@ -513,8 +507,10 @@ export default {
         data: node_details
       }).then(response => {
         if (response.data["message"].includes("Success")) {
+          alert("Added a new node");
           this.cyUpdate();
         } else {
+          console.log(response.data["message"]);
           alert("Failed to create new node");
         }
       });
@@ -588,7 +584,10 @@ export default {
         }
       });
     },
-    changeLink() {},
+    changeLink() {
+      // let link_details = {
+      // }
+    },
     deleteLink() {
       let link_details = {
         link_id: this.links_dict[this.form.links_name]
@@ -643,13 +642,55 @@ export default {
     onFiltered(filteredItems) {
       this.totalRows = filteredItems.length;
       this.currentPage = 1;
+    },
+    focusNode(node) {
+      this.modal_search_show = false;
+      //Deselect any selected nodes
+      window.cy.nodes().unselect();
+      let child_id = String(node[0]["node_id"]);
+      let expandList = [cy.$id(child_id)];
+      let parent = window.cy.getElementById(child_id)["_private"]["data"][
+        "parent"
+      ];
+      if (parent) {
+        //Build list for nodes that need to expanded out
+        while (parent) {
+          expandList.push(cy.$id(parent));
+          child_id = parent;
+          parent = window.cy.$id(child_id)["_private"]["data"]["parent"];
+        }
+        //Collapse all nodes on the map
+        window.api.collapseAll();
+        window.api.expand(expandList);
+        // Highlight the node that was selected. Dirty way since expand has no promise
+        setTimeout(function() {
+          window.cy.$id(String(node[0]["node_id"])).select();
+        }, 2000);
+      } else {
+        window.api.collapseAll();
+        window.cy.$id(String(node[0]["node_id"])).select();
+      }
+    },
+    resetVariables() {
+      this.nodes_form = [];
+      this.nodes_dict = {};
+      this.labels_form = [];
+      this.labels_dict = {};
+      this.links_dict = {};
+      this.links_form = [];
+      this.relationships_dict = {};
+      this.relationship = [];
+      this.search_list = [];
+      this.relationships_form = [];
     }
   },
   mounted: function() {
     document.querySelectorAll("canvas").forEach(canvas => {
       canvas.style.left = "0";
     });
+    //Load all map data with get requests
     this.$nextTick(this.cyUpdate);
+    //Load expand collapse module
     this.$nextTick(this.loadExpandCollapse);
   }
 };
@@ -679,5 +720,9 @@ export default {
   position: absolute;
   left: calc(100vw - 350px);
   top: calc(100vh - 300px);
+}
+#container {
+  position: relative;
+  padding-top: 45%;
 }
 </style>
