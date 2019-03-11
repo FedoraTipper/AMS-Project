@@ -94,7 +94,11 @@
               <b-form-input v-model="form.node_type" required/>
             </b-input-group>
             <b-form-group id="Label_id_group" label="Collection label:" label-for="label_dropdown">
-              <b-form-select id="label_dropdown" :options="labels_form" v-model="form.node_label"/>
+              <b-form-select
+                id="label_dropdown"
+                :options="options.label"
+                v-model="selected.node_label"
+              />
             </b-form-group>
             <b-button type="submit" variant="primary">Add Node</b-button>
           </b-form>
@@ -118,7 +122,11 @@
               <b-form-input v-model="form.new_node_type"/>
             </b-input-group>
             <b-form-group id="Label_id_group" label="Collection label:" label-for="label_dropdown">
-              <b-form-select id="label_dropdown" :options="labels_form" v-model="form.node_label"/>
+              <b-form-select
+                id="label_dropdown"
+                :options="options.label"
+                v-model="selected.node_label"
+              />
             </b-form-group>
             <b-button type="submit" variant="primary">Change Node</b-button>
           </b-form>
@@ -159,7 +167,11 @@
               />
             </b-form-group>
             <b-form-group id="Label_id_group" label="Collection label:" label-for="label_dropdown">
-              <b-form-select id="label_dropdown" :options="labels_form" v-model="form.link_label"/>
+              <b-form-select
+                id="label_dropdown"
+                :options="options.label"
+                v-model="form.link_label"
+              />
             </b-form-group>
             <b-form-group label="Relationship:" label-for="label_dropdown">
               <b-form-select :options="relationship_form" v-model="form.relationship"/>
@@ -176,7 +188,11 @@
               <b-form-input v-model="form.new_node_type"/>
             </b-input-group>
             <b-form-group id="Label_id_group" label="Collection label:" label-for="label_dropdown">
-              <b-form-select id="label_dropdown" :options="labels_form" v-model="form.node_label"/>
+              <b-form-select
+                id="label_dropdown"
+                :options="options.label"
+                v-model="selected.node_label"
+              />
             </b-form-group>
             <b-button type="submit" variant="primary">Change Node</b-button>
           </b-form>
@@ -186,22 +202,96 @@
             <b-form-group label="Select link to delete:" required>
               <b-form-select :options="links_form" required v-model="form.links_name"/>
             </b-form-group>
-            <b-button type="submit" variant="danger">Delete Node</b-button>
+            <b-button type="submit" variant="danger">Delete Link</b-button>
           </b-form>
         </b-tab>
       </b-tabs>
     </b-modal>
     <b-modal size="xl" v-model="modal_metadata_show">
       <b-tabs card>
-        <b-tab title="Add" active>
-          <b-form @submit="addNode">
-            <b-input-group prepend="Type" required class="mt-3">
-              <b-form-input v-model="form.node_type" required/>
-            </b-input-group>
-            <b-form-group id="Label_id_group" label="Collection label:" label-for="label_dropdown">
-              <b-form-select id="label_dropdown" :options="labels_form" v-model="form.node_label"/>
+        <b-tab title="Get" active>
+          <b-form @submit="getMetadata">
+            <b-form-group label="Node:" label-for="node_id_2">
+              <b-form-select required :options="nodes_form" v-model="selected.node"/>
+              <div id="button_padding">
+                <b-button type="submit" variant="primary">Get metadata</b-button>
+              </div>
             </b-form-group>
-            <b-button type="submit" variant="primary">Add Node</b-button>
+            <div id="metadata_table">
+              <b-card-group class="text-center" id="log_table">
+                <b-row>
+                  <b-col md="10" class="my-1">
+                    <b-form-group label-cols-sm="3" label="Filter" class="mb-0">
+                      <b-input-group>
+                        <b-form-input v-model="filter" placeholder="Type to Search"/>
+                        <b-input-group-append>
+                          <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+                        </b-input-group-append>
+                      </b-input-group>
+                    </b-form-group>
+                  </b-col>
+                  <b-col md="10" class="my-1">
+                    <b-form-group label-cols-sm="3" label="Per page" class="mb-0">
+                      <b-form-select :options="pageOptions" v-model="perPage"/>
+                    </b-form-group>
+                  </b-col>
+                </b-row>
+
+                <!-- Main table element -->
+                <b-table
+                  show-empty
+                  stacked="md"
+                  :items="metadata_list"
+                  :fields="metadata_table_fields"
+                  :current-page="currentPage"
+                  :per-page="perPage"
+                  :filter="filter"
+                  :striped="true"
+                  :bordered="true"
+                  :hover="true"
+                  :outlines="true"
+                  :dark="true"
+                  @filtered="onFiltered"
+                >
+                  <template slot="name" slot-scope="row">{{ row.value.first }} {{ row.value.last }}</template>
+
+                  <template slot="row-details" slot-scope="row">
+                    <b-card>
+                      <ul>
+                        <li v-for="(value, key) in row.item" :key="key">{{ key }}: {{ value }}</li>
+                      </ul>
+                    </b-card>
+                  </template>
+                </b-table>
+
+                <b-row>
+                  <b-col md="6" class="my-1">
+                    <b-pagination
+                      :total-rows="totalMetaRows"
+                      :per-page="perPage"
+                      v-model="currentPage"
+                      class="my-0"
+                    />
+                  </b-col>
+                </b-row>
+              </b-card-group>
+            </div>
+          </b-form>
+        </b-tab>
+        <b-tab title="Add">
+          <b-form @submit="addMetadata">
+            <b-form-group label="Select Node:" label-for="node_id_2">
+              <b-form-select required :options="nodes_form" v-model="selected.node"/>
+            </b-form-group>
+            <b-input-group prepend="Category" required class="mt-3">
+              <b-form-input v-model="form.metadata.category"/>
+            </b-input-group>
+            <b-input-group prepend="Metadata" required class="mt-3">
+              <b-form-input v-model="form.metadata.data"/>
+            </b-input-group>
+            <div id="button_padding">
+              <b-button type="submit" variant="primary">Add Metadata</b-button>
+            </div>
           </b-form>
         </b-tab>
         <b-tab title="Change">
@@ -223,9 +313,13 @@
               <b-form-input v-model="form.new_node_type"/>
             </b-input-group>
             <b-form-group id="Label_id_group" label="Collection label:" label-for="label_dropdown">
-              <b-form-select id="label_dropdown" :options="labels_form" v-model="form.node_label"/>
+              <b-form-select
+                id="label_dropdown"
+                :options="options.label"
+                v-model="selected.node_label"
+              />
             </b-form-group>
-            <b-button type="submit" variant="primary">Change Node</b-button>
+            <b-button type="submit" variant="primary">Change Metadata</b-button>
           </b-form>
         </b-tab>
       </b-tabs>
@@ -245,11 +339,6 @@
         </b-card-text>
       </b-card>
     </div>
-    <div id="metaTable">
-      <div>
-        <!-- <b-table striped hover :fields="items" /> -->
-      </div>
-    </div>
   </div>
 </template>
 
@@ -267,7 +356,8 @@ export default {
       modal_link_show: false,
       modal_metadata_show: false,
       modal_search_show: false,
-      totalRows: "10000",
+      totalRows: "1",
+      totalMetaRows: "1",
       currentPage: 1,
       filter: null,
       pageOptions: [5, 10, 15],
@@ -284,7 +374,22 @@ export default {
           label: "Label ID"
         }
       },
+      selected: {
+        node_label: ""
+      },
+      metadata_table_fields: {
+        category: {
+          label: "Metadata Category"
+        },
+        metadata: {
+          label: "Field Data"
+        }
+      },
       form: {
+        metadata: {
+          category: "",
+          data: ""
+        },
         node_type: "",
         node_type_1: "",
         node_type_2: "",
@@ -299,10 +404,17 @@ export default {
       auth_header: {
         Authorization: localStorage.getItem("Authorization")
       },
-      labels_form: [],
+      options: {
+        label: [],
+        node: []
+      },
+      selected: {
+        node: null
+      },
       nodes_form: [],
       links_form: [],
       relationship_form: [],
+      metadata_list: [],
       search_list: [],
       labels_dict: {},
       nodes_dict: {},
@@ -406,8 +518,13 @@ export default {
           let labels = values[3].data["data"];
           let labels_dict_2 = {};
           for (var i = 0; i < labels.length; i++) {
-            this.labels_form.push(labels[i]["label_text"]);
-            labels_dict_2[labels[i]["label_id"]] = labels[i]["label_text"];
+            this.options.label.push({
+              value: {
+                label_id: labels[i]["label_id"],
+                label_text: labels[i]["label_text"]
+              },
+              text: labels[i]["label_text"]
+            });
             this.labels_dict[labels[i]["label_text"]] = labels[i]["label_id"];
 
             cy.add({
@@ -419,6 +536,7 @@ export default {
               }
             });
           }
+
           this.totalRows = nodes.length;
           for (var i = 0; i < nodes.length; i++) {
             this.nodes_form.push(nodes[i]["type"]);
@@ -497,8 +615,8 @@ export default {
       let node_details = {
         type: this.form.node_type
       };
-      if (this.form.node_label) {
-        node_details["label_id"] = this.labels_dict[this.form.node_label];
+      if (this.selected.node_label) {
+        node_details["label_id"] = this.labels_dict[this.selected.node_label];
       }
       this.axios({
         url: "http://127.0.0.1:5000/api/node/",
@@ -519,8 +637,8 @@ export default {
       let node_details = {
         node_id: this.nodes_dict[this.form.node_type]["nodes_id"]
       };
-      if (this.form.node_label) {
-        node_details["label_id"] = this.labels_dict[this.form.node_label];
+      if (this.selected.node_label) {
+        node_details["label_id"] = this.labels_dict[this.selected.node_label];
       }
       if (this.form.new_node_type) {
         node_details["type"] = this.form.new_node_type;
@@ -606,7 +724,46 @@ export default {
         }
       });
     },
-    addMetadata() {},
+    getMetadata() {
+      let node_id = this.nodes_dict[this.selected.node]["node_id"];
+      this.axios({
+        url: "http://127.0.0.1:5000/api/metadata/?node_id=" + node_id,
+        headers: this.auth_header,
+        method: "get"
+      }).then(response => {
+        let response_data = response["data"].data;
+        if (response_data.length != 0) {
+          this.totalMetaRows = response_data.length;
+          for (let i = 0; i < response_data.length; i++) {
+            this.metadata_list.push({
+              category: response_data[i]["category"],
+              metadata: response_data[i]["metadata"]
+            });
+          }
+        } else {
+          alert("No metadata for node");
+        }
+      });
+    },
+    addMetadata() {
+      let body_data = {
+        node_id: this.nodes_dict[this.selected.node]["node_id"],
+        category: this.form.metadata.category,
+        metadata: this.form.metadata.data
+      };
+      this.axios({
+        url: "http://127.0.0.1:5000/api/metadata/",
+        headers: this.auth_header,
+        method: "post",
+        data: body_data
+      }).then(response => {
+        if (response.data["message"].includes("Success")) {
+          alert("Added metadata to node");
+        } else {
+          alert("Failed to add metadata to node");
+        }
+      });
+    },
     changeMetadata() {},
     deleteMetadata() {},
     loadExpandCollapse() {
@@ -674,7 +831,7 @@ export default {
     resetVariables() {
       this.nodes_form = [];
       this.nodes_dict = {};
-      this.labels_form = [];
+      this.options.label = [];
       this.labels_dict = {};
       this.links_dict = {};
       this.links_form = [];
@@ -724,5 +881,12 @@ export default {
 #container {
   position: relative;
   padding-top: 45%;
+}
+#metadata_table {
+  position: relative;
+  padding-top: 30%;
+}
+#button_padding {
+  padding-top: 10px;
 }
 </style>
