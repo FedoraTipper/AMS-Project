@@ -10,4 +10,4 @@ Secret = Verysecretpassword
 Algorithm = HS256
 
 [PBKDF2]
-Secret = ThisIsAVerySecureSecret
+Secret = Sixteen byte key

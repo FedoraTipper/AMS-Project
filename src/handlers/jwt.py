@@ -1,17 +1,29 @@
 import handlers.config as ConfigHandler
 import jwt
+from Crypto.Cipher import AES
+from Crypto import Random
+import base64
 
 jwt_config = ConfigHandler.get_keys("JWT")
+hash_config = ConfigHandler.get_keys("PBKDF2")
+iv = Random.new().read(16)
+cipher = AES.new(hash_config[0], AES.MODE_CFB, iv)
+
 
 """
 Add random values on creation aka magic number
 """
 def create_token(uid, username, privilege):
-	return jwt.encode({"uid": uid, "username": username, "privilege": privilege}, jwt_config[0], algorithm=jwt_config[1])
+	token = jwt.encode({"uid": uid, "username": username, "privilege": privilege}, jwt_config[0], algorithm=jwt_config[1])
+	encrypt = cipher.encrypt((iv + bytes(token)))
+	return base64.b64encode(encrypt)
 
+def decrypt_token(encrypt):
+	return cipher.decrypt(base64.b64decode(encrypt))[len(iv):]
 
 def decode_token(encode):
-	return jwt.decode(encode, jwt_config[0], algorithm=[jwt_config[1]])
+	decrypt = decrypt_token(encode)
+	return jwt.decode(decrypt, jwt_config[0], algorithm=[jwt_config[1]])
 
 def determine_privilege(encode):
 	if len(encode) == 0:
@@ -27,7 +39,8 @@ def determine_privilege(encode):
 		return int(decoded_token["privilege"])
 
 def decode_userdata(encode):
-	decode = jwt.decode(encode, jwt_config[0], algorithm=[jwt_config[1]])
+	decrypted_token = decrypt_token(encode)
+	decode = jwt.decode(decrypted_token, jwt_config[0], algorithm=[jwt_config[1]])
 	return {"username": decode["username"], "uid": decode["uid"]}
 
 """

@@ -13,7 +13,10 @@ SQL_Statements.append("""CREATE TABLE labels
 (
  label_id   int NOT NULL AUTO_INCREMENT ,
  label_text varchar(255) NOT NULL ,
-PRIMARY KEY (label_id)
+ parent     int ,
+PRIMARY KEY (label_id),
+KEY fkIdx_155 (parent),
+CONSTRAINT FK_155 FOREIGN KEY fkIdx_155 (parent) REFERENCES labels (label_id)
 );""")
 
 SQL_Statements.append("""CREATE TABLE nodes
@@ -21,6 +24,7 @@ SQL_Statements.append("""CREATE TABLE nodes
  node_id  int NOT NULL AUTO_INCREMENT ,
  type     varchar(255) NOT NULL ,
  label_id int ,
+ icon     varchar(500) ,
 PRIMARY KEY (node_id),
 KEY fkIdx_123 (label_id),
 CONSTRAINT FK_123 FOREIGN KEY fkIdx_123 (label_id) REFERENCES labels (label_id)

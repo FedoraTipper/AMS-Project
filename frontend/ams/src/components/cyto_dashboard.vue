@@ -230,11 +230,6 @@
                       </b-input-group>
                     </b-form-group>
                   </b-col>
-                  <b-col md="10" class="my-1">
-                    <b-form-group label-cols-sm="3" label="Per page" class="mb-0">
-                      <b-form-select :options="pageOptions" v-model="perPage"/>
-                    </b-form-group>
-                  </b-col>
                 </b-row>
 
                 <!-- Main table element -->
@@ -378,6 +373,9 @@ export default {
         node_label: ""
       },
       metadata_table_fields: {
+        meta_id: {
+          label: "Metadata ID"
+        },
         category: {
           label: "Metadata Category"
         },
@@ -431,7 +429,8 @@ export default {
             style: {
               shape: "hexagon",
               "background-color": "#0d47a1",
-              label: "data(name)"
+              label: "data(name)",
+              "background-image": "data(imglink)"
             }
           },
           {
@@ -532,7 +531,8 @@ export default {
               data: {
                 id: "label_" + labels[i]["label_id"],
                 name: labels[i]["label_text"],
-                label_collection: labels[i]["label_text"]
+                label_collection: labels[i]["label_text"],
+                imglink: "null"
               }
             });
           }
@@ -562,14 +562,15 @@ export default {
                 label_id: "Null"
               });
             }
-
             cy.add({
               group: "nodes",
               data: {
                 id: nodes[i]["node_id"],
                 name: nodes[i]["type"],
                 parent: "label_" + nodes[i]["label_id"],
-                label_collection: labels_dict_2[nodes[i]["label_id"]]
+                label_collection: labels_dict_2[nodes[i]["label_id"]],
+                imglink:
+                  "https://farm8.staticflickr.com/7272/7633179468_3e19e45a0c_b.jpg"
               }
             });
           }
@@ -736,6 +737,7 @@ export default {
           this.totalMetaRows = response_data.length;
           for (let i = 0; i < response_data.length; i++) {
             this.metadata_list.push({
+              meta_id: response_data[i]["meta_id"],
               category: response_data[i]["category"],
               metadata: response_data[i]["metadata"]
             });
