@@ -437,7 +437,8 @@ export default {
               shape: "hexagon",
               "background-color": "#0d47a1",
               label: "data(name)",
-              "background-image": "data(imglink)"
+              "background-image": "data(imglink)",
+              "background-fit": "cover"
             }
           },
           {
@@ -571,7 +572,8 @@ export default {
             }
             let icon_link = "";
             if (nodes[i]["icon"]) {
-              icon_link = nodes[i]["icon"];
+              icon_link =
+                "https://cors-anywhere.herokuapp.com/" + nodes[i]["icon"];
             } else {
               icon_link = "null";
             }

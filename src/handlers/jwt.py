@@ -9,7 +9,6 @@ hash_config = ConfigHandler.get_keys("PBKDF2")
 iv = Random.new().read(16)
 cipher = AES.new(hash_config[0], AES.MODE_CFB, iv)
 
-
 """
 Function to create a JWT token that is encrypted with AES
 Inputs: User_ID; username; privilege
@@ -74,7 +73,8 @@ def decode_userdata(encode):
 Function to authorise any action that a user requests
 Inputs: tornado object to write messages; privilege level that needs to be checked against
 Output: None if authorisation failed and message; Or the decoded token
-Caveats: 
+Caveats:
+	Privilege levels:
 	0: Any level
 	1: User level privilege
 	2: Admin level privilege
