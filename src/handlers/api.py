@@ -433,7 +433,7 @@ class Metadata(SetDefaultHeaders):
                                                                 metadata_dict)
 
         try:
-            LoggerHandler.log_message("add", formatted_message)
+            LoggerHandler.log_message("change", formatted_message)
         except:
             pass
 

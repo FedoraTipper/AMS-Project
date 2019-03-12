@@ -12,7 +12,7 @@
     >
       <b-dropdown-item @click="modal_node_show=true">Node</b-dropdown-item>
       <b-dropdown-item @click="modal_link_show=true">Link</b-dropdown-item>
-      <b-dropdown-item @click="perpareMetaModal()">Metadata</b-dropdown-item>
+      <b-dropdown-item @click="modal_metadata_show=true">Metadata</b-dropdown-item>
     </b-dropdown>
     <b-button @click="modal_search_show=true" variant="primary" id="overlay-button-2" size="lg">🔍</b-button>
     <b-modal size="xl" v-model="modal_search_show" title="Search" ok-only>
@@ -302,30 +302,36 @@
           </b-form>
         </b-tab>
         <b-tab title="Change">
-          <b-form @submit="changeNode">
-            <b-form-group
-              id="Node_Type_group"
-              label="Select node:"
-              required
-              label-for="node_dropdown"
-            >
-              <b-form-select
-                id="old_node_dropdown"
-                :options="nodes_form"
-                required
-                v-model="form.node_type"
-              />
+          <b-form @submit="changeMetadata">
+            <b-form-group label="Select Metadata ID:">
+              <b-form-select required :options="metadata_form" v-model="selected.metadata"/>
             </b-form-group>
-            <b-input-group prepend="New Type" required class="mt-3">
-              <b-form-input v-model="form.new_node_type"/>
+            <b-form-group label="Select Node:" label-for="node_id_2">
+              <b-form-select :options="nodes_form" v-model="selected.node"/>
+            </b-form-group>
+            <b-input-group prepend="Category" required class="mt-3">
+              <b-form-input v-model="form.metadata.category"/>
             </b-input-group>
-            <b-form-group id="Label_id_group" label="Collection label:" label-for="label_dropdown">
-              <b-form-select
-                id="label_dropdown"
-                :options="options.label"
-                v-model="selected.node_label"
-              />
+            <b-input-group prepend="Metadata" required class="mt-3">
+              <b-form-input v-model="form.metadata.data"/>
+            </b-input-group>
+            <b-button type="submit" variant="primary">Change Metadata</b-button>
+          </b-form>
+        </b-tab>
+        <b-tab title="Delete">
+          <b-form @submit="changeMetadata">
+            <b-form-group label="Select Metadata ID:">
+              <b-form-select required :options="metadata_form" v-model="selected.metadata"/>
             </b-form-group>
+            <b-form-group label="Select Node:" label-for="node_id_2">
+              <b-form-select :options="nodes_form" v-model="selected.node"/>
+            </b-form-group>
+            <b-input-group prepend="Category" required class="mt-3">
+              <b-form-input v-model="form.metadata.category"/>
+            </b-input-group>
+            <b-input-group prepend="Metadata" required class="mt-3">
+              <b-form-input v-model="form.metadata.data"/>
+            </b-input-group>
             <b-button type="submit" variant="primary">Change Metadata</b-button>
           </b-form>
         </b-tab>
@@ -383,7 +389,8 @@ export default {
       },
       selected: {
         node_label: "",
-        link: ""
+        link: "",
+        metadata: ""
       },
       metadata_table_fields: {
         meta_id: {
@@ -432,6 +439,7 @@ export default {
       nodes_dict: {},
       links_dict: {},
       relationship_dict: {},
+      metadata_form: [],
       config: {
         panningEnabled: true,
         fit: false,
@@ -520,12 +528,18 @@ export default {
             url: "http://127.0.0.1:5000/api/label/",
             headers: this.auth_header,
             method: "get"
+          }),
+          this.axios({
+            url: "http://127.0.0.1:5000/api/metadata/",
+            headers: this.auth_header,
+            method: "get"
           })
         ];
         Promise.all(requests).then(values => {
           nodes = values[0].data["data"];
           links = values[1].data["data"];
           let relation_response = values[2].data["data"];
+          let metadata_response = values[4].data["data"];
           for (var i = 0; i < relation_response.length; i++) {
             this.relationship_form.push(relation_response[i]["message"]);
             this.relationship_dict[relation_response[i]["message"]] =
@@ -625,6 +639,11 @@ export default {
               }
             });
           }
+
+          for (let i = 0; i < metadata_response.length; i++) {
+            this.metadata_form.push(metadata_response[i]["meta_id"]);
+          }
+
           cy.layout({
             name: "cose-bilkent",
             nodeRepulsion: 30000,
@@ -838,7 +857,32 @@ export default {
         }
       });
     },
-    changeMetadata() {},
+    changeMetadata() {
+      let body_data = {
+        meta_id: this.selected.metadata
+      };
+      if (this.selected.node) {
+        body_data["node_id"] = this.nodes_dict[this.selected.node]["node_id"];
+      }
+      if (this.form.metadata.category) {
+        body_data["category"] = this.form.metadata.category;
+      }
+      if (this.form.metadata.data) {
+        body_data["metadata"] = this.form.metadata.data;
+      }
+      this.axios({
+        url: "http://127.0.0.1:5000/api/metadata/",
+        headers: this.auth_header,
+        method: "put",
+        data: body_data
+      }).then(response => {
+        if (response.data["message"].includes("Success")) {
+          alert("Changed metadata");
+        } else {
+          alert("Failed to change metadata");
+        }
+      });
+    },
     deleteMetadata() {},
     loadExpandCollapse() {
       this.$cytoscape.instance.then(cy => {
@@ -913,9 +957,7 @@ export default {
       this.relationship = [];
       this.search_list = [];
       this.relationships_form = [];
-    },
-    perpareMetaModal() {
-      modal_metadata_show = true;
+      this.metadata_form = [];
     }
   },
   mounted: function() {
