@@ -8,11 +8,11 @@ _table_ = "metadata"
 def create_category(metadata_dict, torn):
 	if NodeUtil.node_id_exists(metadata_dict["node_id"]) == False:
 		torn.write({"message": "Node does not exist"})
-		return None
+		return False
 
 	if category_exists(metadata_dict["category"], metadata_dict["node_id"]):
 		torn.write({"message": "Metadata category for the specified node already exists"})
-		return None
+		return False
 
 	conn.execute(SQLUtil.build_insert_statement(_table_, metadata_dict))
 	return ""
@@ -37,17 +37,17 @@ def get_metadata_id(category, node_id):
 def change_metadata(metadata_id, metadata_dict, torn):
 	if metadata_exists(metadata_id) == False:
 		torn.write({"message": "Metadata ID does not exist"})
-		return None
+		return False
 
 	if "node_id" in metadata_dict:
 		if NodeUtil.node_id_exists(metadata_dict["node_id"]) == False:
 			torn.write({"message": "Node does not exist"})
-			return None
+			return False
 
 	if "category" in metadata_dict:
 		if category_exists(metadata_dict["category"], metadata_dict["node_id"]):
 			torn.write({"message": "Metadata category already exists"})
-			return None
+			return False
 
 	statement = SQLUtil.build_update_statement(_table_, metadata_dict) + " WHERE meta_id = %d;" % metadata_id
 	conn.execute(statement)
@@ -57,9 +57,9 @@ def change_metadata(metadata_id, metadata_dict, torn):
 def delete_metadata(metadata_id, torn):
 	if metadata_exists(metadata_id) == False:
 		torn.write({"message": "Node does not exist"})
-		return None
+		return False
 	conn.execute("DELETE FROM {} WHERE meta_id = {}".format(_table_, metadata_id))
-	return None
+	return False
 
 def delete_metadata_with_node(node_id):
 	conn.execute("DELETE FROM {} WHERE node_id = {}".format(_table_, int(node_id)))

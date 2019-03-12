@@ -8,9 +8,9 @@ _table_ = "labels"
 def create_label(label_dict, torn):
 	if label_exists(label_dict["label_text"]):
 		torn.write({'message': "Label exists"})
-		return None
+		return False
 	conn.execute(SQLUtil.build_insert_statement(_table_, label_dict))
-	#Return random object that is not None
+	#Return random object that is not False
 	return ""
 
 
@@ -37,10 +37,10 @@ def get_label_id(label_text):
 def change_label(label_id, label_dict, torn):
 	if label_id_exists(label_id) == False:
 		torn.write({"message": "Label does not exist"})
-		return None
+		return False
 	if label_exists(label_dict["label_text"]):
 		torn.write({"message": "New label text already exists"})
-		return None
+		return False
 	statement = SQLUtil.build_update_statement(_table_, label_dict) + " WHERE label_id = %d;" % int(label_id)
 	conn.execute(statement)
 	return ""
@@ -49,9 +49,9 @@ def change_label(label_id, label_dict, torn):
 def delete_label(label_id, torn):
 	if label_id_exists(label_id) == False:
 		torn.write({"message": "Label does not exist"})
-		return None
+		return False
 	_table_s = {"links", "nodes"}
-	null_dict = {"label_id": None}
+	null_dict = {"label_id": False}
 	statements = SQLUtil.build_nullify_statements(_table_, null_dict)
 	statements.append("DELETE FROM {}".format(_table_))
 	

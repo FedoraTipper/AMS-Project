@@ -14,27 +14,25 @@ Node ids are stored in ascending order
 def create_link(link_dict, torn):
 	if check_nodes_exist(link_dict["node_id_1"], link_dict["node_id_2"]) == False:
 		torn.write({"message":"One of nodes in the the link does not exist"})
-		return None
-
-	link_dict = sort_node_ids(link_dict)
+		return False
 
 	if link_dict["node_id_1"] == link_dict["node_id_2"]:
 		torn.write({"message":"Links from and to the same node are not allowed"})
-		return None
+		return False
 
 	if link_relation_exists(link_dict["node_id_1"], link_dict["node_id_2"]):
 		torn.write({"message":"Link between the two nodes already exists"})
-		return None
+		return False
 
 	if "label_id" in link_dict:
 		if LabelUtil.label_id_exists(link_dict["label_id"]) == False:
 			torn.write({"message":"Label does not exist"})
-			return None
+			return False
 
 	if "relationship_id" in link_dict:
 		if RelationshipUtil.relationship_id_exists(link_dict["relationship_id"]) == False:
 			torn.write({"message":"Relationship does not exist"})
-			return None
+			return False
 
 	conn.execute(SQLUtil.build_insert_statement(_table_, link_dict))
 	return ""
@@ -43,7 +41,7 @@ def link_exists(link_id):
 	return int(conn.execute("SELECT COUNT(link_id) FROM {} WHERE link_id = {};".format(_table_, int(link_id))).fetchall()[0][0]) != 0
 
 def link_relation_exists(node_id_1, node_id_2):
-	return int(conn.execute("SELECT COUNT(link_id) FROM {} WHERE node_id_1 = {} AND node_id_2 = {}".format(_table_, node_id_1, node_id_2)).fetchall()[0][0]) != 0
+	return int(conn.execute("SELECT COUNT(link_id) FROM {0} WHERE (node_id_1 = {1} AND node_id_2 = {2}) AND (node_id_1 = {2} AND node_id_2 = {1});".format(_table_, int(node_id_1), int(node_id_2))).fetchall()[0][0]) != 0
 
 def get_links():
 	links = conn.execute("SELECT link_id, node_id_1, node_id_2, label_id, relationship_id FROM %s" % (_table_))
@@ -60,7 +58,7 @@ def change_link(link_id, link_dict, torn):
 
 	if link_exists(link_id) == False:
 		torn.write({"message":"Link does not exist"})
-		return None
+		return False
 
 	check = True
 	if "node_id_1" in link_dict or "node_id_2" in link_dict:
@@ -75,17 +73,15 @@ def change_link(link_id, link_dict, torn):
 
 		if check == True and check_nodes_exist(link_dict["node_id_1"], link_dict["node_id_2"]) == False:
 			torn.write({"message":"One of nodes in the the link does not exist"})
-			return None
+			return False
 
 		if link_dict["node_id_1"] == link_dict["node_id_2"]:
 			torn.write({"message":"Links from and to the same node are not allowed"})
-			return None
-
-		link_dict = sort_node_ids(link_dict)
+			return False
 
 		if link_relation_exists(link_dict["node_id_1"], link_dict["node_id_2"]):
 			torn.write({"message":"Link between the two nodes already exists"})
-			return None
+			return False
 	conn.execute(SQLUtil.build_update_statement(_table_, link_dict) + " WHERE link_id = %d;" % (int(link_id)))
 	return ""
 
@@ -99,7 +95,7 @@ def sort_node_ids(link_dict):
 def delete_link(link_id, torn):
 	if link_exists(link_id) == False:
 		torn.write({"message":"Link does not exist"})
-		return None
+		return False
 	conn.execute("DELETE FROM {} WHERE link_id = {}".format(_table_, int(link_id)))
 	return ""
 

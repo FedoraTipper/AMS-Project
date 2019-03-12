@@ -15,7 +15,7 @@ Caveats: Check if the node type already exists
 def create_node(node_dict, torn):
 	if node_exists(node_dict["type"]):
 		torn.write({'message': "Node type exists"})
-		return None
+		return False
 	conn.execute(SQLUtil.build_insert_statement(_table_, node_dict))
 	return True
 
@@ -75,15 +75,15 @@ Caveats: Check if the node and any FK objects exists
 def change_node(node_id, node_dict, torn):
 	if node_id_exists(node_id) == False:
 		torn.write({'message': "Node does not exist"})
-		return None
+		return False
 	if "type" in node_dict:
 		if node_exists(node_dict["type"]):
 			torn.write({"message": "New node type already exists"})
-			return None
+			return False
 	if "label_id" in node_dict:
 		if LabelUtil.label_id_exists(node_dict["label_id"]) == False:
 			torn.write({"message": "Label id does not exist"})
-			return None
+			return False
 
 	statement = SQLUtil.build_update_statement(_table_, node_dict) + " WHERE node_id = %d;" % node_id
 	conn.execute(statement)
@@ -98,7 +98,7 @@ Caveats: Check if the node id already exists
 def delete_node(node_id, torn):
 	if node_id_exists(node_id) == False:
 		torn.write({"message":"Node does not exist"})
-		return 
+		return False
 	#Import module in function. Not allowed to cross reference
 	import utilities.link as LinkUtil
 	#Delete all links that contain the node id

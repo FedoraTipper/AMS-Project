@@ -85,6 +85,6 @@ def authorize_action(torn, priv_level):
 	if determine_privilege(encoded_token) < priv_level:
 		torn.write({"message":"Authorization failed"})
 		torn.add_header("Authorization", "")
-		return None
+		return False
 
 	return decode_token(encoded_token)

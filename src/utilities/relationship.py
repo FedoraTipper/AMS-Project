@@ -19,7 +19,7 @@ def get_relationship_id(message):
 def create_relationship(relationship_dict, torn):
 	if relationship_exists(relationship_dict["message"]):
 		torn.write({"message":"Relationship message already exists"})
-		return None
+		return False
 	conn.execute(SQLUtil.build_insert_statement(_table_, relationship_dict))
 	return ""
 
@@ -32,20 +32,20 @@ def relationship_id_exists(relationship_id):
 def change_relationship(relationship_id, relationship_dict, torn):
 	if relationship_id_exists(relationship_id) == False:
 		torn.write({"message":"Relationship does not exists"})
-		return None
+		return False
 
 	if relationship_exists(relationship_dict["message"]):
 		torn.write({"message":"New relationship message exists"})
-		return None
+		return False
 
 	conn.execute(SQL.build_update_statement(_table_, relationship_dict) + " WHERE relationship_id = {}".format(int(relationship_id)))
 
 def delete_relationship(relationship_id, torn):
 	if relationship_id_exists(relationship_id) == False:
 		torn.write({"message": "Relationship id does not exist"})
-		return None
+		return False
 	_table_ = {"links"}
-	null_dict = {"relationship_id": None}
+	null_dict = {"relationship_id": False}
 	#Create SQL statements to set relationship ID in FK _table_s to NULL
 	statements = SQLUtil.build_nullify_statements(_table_s, null_dict)
 	statements.append("DELETE FROM {}".format(_table_))

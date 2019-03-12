@@ -60,7 +60,7 @@ Caveats: Password is hashed using pbkdf sha256 with 48k rounds and salt size of 
 def create_user(user_dict, torn):
 	if user_exists(user_dict["username"]):
 		torn.write({"message":"Username already exists"})
-		return None
+		return False
 	if "privilege" not in user_dict:
 		user_dict["privilege"] = 0
 	user_dict["username"] = user_dict["username"].lower()

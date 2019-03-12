@@ -12,7 +12,7 @@
     >
       <b-dropdown-item @click="modal_node_show=true">Node</b-dropdown-item>
       <b-dropdown-item @click="modal_link_show=true">Link</b-dropdown-item>
-      <b-dropdown-item @click="modal_metadata_show=true">Metadata</b-dropdown-item>
+      <b-dropdown-item @click="perpareMetaModal()">Metadata</b-dropdown-item>
     </b-dropdown>
     <b-button @click="modal_search_show=true" variant="primary" id="overlay-button-2" size="lg">🔍</b-button>
     <b-modal size="xl" v-model="modal_search_show" title="Search" ok-only>
@@ -187,20 +187,26 @@
         </b-tab>
         <b-tab title="Change">
           <b-form @submit="changeLink">
-            <b-form-group label="Select link:">
-              <b-form-select :options="links_form" required v-model="form.link_type"/>
+            <b-form-group label="Select link to change:" required label-for="label_dropdown">
+              <b-form-select required :options="links_form" v-model="selected.link"/>
             </b-form-group>
-            <b-input-group prepend="New Type" required class="mt-3">
-              <b-form-input v-model="form.new_node_type"/>
-            </b-input-group>
+            <b-form-group label="Source:">
+              <b-form-select id="label_dropdown" :options="nodes_form" v-model="form.node_type_1"/>
+            </b-form-group>
+            <b-form-group id="Label_id_group" label="Target:" label-for="node_id_2">
+              <b-form-select id="label_dropdown" :options="nodes_form" v-model="form.node_type_2"/>
+            </b-form-group>
             <b-form-group id="Label_id_group" label="Collection label:" label-for="label_dropdown">
               <b-form-select
                 id="label_dropdown"
                 :options="options.label"
-                v-model="selected.node_label"
+                v-model="form.link_label"
               />
             </b-form-group>
-            <b-button type="submit" variant="primary">Change Node</b-button>
+            <b-form-group label="Relationship:" label-for="label_dropdown">
+              <b-form-select :options="relationship_form" v-model="form.relationship"/>
+            </b-form-group>
+            <b-button type="submit" variant="primary">Change Link</b-button>
           </b-form>
         </b-tab>
         <b-tab title="Delete">
@@ -376,7 +382,8 @@ export default {
         }
       },
       selected: {
-        node_label: ""
+        node_label: "",
+        link: ""
       },
       metadata_table_fields: {
         meta_id: {
@@ -438,14 +445,19 @@ export default {
               "background-color": "#0d47a1",
               label: "data(name)",
               "background-image": "data(imglink)",
-              "background-fit": "cover"
+              "background-fit": "cover",
+              height: 24,
+              width: 24
             }
           },
           {
             selector: "edge",
             style: {
               "line-color": "#42a5f5",
-              label: "data(name)"
+              label: "data(name)",
+              "curve-style": "straight",
+              "target-arrow-color": "#0d47a1",
+              "target-arrow-shape": "triangle"
             }
           },
           {
@@ -533,7 +545,7 @@ export default {
               text: labels[i]["label_text"]
             });
             this.labels_dict[labels[i]["label_text"]] = labels[i]["label_id"];
-
+            labels_dict_2[labels[i]["label_id"]] = labels[i]["label_text"];
             cy.add({
               group: "nodes",
               data: {
@@ -613,9 +625,15 @@ export default {
               }
             });
           }
-          cy.layout({ name: "cose-bilkent" }).run();
+          cy.layout({
+            name: "cose-bilkent",
+            nodeRepulsion: 30000,
+            fit: true,
+            padding: 150,
+            nestingFactor: 0.2,
+            gravity: 0.1
+          }).run();
         });
-        cy.center();
         //Bind clicking a node, to load collection value
         cy.on("click", "node", evt => {
           this.form.NDataType = evt.target.data()["name"];
@@ -726,8 +744,40 @@ export default {
       });
     },
     changeLink() {
-      // let link_details = {
-      // }
+      let link_details = {
+        link_id: this.links_dict[this.selected.link]
+      };
+      if (this.form.node_type_1) {
+        link_details["node_id_1"] = this.nodes_dict[this.form.node_type_1][
+          "node_id"
+        ];
+      }
+      if (this.form.node_type_2) {
+        link_details["node_id_2"] = this.nodes_dict[this.form.node_type_2][
+          "node_id"
+        ];
+      }
+      if (this.form.link_label) {
+        link_details["label_id"] = this.links_dict[this.form.link_label];
+      }
+      if (this.form.relationship) {
+        link_details["relationship_id"] = this.relationship_dict[
+          this.form.relationship
+        ];
+      }
+      this.axios({
+        url: "http://127.0.0.1:5000/api/link/",
+        headers: this.auth_header,
+        method: "put",
+        data: link_details
+      }).then(response => {
+        if (response.data["message"].includes("Success")) {
+          this.cyUpdate();
+          alert("Changed link");
+        } else {
+          alert("Failed to change new link");
+        }
+      });
     },
     deleteLink() {
       let link_details = {
@@ -863,6 +913,9 @@ export default {
       this.relationship = [];
       this.search_list = [];
       this.relationships_form = [];
+    },
+    perpareMetaModal() {
+      modal_metadata_show = true;
     }
   },
   mounted: function() {
