@@ -15,6 +15,10 @@ def create_label(label_dict, torn):
 	if label_exists(label_dict["label_text"]):
 		torn.write({'message': "Label exists"})
 		return False
+	if (label_dict["parent"] is not None):
+		if (label_id_exists(label_dict["parent"]) == False):
+			torn.write({"message": "Parent label does not exist"})
+			return False
 	conn.execute(SQLUtil.build_insert_statement(_table_, label_dict))
 	return True
 
@@ -43,7 +47,7 @@ Output: JSON formatted string of column names and respective values
 Caveats: None
 """
 def get_labels():
-	labels = conn.execute("SELECT label_id, label_text FROM %s" % (_table_))
+	labels = conn.execute("SELECT label_id, label_text, parent FROM %s" % (_table_))
 	return {'data': [dict(zip(tuple (labels.keys()) ,i)) for i in labels.cursor]}
 
 """
@@ -53,7 +57,7 @@ Output: JSON formatted string of column names and respective values
 Caveats: None
 """
 def get_label(label_id):
-	label = conn.execute("SELECT label_text FROM %s WHERE label_id = %d" % (_table_, int(label_id)))
+	label = conn.execute("SELECT label_text, parent FROM %s WHERE label_id = %d" % (_table_, int(label_id)))
 	return {'data': [dict(zip(tuple (label.keys()) ,i)) for i in label.cursor]}
 
 """
@@ -69,15 +73,20 @@ def get_label_id(label_text):
 Function to change a label record's data
 Inputs: Label ID; Dictionary of label values; Tornado object
 Output: True if operation was successful, False if the operation was not
-Caveats: Determine if the label ID exists and whether the text exists
+Caveats: Determine if the label ID exists and whether the text exists as well as parent label
 """
 def change_label(label_id, label_dict, torn):
 	if label_id_exists(label_id) == False:
 		torn.write({"message": "Label does not exist"})
 		return False
-	if label_exists(label_dict["label_text"]):
-		torn.write({"message": "New label text already exists"})
-		return False
+	if (label_dict["label_text"] is not None):
+		if (label_exists(label_dict["label_text"])):
+			torn.write({"message": "New label text already exists"})
+			return False
+	if (label_dict["parent"] is not None):
+		if (label_id_exists(label_dict["parent"]) == False):
+			torn.write({"message": "Parent label does not exist"})
+			return False
 	statement = SQLUtil.build_update_statement(_table_, label_dict) + " WHERE label_id = %d;" % int(label_id)
 	conn.execute(statement)
 	return True
@@ -92,12 +101,16 @@ def delete_label(label_id, torn):
 	if label_id_exists(label_id) == False:
 		torn.write({"message": "Label does not exist"})
 		return False
-	_table_s = {"links", "nodes"}
-	null_dict = {"label_id": False}
-	statements = SQLUtil.build_nullify_statements(_table_, null_dict)
+	_alt_table_ = {"links", "nodes"}
+	null_dict = {"label_id": None}
+	statements = SQLUtil.build_nullify_statements(_alt_table_, null_dict)
 	statements.append("DELETE FROM {}".format(_table_))
 	
+	null_dict = {"parent": None}
+	parent_statement = SQLUtil.build_update_statement(_table_, null_dict)
+	conn.execute(parent_statement + " WHERE parent = {};".format(int(label_id)))
+
 	for sql_statement in statements:
 		conn.execute(sql_statement + " WHERE label_id = {};".format(int(label_id)))
 
-	return true
+	return True

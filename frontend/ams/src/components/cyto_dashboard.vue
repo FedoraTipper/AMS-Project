@@ -545,11 +545,13 @@ export default {
             });
             this.labels_dict[labels[i]["label_text"]] = labels[i]["label_id"];
             labels_dict_2[labels[i]["label_id"]] = labels[i]["label_text"];
+
             cy.add({
               group: "nodes",
               data: {
                 id: "label_" + labels[i]["label_id"],
                 name: labels[i]["label_text"],
+                parent: "label_" + labels[i]["parent"],
                 label_collection: labels[i]["label_text"],
                 imglink: "null"
               }
@@ -644,7 +646,9 @@ export default {
       });
     },
     preConfig(cytoscape) {
-      expandCollapse(cytoscape, jquery);
+      try {
+        expandCollapse(cytoscape, jquery);
+      } catch {}
       cytoscape.use(cosebilkent);
     },
     addNode() {
@@ -674,10 +678,11 @@ export default {
     },
     changeNode() {
       let node_details = {
-        node_id: this.nodes_dict[this.form.node_type]["node_id"]
+        node_id: this.nodes_dict[this.form.node_type]["nodes_id"]
       };
       if (this.selected.node_label) {
-        node_details["label_id"] = this.labels_dict[this.selected.node_label];
+        console.log(this.selected.node_label["label_id"]);
+        node_details["label_id"] = this.selected.node_label["label_id"];
       }
       if (this.form.new_node_type) {
         node_details["type"] = this.form.new_node_type;
@@ -685,6 +690,7 @@ export default {
       if (this.form.icon) {
         node_details["icon"] = this.form.icon;
       }
+      console.log(node_details);
 
       this.axios({
         url: "http://127.0.0.1:5000/api/node/",
@@ -696,6 +702,7 @@ export default {
           alert("Changed Node");
           this.cyUpdate();
         } else {
+          console.log(response.data["message"]);
           alert("Failed to change node");
         }
       });

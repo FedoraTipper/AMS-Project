@@ -79,28 +79,10 @@ PRIMARY KEY (message_id)
 
 SQL_Statements.append("""CREATE TABLE logs
 (
- log_id     int NOT NULL AUTO_INCREMENT ,
- user_id    int NOT NULL ,
- node_id    int ,
- link_id    int ,
- meta_id    int ,
- label_id   int ,
- message_id int NOT NULL ,
-PRIMARY KEY (log_id),
-KEY fkIdx_128 (meta_id),
-CONSTRAINT FK_128 FOREIGN KEY fkIdx_128 (meta_id) REFERENCES metadata (meta_id),
-KEY fkIdx_131 (label_id),
-CONSTRAINT FK_131 FOREIGN KEY fkIdx_131 (label_id) REFERENCES labels (label_id),
-KEY fkIdx_139 (message_id),
-CONSTRAINT FK_139 FOREIGN KEY fkIdx_139 (message_id) REFERENCES messages (message_id),
-KEY fkIdx_66 (user_id),
-CONSTRAINT FK_66 FOREIGN KEY fkIdx_66 (user_id) REFERENCES user (user_id),
-KEY fkIdx_69 (node_id),
-CONSTRAINT FK_69 FOREIGN KEY fkIdx_69 (node_id) REFERENCES nodes (node_id),
-KEY fkIdx_95 (link_id),
-CONSTRAINT FK_95 FOREIGN KEY fkIdx_95 (link_id) REFERENCES links (link_id)
-);
-""")
+ log_id  int NOT NULL AUTO_INCREMENT ,
+ message varchar(2000) NOT NULL ,
+PRIMARY KEY (log_id)
+);""")
 
 
 import handlers.mysqldb as DBHandler

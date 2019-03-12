@@ -120,7 +120,7 @@ class Label(SetDefaultHeaders):
         
         userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
-        body_categories = {"label_text": 1}
+        body_categories = {"label_text": 1, "parent": 0}
         label_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if label_dict == False or LabelUtil.create_label(label_dict, self) == False:
@@ -144,7 +144,7 @@ class Label(SetDefaultHeaders):
 
         userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
-        body_categories = {"label_id": 1, "label_text": 1}
+        body_categories = {"label_id": 1, "label_text": 0, "parent": 0}
         label_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if label_dict == False:
