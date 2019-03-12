@@ -319,20 +319,11 @@
           </b-form>
         </b-tab>
         <b-tab title="Delete">
-          <b-form @submit="changeMetadata">
+          <b-form @submit="deleteMetadata">
             <b-form-group label="Select Metadata ID:">
               <b-form-select required :options="metadata_form" v-model="selected.metadata"/>
             </b-form-group>
-            <b-form-group label="Select Node:" label-for="node_id_2">
-              <b-form-select :options="nodes_form" v-model="selected.node"/>
-            </b-form-group>
-            <b-input-group prepend="Category" required class="mt-3">
-              <b-form-input v-model="form.metadata.category"/>
-            </b-input-group>
-            <b-input-group prepend="Metadata" required class="mt-3">
-              <b-form-input v-model="form.metadata.data"/>
-            </b-input-group>
-            <b-button type="submit" variant="primary">Change Metadata</b-button>
+            <b-button type="submit" variant="danger">Delete Metadata</b-button>
           </b-form>
         </b-tab>
       </b-tabs>
@@ -528,18 +519,12 @@ export default {
             url: "http://127.0.0.1:5000/api/label/",
             headers: this.auth_header,
             method: "get"
-          }),
-          this.axios({
-            url: "http://127.0.0.1:5000/api/metadata/",
-            headers: this.auth_header,
-            method: "get"
           })
         ];
         Promise.all(requests).then(values => {
           nodes = values[0].data["data"];
           links = values[1].data["data"];
           let relation_response = values[2].data["data"];
-          let metadata_response = values[4].data["data"];
           for (var i = 0; i < relation_response.length; i++) {
             this.relationship_form.push(relation_response[i]["message"]);
             this.relationship_dict[relation_response[i]["message"]] =
@@ -640,9 +625,7 @@ export default {
             });
           }
 
-          for (let i = 0; i < metadata_response.length; i++) {
-            this.metadata_form.push(metadata_response[i]["meta_id"]);
-          }
+          this.init_metadata_list();
 
           cy.layout({
             name: "cose-bilkent",
@@ -852,6 +835,7 @@ export default {
       }).then(response => {
         if (response.data["message"].includes("Success")) {
           alert("Added metadata to node");
+          this.init_metadata_list();
         } else {
           alert("Failed to add metadata to node");
         }
@@ -883,7 +867,24 @@ export default {
         }
       });
     },
-    deleteMetadata() {},
+    deleteMetadata() {
+      let body_data = {
+        meta_id: this.selected.metadata
+      };
+      this.axios({
+        url: "http://127.0.0.1:5000/api/metadata/",
+        headers: this.auth_header,
+        method: "delete",
+        data: body_data
+      }).then(response => {
+        if (response.data["message"].includes("Success")) {
+          alert("Deleted metadata");
+          this.init_metadata_list();
+        } else {
+          alert("Failed to delete metadata");
+        }
+      });
+    },
     loadExpandCollapse() {
       this.$cytoscape.instance.then(cy => {
         let api = "";
@@ -958,6 +959,19 @@ export default {
       this.search_list = [];
       this.relationships_form = [];
       this.metadata_form = [];
+    },
+    init_metadata_list() {
+      this.metadata_form = [];
+      this.axios({
+        url: "http://127.0.0.1:5000/api/metadata/",
+        headers: this.auth_header,
+        method: "get"
+      }).then(response => {
+        let metadata_response = response.data["data"];
+        for (let i = 0; i < metadata_response.length; i++) {
+          this.metadata_form.push(metadata_response[i]["meta_id"]);
+        }
+      });
     }
   },
   mounted: function() {

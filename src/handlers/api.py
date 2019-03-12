@@ -449,6 +449,7 @@ class Metadata(SetDefaultHeaders):
         metadata_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if metadata_dict == False or MetaUtil.delete_metadata(metadata_dict["meta_id"], self) == False:
+            console.log("aaaa")
             return None
 
         formatted_message = LoggerHandler.form_delete_message_dictionary(userdata, 
