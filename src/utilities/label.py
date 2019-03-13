@@ -15,7 +15,7 @@ def create_label(label_dict, torn):
 	if label_exists(label_dict["label_text"]):
 		torn.write({'message': "Label exists"})
 		return False
-	if (label_dict["parent"] is not None):
+	if ("parent" in label_dict and label_dict["parent"] is not None):
 		if (label_id_exists(label_dict["parent"]) == False):
 			torn.write({"message": "Parent label does not exist"})
 			return False
@@ -83,7 +83,7 @@ def change_label(label_id, label_dict, torn):
 		if (label_exists(label_dict["label_text"])):
 			torn.write({"message": "New label text already exists"})
 			return False
-	if (label_dict["parent"] is not None):
+	if ("parent" in label_dict and label_dict["parent"] is not None):
 		if (label_id_exists(label_dict["parent"]) == False):
 			torn.write({"message": "Parent label does not exist"})
 			return False

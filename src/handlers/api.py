@@ -492,7 +492,7 @@ class Relationship(SetDefaultHeaders):
 
         formatted_message = LoggerHandler.form_message_dictionary(userdata, 
                                                                 "relationship", 
-                                                                RelationshipUtil.get_relationship_id(message),
+                                                                RelationshipUtil.get_relationship_id(body_categories["message"]),
                                                                 relationship_dict)
 
         try:

@@ -37,7 +37,7 @@ def form_message_dictionary(user_data, field, field_id, vals):
 		result_dict["user_data"] += "{}: {}, ".format(key, str(user_data[key]))
 	
 	result_dict["user_data"] = result_dict["user_data"][:-2]
-
+	print("aaa")
 	for key in vals:
 		result_dict["vals"] += "{} = {}, ".format(key, str(vals[key]))
 

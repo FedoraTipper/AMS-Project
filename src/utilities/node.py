@@ -103,7 +103,7 @@ def delete_node(node_id, torn):
 	import utilities.link as LinkUtil
 	#Delete all links that contain the node id
 	LinkUtil.delete_link_with_node(node_id)
-	import utilities.metadata as MetaUtil
+	import utilities.meta as MetaUtil
 	MetaUtil.delete_metadata_with_node(node_id)
 	#Delete the node
 	conn.execute("DELETE FROM {} WHERE node_id = {}".format(_table_, int(node_id)))

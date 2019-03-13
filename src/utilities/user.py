@@ -1,9 +1,13 @@
 import handlers.mysqldb as DBHandler
 import utilities.sql as SQLUtil
 from passlib.hash import pbkdf2_sha256
+import handlers.classes.TableEntities as ORM
+
 conn = DBHandler.create_connection()
 
 _table_ = "user"
+
+session = DBHandler.create_session()
 
 """
 Function to compare user's given password hash instance versus hash stored in the database 
@@ -22,7 +26,7 @@ Output: Hashed password
 Caveats: None
 """
 def get_password(username):
-	return conn.execute("SELECT password FROM %s WHERE username = '%s';" % (_table_, username)).fetchall()[0][0]
+	return (session.query(ORM.User).filter(ORM.User.username == username)).one().password
 
 """
 Function to get the user's id found in the database
@@ -31,7 +35,7 @@ Output: User's id in int format
 Caveats: None
 """
 def get_uid(username):
-	return int(conn.execute("SELECT user_id FROM %s WHERE username = '%s';" % (_table_, username)).fetchall()[0][0])
+	return session.query(ORM.User).filter(ORM.User.username == username).one().user_id
 
 """
 Function to return the privilege level of a user
@@ -40,7 +44,7 @@ Output: User's privilege level in int format
 Caveats: None
 """
 def get_privilege(username):
-	return int(conn.execute("SELECT privilege FROM %s WHERE username = '%s';" % (_table_, username)).fetchall()[0][0])
+	return session.query(ORM.User).filter(ORM.User.username == username).one().privilege
 
 """
 Function to determine whether the user exists in the database
@@ -49,7 +53,7 @@ Output: Boolean value  (True set to "they exists")
 Caveats: None
 """
 def user_exists(username):
-	return int(conn.execute("SELECT COUNT(username) FROM %s WHERE username = '%s';" % (_table_, username)).fetchall()[0][0]) != 0
+	return (int(session.query(ORM.User).filter(ORM.User.username == username).count()) != 0)
 
 """
 Function to create a user record and to be inserted into the database
@@ -67,7 +71,11 @@ def create_user(user_dict, torn):
 	#salt_size 64 bits
 	#48k rounds
 	user_dict["password"] = pbkdf2_sha256.hash(user_dict["password"], salt_size=64, rounds=48000)
-	conn.execute(SQLUtil.build_insert_statement(_table_, user_dict))
+	new_user = ORM.User(username=user_dict["username"], 
+						password=user_dict["password"], 
+						privilege=user_dict["privilege"])
+	session.add(new_user)
+	session.commit()
 	#sanitize variables
 	del user_dict
 	return True
@@ -80,7 +88,7 @@ def change_user_fields(user_dict, torn):
 		torn.write({"message":"Username does not exist"})
 		return None
 
-	conn.execute(SQLUtil.build_update_statement(_table_, user_dict) + " WHERE user_id = {}".format(get_uid(user_dict["username"])))
+	conn.execute(SQLUtil.build_update_statement(_table_, user_dict) + " WHERE user_id = {}", (get_uid(user_dict["username"])))
 	return ""
 
 """
@@ -88,4 +96,4 @@ Function to change user's privilege
 """
 
 def change_user_privilege(uid, privilege):
-	conn.execute("UPDATE %s SET privilege = %d WHERE user_id = %d" % (_table_, privilege, uid))
+	conn.execute("UPDATE %s SET privilege = %d WHERE user_id = %d" , (_table_, privilege, uid))

@@ -32,7 +32,8 @@ Output: Relationship ID
 Caveats: None
 """
 def get_relationship_id(message):
-	return conn.execute("SELECT relationship_id FROM {} WHERE message = {}".format(_table_, message)).fetchall()[0][0]
+	print(conn.execute("SELECT relationship_id FROM {} WHERE message = {}".format(_table_, message)).fetchall())
+	return conn.execute("SELECT relationship_id FROM {} WHERE message = {}".format(_table_, message)).fetchall()
 
 """
 Function to create a relationship
