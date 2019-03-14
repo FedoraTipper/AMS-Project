@@ -37,10 +37,8 @@ class View(SetDefaultHeaders):
                                                                 ViewUtil.get_view_id(view_dict["name"]),
                                                                 view_dict)
 
-        try:
-            LoggerHandler.log_message("add", formatted_message)
-        except:
-            pass
+
+        LoggerHandler.log_message("add", formatted_message)
 
         self.write({"message": "Success"})
 
@@ -66,10 +64,8 @@ class View(SetDefaultHeaders):
                                                                 "views", 
                                                                 view_id,
                                                                 view_dict)
-        try:
-            LoggerHandler.log_message("change", formatted_message)
-        except:
-            pass
+
+        LoggerHandler.log_message("change", formatted_message)
 
         self.write({"message":"Success"})
 
@@ -89,9 +85,6 @@ class View(SetDefaultHeaders):
                                                                 "views", 
                                                                 view_dict["view_id"])
 
-        try:
-            LoggerHandler.log_message("delete", formatted_message)
-        except:
-            pass
+        LoggerHandler.log_message("delete", formatted_message)
 
         self.write({"message":"Success"})

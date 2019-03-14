@@ -11,3 +11,7 @@ Algorithm = HS256
 
 [PBKDF2]
 Secret = Sixteen byte key
+
+[FILELOGGING]
+filename = logs.txt
+format= '%(asctime)s - %(levelname)s - %(message)s'

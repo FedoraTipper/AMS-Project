@@ -1,7 +1,8 @@
 import handlers.mysqldb as DBHandler
 import utilities.sql as SQLUtil
 import handlers.classes.TableEntities as TableEntities
-from sqlalchemy import update, delete
+from sqlalchemy import update, delete, exc
+import handlers.filelogger as FLHandler
 
 session = DBHandler.create_session()
 
@@ -15,14 +16,16 @@ Caveats: Check if the label text already exists
 
 def create_label(label_dict, torn):
     if label_exists(label_dict["label_text"]):
+        torn.set_status(400)
         torn.write({'message': "Label text already exists"})
         return False
 
     try:
         session.add(TableEntities.Label(label_text=label_dict["label_text"]))
         session.commit()
-    except:
-        print("Something went wrong. <Label Create>")
+    except exc.SQLAlchemyError as Error:
+        FLHandler.log_error_to_file(Error)
+        torn.set_status(500)
         return False
 
     return True
@@ -103,10 +106,12 @@ Caveats: Determine if the label ID exists and whether the text exists as well as
 
 def change_label(label_id, label_dict, torn):
     if label_id_exists(label_id) == False:
+        torn.set_status(404)
         torn.write({"message": "Label does not exist"})
         return False
     if (label_dict["label_text"] is not None):
         if (label_exists(label_dict["label_text"])):
+            torn.set_status(404)
             torn.write({"message": "New label text already exists"})
             return False
     try:
@@ -115,8 +120,9 @@ def change_label(label_id, label_dict, torn):
                 TableEntities.Label.label_id == int(label_id)).values(label_dict)
         )
         session.commit()
-    except:
-        print("Something went wrong. <Label Update>")
+    except exc.SQLAlchemyError as Error:
+        FLHandler.log_error_to_file(Error)
+        torn.set_status(500)
         return False
     return True
 
@@ -131,6 +137,7 @@ Caveats: Check if the label id exists. Nullify label ID in any other tables
 
 def delete_label(label_id, torn):
     if label_id_exists(label_id) == False:
+        torn.set_status(404)
         torn.write({"message": "Label does not exist"})
         return False
 
@@ -150,8 +157,9 @@ def delete_label(label_id, torn):
                 TableEntities.Label.label_id == int(label_id))
         )
         session.commit()
-    except:
-        print("Something went wrong. <Relationship Delete>")
+    except exc.SQLAlchemyError as Error:
+        torn.set_status(500)
+        FLHandler.log_error_to_file(Error)
         return False
 
     return True

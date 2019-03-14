@@ -1,5 +1,6 @@
 import handlers.mysqldb as DBHandler
-from sqlalchemy import update, delete
+from sqlalchemy import update, delete, exc
+import handlers.filelogger as FLHandler
 
 session = DBHandler.create_session()
 
@@ -40,8 +41,7 @@ Caveats: None
 
 def get_relationship_id(message):
     return (session.query(TableEntities.Relationship).filter(
-        (TableEntities.Relationship.message == message))
-        .one().meta_id)
+        (TableEntities.Relationship.message == message)).one().meta_id)
 
 
 """
@@ -54,11 +54,17 @@ Caveats: Check if relationship message already exists
 
 def create_relationship(relationship_dict, torn):
     if relationship_exists(relationship_dict["message"]):
+        torn.set_status(400)
         torn.write({"message": "Relationship message already exists"})
         return False
-    session.add(TableEntities.Relationship(
-        message=relationship_dict["message"]))
-    session.commit()
+    try:
+        session.add(TableEntities.Relationship(
+            message=relationship_dict["message"]))
+        session.commit()
+    except exc.SQLAlchemyError as Error:
+        torn.set_status(500)
+        FLHandler.log_error_to_file(Error)
+        return False
     return True
 
 
@@ -72,8 +78,7 @@ Caveats: None
 
 def relationship_exists(message):
     return int(session.query(TableEntities.Relationship).filter(
-        TableEntities.Relationship.message == message)
-        .count()) != 0
+        TableEntities.Relationship.message == message).count()) != 0
 
 
 """
@@ -85,8 +90,7 @@ Caveats: None
 
 
 def relationship_id_exists(relationship_id):
-    return (session.query(TableEntities.Relationship).filter(TableEntities.Relationship.relationship_id == int(relationship_id))
-            .one().relationship_id)
+    return (session.query(TableEntities.Relationship).filter(TableEntities.Relationship.relationship_id == int(relationship_id)).one().relationship_id)
 
 
 """
@@ -99,10 +103,12 @@ Caveats: Determine if node and other FK objects needed to be changed exist; Dete
 
 def change_relationship(relationship_id, relationship_dict, torn):
     if relationship_id_exists(relationship_id) == False:
+        torn.set_status(404)
         torn.write({"message": "Relationship does not exists"})
         return False
 
     if relationship_exists(relationship_dict["message"]):
+        torn.set_status(400)
         torn.write({"message": "New relationship message exists"})
         return False
 
@@ -113,8 +119,8 @@ def change_relationship(relationship_id, relationship_dict, torn):
             .values(relationship_dict)
         )
         session.commit()
-    except:
-        print("Something went wrong. <Relationship Update>")
+    except exc.SQLAlchemyError as Error:
+        FLHandler.log_error_to_file(Error)
         return False
 
     return True
@@ -130,6 +136,7 @@ Caveats: Nullify relation ID columns in other tables
 
 def delete_relationship(relationship_id, torn):
     if relationship_id_exists(relationship_id) == False:
+        torn.set_status(404)
         torn.write({"message": "Relationship id does not exist"})
         return False
 
@@ -149,8 +156,9 @@ def delete_relationship(relationship_id, torn):
                 TableEntities.Relationship.relationship_id == int(relationship_id))
         )
         session.commit()
-    except:
-        print("Something went wrong. <Relationship Delete>")
+    except exc.SQLAlchemyError as Error:
+        torn.set_status(500)
+        FLHandler.log_error_to_file(Error)
         return False
 
     return True

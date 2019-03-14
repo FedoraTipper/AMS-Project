@@ -4,6 +4,8 @@ import utilities.label as LabelUtil
 import utilities.view as ViewUtil
 import utilities.relationship as RelationshipUtil
 import handlers.classes.TableEntities as TableEntities
+import handlers.filelogger as FLHandler
+from sqlalchemy import update, delete, exc
 
 session = DBHandler.create_session()
 
@@ -16,18 +18,23 @@ Caveats: Check if both nodes and any FK objects exists, links already exists and
 def create_link(link_dict, torn):
 	if check_nodes_exist(link_dict["node_id_1"], link_dict["node_id_2"]) == False:
 		torn.write({"message":"One of nodes in the the link does not exist"})
+		torn.set_status(404)
 		return False
 
 	if link_dict["node_id_1"] == link_dict["node_id_2"]:
 		torn.write({"message":"Links from and to the same node are not allowed"})
+		torn.set_status(400)
 		return False
 
 	if link_relation_exists(link_dict["node_id_1"], link_dict["node_id_2"]):
 		torn.write({"message":"Link between the two nodes already exists"})
+		torn.set_status(400)
 		return False
 
 	if ViewUtil.view_id_exists(link_dict["view_id"]) == False:
 		torn.write({"message":"View ID does not exist"})
+		torn.set_status(404)
+		return False
 
 	link = TableEntities.Links(node_id_1=int(link_dict["node_id_1"]),
 								node_id_2=int(link_dict["node_id_2"]),
@@ -36,6 +43,7 @@ def create_link(link_dict, torn):
 	if "label_id" in link_dict:
 		if LabelUtil.label_id_exists(link_dict["label_id"]) == False:
 			torn.write({"message":"Label does not exist"})
+			torn.set_status(404)
 			return False
 		else:
 			link.label_id = int(link_dict["label_id"])
@@ -43,6 +51,7 @@ def create_link(link_dict, torn):
 	if "relationship_id" in link_dict:
 		if RelationshipUtil.relationship_id_exists(link_dict["relationship_id"]) == False:
 			torn.write({"message":"Relationship does not exist"})
+			torn.set_status(404)
 			return False
 		else:
 			link.relationship_id = int(link_dict["relationship_id"])
@@ -50,8 +59,9 @@ def create_link(link_dict, torn):
 	try:
 		session.add(link)
 		session.commit()
-	except:
-		print("Something went wrong. <Link Add>")
+	except exc.SQLAlchemyError as Error:
+		FLHandler.log_error_to_file(Error)
+		torn.set_status(500)
 		return False
 	return True
 
@@ -116,6 +126,7 @@ Caveats: Determine if node and other FK objects needed to be changed exist; Dete
 """
 def change_link(link_id, link_dict, torn):
 	if link_exists(link_id) == False:
+		torn.set_status(400)
 		torn.write({"message":"Link does not exist"})
 		return False
 
@@ -132,24 +143,29 @@ def change_link(link_id, link_dict, torn):
 			check = False
 
 		if check == True and check_nodes_exist(link_dict["node_id_1"], link_dict["node_id_2"]) == False:
+			torn.set_status(404)
 			torn.write({"message":"One of nodes in the the link does not exist"})
 			return False
 
 		if link_dict["node_id_1"] == link_dict["node_id_2"]:
+			torn.set_status(400)
 			torn.write({"message":"Links from and to the same node are not allowed"})
 			return False
 
 		if link_relation_exists(link_dict["node_id_1"], link_dict["node_id_2"]):
+			torn.set_status(400)
 			torn.write({"message":"Link between the two nodes already exists"})
 			return False
 
 	if "view_id" in link_dict:
 		if ViewUtil.view_id_exists(link_dict["view_id"]) == False:
+			torn.set_status(404)
 			torn.write({'message': "View ID does not exist"})
 			return False
 
 	if "relationship_id" in link_dict:
 		if RelationshipUtil.relationship_id_exists(link_dict["relationship_id"]) == False:
+			torn.set_status(404)
 			torn.write({'message': "Relationship ID does not exist"})
 			return False
 
@@ -159,8 +175,9 @@ def change_link(link_id, link_dict, torn):
 			.values(link_dict)
 			)	
 		session.commit()
-	except:
-		print("Something went wrong. <Link Update>")
+	except exc.SQLAlchemyError as Error:
+		torn.set_status(500)
+		FLHandler.log_error_to_file(Error)
 		return False
 
 	return True
@@ -183,6 +200,7 @@ Caveats: Check if the node and any FK objects exists
 """
 def delete_link(link_id, torn):
 	if link_exists(link_id) == False:
+		torn.set_status(404)
 		torn.write({"message":"Link does not exist"})
 		return False
 	try:
@@ -190,8 +208,10 @@ def delete_link(link_id, torn):
 			delete(TableEntities.Links).where(TableEntities.Links.link_id == int(link_id))
 			)
 		session.commit()
-	except:
-		print("Something went wrong. <Link Delete>")
+	except exc.SQLAlchemyError as Error:
+		torn.set_status(500)
+		FLHandler.log_error_to_file(Error)
+		return False
 	return True
 
 #Internal function
@@ -201,8 +221,9 @@ def delete_link_with_node(node_id):
 			delete(TableEntities.Links).where((TableEntities.Links.node_id_1 == int(node_id)) | (TableEntities.Links.node_id_2 == int(node_id)))
 			)
 		session.commit()
-	except:
-		print("Something went wrong. <Link with Node Delete>")
+	except exc.SQLAlchemyError as Error:
+		torn.set_status(500)
+		FLHandler.log_error_to_file(Error)
 		return False
 	return True
 """

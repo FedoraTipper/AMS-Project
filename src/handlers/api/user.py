@@ -1,20 +1,28 @@
 import handlers.logger as LoggerHandler
 import handlers.jwt as  JWTHandler
 from handlers.headers import SetDefaultHeaders
+import handlers.filelogger as FLHandler
 
 import utilities.error as ErrorUtil
 import utilities.user as UserUtil
 
 class Authenticate(SetDefaultHeaders):
     def post(self):        
+        FLHandler.log_debug_to_file("hello")
         body_categories = {"username": 1, "password": 1}
         user_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if user_dict == False or UserUtil.user_exists(user_dict["username"]) == False:
+            statement = "Failed login attempt %s : %s", (user_dict["username"], user_dict["password"])
+            FLHandler.log_debug_to_file(statement)
+            self.set_status(401)
             self.write({"message":"Authentication failed"})
             return None
 
         if(UserUtil.compare_password(user_dict["username"], user_dict["password"]) == False):
+            statement = "Failed login attempt %s : %s", (user_dict["username"], user_dict["password"])
+            FLHandler.log_debug_to_file(statement)
+            self.set_status(401)
             self.write({"message":"Authentication failed"})
             return None
 
@@ -49,10 +57,9 @@ class Register(SetDefaultHeaders):
                                                         "user", 
                                                         UserUtil.get_uid(username),
                                                         user_dict)
-        try:
-            LoggerHandler.log_message("add", formatted_message)
-        except:
-            pass
+    
+        LoggerHandler.log_message("add", formatted_message)
+
 
         self.write({'message': "Success"})
 

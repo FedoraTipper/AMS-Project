@@ -1,7 +1,8 @@
 import handlers.mysqldb as DBHandler
 import utilities.node as NodeUtil
 import handlers.classes.TableEntities as TableEntities
-from sqlalchemy import update, delete
+from sqlalchemy import update, delete, exc
+import handlers.filelogger as FLHandler
 
 session = DBHandler.create_session()
 
@@ -14,10 +15,12 @@ Caveats: Check if the node and if the category for that node already exists
 """
 def create_category(metadata_dict, torn):
 	if NodeUtil.node_id_exists(metadata_dict["node_id"]) == False:
+		torn.set_status(404)
 		torn.write({"message": "Node does not exist"})
 		return False
 
 	if category_exists(metadata_dict["category"], metadata_dict["node_id"]):
+		torn.set_status(400)
 		torn.write({"message": "Metadata category for the specified node already exists"})
 		return False
 
@@ -25,8 +28,9 @@ def create_category(metadata_dict, torn):
 		session.add(TableEntities.Metadata(node_id=int(metadata_dict["node_id"]), category=metadata_dict["category"],
 					data=metadata_dict["data"]))
 		session.commit()
-	except:
-		print("Something went wrong. <Metadata Add>")
+	except exc.SQLAlchemyError as Error:
+		torn.set_status(500)
+		FLHandler.log_error_to_file(Error)
 		return False
 	return True
 
@@ -89,16 +93,19 @@ Caveats: Determine the existance of metadata record, node id and category before
 """
 def change_metadata(metadata_id, metadata_dict, torn):
 	if metadata_exists(metadata_id) == False:
+		torn.set_status(404)
 		torn.write({"message": "Metadata ID does not exist"})
 		return False
 
 	if "node_id" in metadata_dict:
 		if NodeUtil.node_id_exists(metadata_dict["node_id"]) == False:
+			torn.set_status(404)
 			torn.write({"message": "Node does not exist"})
 			return False
 
 	if "category" in metadata_dict:
 		if category_exists(metadata_dict["category"], metadata_dict["node_id"]):
+			torn.set_status(400)
 			torn.write({"message": "Metadata category already exists"})
 			return False
 	try:
@@ -106,8 +113,9 @@ def change_metadata(metadata_id, metadata_dict, torn):
 			update(TableEntities.Metadata).where(TableEntities.Metadata.metadata_id == int(metadata_id)).values(metadata_dict)
 			)	
 		session.commit()
-	except:
-		print("Something went wrong. <Metadata Update>")
+	except exc.SQLAlchemyError as Error:
+		torn.set_status(500)
+		FLHandler.log_error_to_file(Error)
 		return False
 	return True
 
@@ -119,6 +127,7 @@ Caveats: Determine the existance of metadata record
 """
 def delete_metadata(metadata_id, torn):
 	if metadata_exists(metadata_id) == False:
+		torn.set_status(404)
 		torn.write({"message": "Node does not exist"})
 		return False
 	try:
@@ -126,8 +135,9 @@ def delete_metadata(metadata_id, torn):
 			delete(TableEntities.Metadata).where(TableEntities.Metadata.metadata_id == int(metadata_id))
 			)
 		session.commit()
-	except:
-		print("Something went wrong. <Metadata Delete>")
+	except exc.SQLAlchemyError as Error:
+		torn.set_status(500)
+		FLHandler.log_error_to_file(Error)
 		return False
 	return True
 
@@ -143,5 +153,7 @@ def delete_metadata_with_node(node_id):
 			delete(TableEntities.Metadata).where(TableEntities.Metadata.node_id == int(node_id))
 			)
 		session.commit()
-	except:
-		print("Something went wrong. <Metadata Node Delete>")
+	except exc.SQLAlchemyError as Error:
+		torn.set_status(500)
+		FLHandler.log_error_to_file(Error)
+		return False

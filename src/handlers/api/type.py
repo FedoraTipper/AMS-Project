@@ -37,10 +37,8 @@ class NodeType(SetDefaultHeaders):
                                                                 TypeUtil.get_type_id(type_dict["type"]),
                                                                 type_dict)
 
-        try:
-            LoggerHandler.log_message("add", formatted_message)
-        except:
-            pass
+
+        LoggerHandler.log_message("add", formatted_message)
 
         self.write({"message": "Success"})
 
@@ -66,10 +64,8 @@ class NodeType(SetDefaultHeaders):
                                                                 "node_type", 
                                                                 type_id,
                                                                 type_dict)
-        try:
-            LoggerHandler.log_message("change", formatted_message)
-        except:
-            pass
+
+        LoggerHandler.log_message("change", formatted_message)
 
         self.write({"message":"Success"})
 
@@ -89,9 +85,6 @@ class NodeType(SetDefaultHeaders):
                                                                 "node_type", 
                                                                 type_dict["type_id"])
 
-        try:
-            LoggerHandler.log_message("delete", formatted_message)
-        except:
-            pass
+        LoggerHandler.log_message("delete", formatted_message)
 
         self.write({"message":"Success"})

@@ -17,6 +17,7 @@ def check_fields(result_body, categories, torn):
 	if isinstance(result_body, dict) and (len(result_body) == 0):
 		return False
 	elif len(result_body) == 0:
+		torn.set_status(400)
 		torn.write({"message":"Missing response body"})
 		return False
 
@@ -26,11 +27,13 @@ def check_fields(result_body, categories, torn):
 		try:
 			json_results = json.loads(result_body)
 		except ValueError as err:
+			torn.set_status(400)
 			torn.write({"message":"Missing field values"})
 			return False
 
 	for category in categories:
 		if category not in json_results and categories[category] == 1:
+			torn.set_status(400)
 			torn.write({"message":"Missing fields: {}".format(category)})
 			return False
 		elif category not in json_results and categories[category] == 0:
@@ -47,6 +50,7 @@ def check_fields(result_body, categories, torn):
 				elif(isinstance(json_results[category], int)):
 					result_dict[category] = json_results[category]
 				else:
+					torn.set_status(400)
 					torn.write({"message":"Empty values for field {}".format(category)})
 					return False
 	return result_dict

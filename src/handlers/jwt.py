@@ -83,6 +83,7 @@ def authorize_action(torn, priv_level):
 	encoded_token = torn.request.headers["Authorization"] if "Authorization" in torn.request.headers else ""
 
 	if determine_privilege(encoded_token) < priv_level:
+		torn.set_status(401)
 		torn.write({"message":"Authorization failed"})
 		torn.add_header("Authorization", "")
 		return False

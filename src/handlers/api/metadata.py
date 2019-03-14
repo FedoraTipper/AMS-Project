@@ -1,5 +1,5 @@
 import handlers.logger as LoggerHandler
-import handlers.jwt as  JWTHandler
+import handlers.jwt as JWTHandler
 from handlers.headers import SetDefaultHeaders
 
 import utilities.error as ErrorUtil
@@ -36,10 +36,7 @@ class Metadata(SetDefaultHeaders):
                                                                 int(MetaUtil.get_metadata_id(metadata_dict["category"],metadata_dict["node_id"])),
                                                                 metadata_dict)
 
-        try:
-            LoggerHandler.log_message("add", formatted_message)
-        except:
-            pass
+        LoggerHandler.log_message("add", formatted_message)
 
         self.write({"message":"Success"})
 
@@ -62,10 +59,7 @@ class Metadata(SetDefaultHeaders):
                                                                 metadata_id,
                                                                 metadata_dict)
 
-        try:
-            LoggerHandler.log_message("change", formatted_message)
-        except:
-            pass
+        LoggerHandler.log_message("change", formatted_message)
 
         self.write({"message":"Success"})
 
@@ -79,16 +73,12 @@ class Metadata(SetDefaultHeaders):
         metadata_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if metadata_dict == False or MetaUtil.delete_metadata(metadata_dict["meta_id"], self) == False:
-            console.log("aaaa")
             return None
 
         formatted_message = LoggerHandler.form_delete_message_dictionary(userdata, 
                                                                 "link", 
                                                                 metadata_dict["meta_id"])
 
-        try:
-            LoggerHandler.log_message("delete", formatted_message)
-        except:
-            pass
+        LoggerHandler.log_message("delete", formatted_message)
 
         self.write({"message":"Success"})

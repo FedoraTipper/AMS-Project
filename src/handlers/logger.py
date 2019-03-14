@@ -74,3 +74,4 @@ Caveats: None
 def get_logs():
 	entries = session.query(TableEntities.Log).all()
 	return {'data': [entry.as_dict() for entry in entries]}
+

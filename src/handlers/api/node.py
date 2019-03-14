@@ -25,7 +25,7 @@ class Node(SetDefaultHeaders):
 
         userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
-        body_categories = {"type": 1, "label_id": 0, "icon":0}
+        body_categories = {"type_id": 1, "view_id": 1, "label_id": 0, "icon":0}
         node_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if node_dict == False or NodeUtil.create_node(node_dict, self) == False:
@@ -33,13 +33,10 @@ class Node(SetDefaultHeaders):
 
         formatted_message = LoggerHandler.form_message_dictionary(userdata, 
                                                                 "node", 
-                                                                NodeUtil.get_node_id(node_dict["type"]),
+                                                                "type_id",
                                                                 node_dict)
 
-        try:
-            LoggerHandler.log_message("add", formatted_message)
-        except:
-            pass
+        LoggerHandler.log_message("add", formatted_message)
 
         self.write({"message": "Success"})
 
@@ -49,7 +46,7 @@ class Node(SetDefaultHeaders):
 
         userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
-        body_categories = {"type": 0, "node_id": 1, "label_id": 0, "icon":0}
+        body_categories = {"node_id": 1, "type_id": 0, "view_id": 0, "label_id": 0, "icon":0}
         node_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if node_dict == False:

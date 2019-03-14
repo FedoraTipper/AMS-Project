@@ -2,10 +2,8 @@ import handlers.mysqldb as DBHandler
 import utilities.sql as SQLUtil
 from passlib.hash import pbkdf2_sha256
 import handlers.classes.TableEntities as TableEntities
-
-conn = DBHandler.create_connection()
-
-_table_ = "user"
+from sqlalchemy import update, delete, exc
+import handlers.filelogger as FLHandler
 
 session = DBHandler.create_session()
 
@@ -63,6 +61,7 @@ Caveats: Password is hashed using pbkdf sha256 with 48k rounds and salt size of 
 """
 def create_user(user_dict, torn):
 	if user_exists(user_dict["username"]):
+		torn.set_status(400)
 		torn.write({"message":"Username already exists"})
 		return False
 	if "privilege" not in user_dict:
@@ -74,26 +73,31 @@ def create_user(user_dict, torn):
 	new_user = TableEntities.User(username=user_dict["username"], 
 						password=user_dict["password"], 
 						privilege=user_dict["privilege"])
-	session.add(new_user)
-	session.commit()
+	try:
+		session.add(new_user)
+		session.commit()
+	except exc.SQLAlchemyError as Error:
+		torn.set_status(500)
+		FLHandler.log_error_to_file(Error)
+		return False
 	#sanitize variables
 	del user_dict
 	return True
 
 """
 Function that is able to change user infTableEntitiesation values besides 
-"""
-def change_user_fields(user_dict, torn):
-	if user_exists(user_dict["username"]) == False:
-		torn.write({"message":"Username does not exist"})
-		return None
+# """
+# def change_user_fields(user_dict, torn):
+# 	if user_exists(user_dict["username"]) == False:
+# 		torn.write({"message":"Username does not exist"})
+# 		return None
 
-	conn.execute(SQLUtil.build_update_statement(_table_, user_dict) + " WHERE user_id = {}", (get_uid(user_dict["username"])))
-	return ""
+# 	conn.execute(SQLUtil.build_update_statement(_table_, user_dict) + " WHERE user_id = {}", (get_uid(user_dict["username"])))
+# 	return ""
 
-"""
-Function to change user's privilege
-"""
+# """
+# Function to change user's privilege
+# """
 
-def change_user_privilege(uid, privilege):
-	conn.execute("UPDATE %s SET privilege = %d WHERE user_id = %d" , (_table_, privilege, uid))
+# def change_user_privilege(uid, privilege):
+# 	conn.execute("UPDATE %s SET privilege = %d WHERE user_id = %d" , (_table_, privilege, uid))
