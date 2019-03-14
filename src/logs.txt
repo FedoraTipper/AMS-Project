@@ -1,11 +1,2 @@
-2019-03-14 16:13:33,219 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
-2019-03-14 16:13:33,230 - DEBUG - Using selector: EpollSelector
-2019-03-14 16:13:35,708 - WARNING - 401 GET /api/link/ (::1) 0.65ms
-2019-03-14 16:13:56,564 - INFO - 200 GET /api/link/ (::1) 3341.91ms
-2019-03-14 16:14:29,206 - INFO - 200 GET /api/node/ (::1) 3427.41ms
-2019-03-14 16:14:56,754 - INFO - 200 DELETE /api/type/ (::1) 14218.91ms
-2019-03-14 16:15:04,844 - INFO - 200 GET /api/link/ (::1) 261.69ms
-2019-03-14 16:15:12,220 - INFO - 200 GET /api/type/ (::1) 251.20ms
-2019-03-14 16:15:20,003 - INFO - 200 GET /api/node/ (::1) 273.26ms
-2019-03-14 16:15:53,290 - INFO - 200 DELETE /api/view/ (::1) 8880.30ms
-2019-03-14 16:15:57,488 - INFO - 200 GET /api/node/ (::1) 241.02ms
+2019-03-14 16:42:27,999 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-14 16:42:28,006 - DEBUG - Using selector: EpollSelector

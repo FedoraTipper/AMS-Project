@@ -10,8 +10,20 @@ logging.basicConfig(filename="logs.txt", level=logging.DEBUG,
 
 logger = logging.getLogger()
 
+"""
+Function to log a debug message to file
+Inputs: message
+Output: None
+Caveats: None
+"""
 def log_debug_to_file(message):
 	logger.debug(message)
 
+"""
+Function to log an error message to file
+Inputs: message
+Output: None
+Caveats: None
+"""
 def log_error_to_file(message):
 	logger.error(message)

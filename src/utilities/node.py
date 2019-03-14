@@ -77,7 +77,7 @@ def get_node(node_id):
 	return {'data': [entry.as_dict() for entry in entries]}
 
 """
-Function to return a node type's ID
+Function to return a node's ID
 Inputs: Node type string
 Output: Node ID in int format
 Caveats: None
@@ -157,7 +157,13 @@ def delete_node(node_id, torn):
 
 	return True
 
-def delete_node_with_view(view_id):
+"""
+Function to delete a node which depends on a view
+Inputs: View_ID; Tornado object to write any messages
+Output: True if operation was successful, False if the operation was not
+Caveats: Delete links and metadata alongside
+"""
+def delete_node_with_view(view_id, torn):
 	node_entries = session.query(TableEntities.Nodes).filter(TableEntities.Nodes.view_id == int(view_id)).all()
 	#Import module in function. Not allowed to cross reference
 	import utilities.link as LinkUtil
@@ -177,7 +183,13 @@ def delete_node_with_view(view_id):
 			return False
 	return True
 
-def delete_node_with_type(type_id):
+"""
+Function to delete a node which depends on a node type
+Inputs: type; Tornado object to write any messages
+Output: True if operation was successful, False if the operation was not
+Caveats: Delete links and metadata alongside
+"""
+def delete_node_with_type(type_id, torn):
 	node_entries = session.query(TableEntities.Nodes).filter(TableEntities.Nodes.type_id == int(type_id)).all()
 	#Import module in function. Not allowed to cross reference
 	import utilities.link as LinkUtil
