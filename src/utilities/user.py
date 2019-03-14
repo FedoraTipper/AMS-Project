@@ -1,7 +1,7 @@
 import handlers.mysqldb as DBHandler
 import utilities.sql as SQLUtil
 from passlib.hash import pbkdf2_sha256
-import handlers.classes.TableEntities as ORM
+import handlers.classes.TableEntities as TableEntities
 
 conn = DBHandler.create_connection()
 
@@ -26,25 +26,25 @@ Output: Hashed password
 Caveats: None
 """
 def get_password(username):
-	return (session.query(ORM.User).filter(ORM.User.username == username)).one().password
+	return (session.query(TableEntities.User).filter(TableEntities.User.username == username)).one().password
 
 """
 Function to get the user's id found in the database
 Inputs: Username
-Output: User's id in int format
+Output: User's id in int fTableEntitiesat
 Caveats: None
 """
 def get_uid(username):
-	return session.query(ORM.User).filter(ORM.User.username == username).one().user_id
+	return session.query(TableEntities.User).filter(TableEntities.User.username == username).one().user_id
 
 """
 Function to return the privilege level of a user
 Inputs: Username
-Output: User's privilege level in int format
+Output: User's privilege level in int fTableEntitiesat
 Caveats: None
 """
 def get_privilege(username):
-	return session.query(ORM.User).filter(ORM.User.username == username).one().privilege
+	return session.query(TableEntities.User).filter(TableEntities.User.username == username).one().privilege
 
 """
 Function to determine whether the user exists in the database
@@ -53,7 +53,7 @@ Output: Boolean value  (True set to "they exists")
 Caveats: None
 """
 def user_exists(username):
-	return (int(session.query(ORM.User).filter(ORM.User.username == username).count()) != 0)
+	return (int(session.query(TableEntities.User).filter(TableEntities.User.username == username).count()) != 0)
 
 """
 Function to create a user record and to be inserted into the database
@@ -71,7 +71,7 @@ def create_user(user_dict, torn):
 	#salt_size 64 bits
 	#48k rounds
 	user_dict["password"] = pbkdf2_sha256.hash(user_dict["password"], salt_size=64, rounds=48000)
-	new_user = ORM.User(username=user_dict["username"], 
+	new_user = TableEntities.User(username=user_dict["username"], 
 						password=user_dict["password"], 
 						privilege=user_dict["privilege"])
 	session.add(new_user)
@@ -81,7 +81,7 @@ def create_user(user_dict, torn):
 	return True
 
 """
-Function that is able to change user information values besides 
+Function that is able to change user infTableEntitiesation values besides 
 """
 def change_user_fields(user_dict, torn):
 	if user_exists(user_dict["username"]) == False:

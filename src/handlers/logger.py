@@ -2,7 +2,7 @@ import handlers.mysqldb as DBHandler
 import utilities.sql as SQLUtil
 
 conn = DBHandler.create_connection()
-
+session = DBHandler.create_session()
 _table_ = "logs"
 
 _message_format_ = {"add":"({user_data}) added {field} {field_id}; values: {vals}",
@@ -20,8 +20,11 @@ def log_message(format, message_dict):
 	for key in message_dict:
 		if "{" + key + "}" in message:
 			message = message.replace("{" + key + "}", message_dict[key])
-	statement = SQLUtil.build_insert_statement(_table_, {"message":message})
-	conn.execute(statement)
+	try:
+		session.add(Log(message=message))
+	except:
+		print("Something went wrong. <Log add>")
+		return False
 	return "Success"
 
 """
@@ -37,7 +40,6 @@ def form_message_dictionary(user_data, field, field_id, vals):
 		result_dict["user_data"] += "{}: {}, ".format(key, str(user_data[key]))
 	
 	result_dict["user_data"] = result_dict["user_data"][:-2]
-	print("aaa")
 	for key in vals:
 		result_dict["vals"] += "{} = {}, ".format(key, str(vals[key]))
 
@@ -68,5 +70,5 @@ Output: Dictionary of log messages
 Caveats: None
 """
 def get_logs():
-	logs = conn.execute("SELECT message FROM %s" % (_table_))
-	return {'data': [dict(zip(tuple (logs.keys()) ,i)) for i in logs.cursor]}
+	entries = session.query(TableEntities.Log).all()
+	return {'data': [entry.as_dict() for entry in entries]}

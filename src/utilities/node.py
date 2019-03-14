@@ -1,10 +1,8 @@
 import handlers.mysqldb as DBHandler
-import utilities.sql as SQLUtil
 import utilities.label as LabelUtil
+from sqlalchemy import update, delete
 
-conn = DBHandler.create_connection()
-
-_table_ = "nodes"
+session = DBHandler.create_session()
 
 """
 Function to create a node in the database
@@ -16,7 +14,13 @@ def create_node(node_dict, torn):
 	if node_exists(node_dict["type"]):
 		torn.write({'message': "Node type exists"})
 		return False
-	conn.execute(SQLUtil.build_insert_statement(_table_, node_dict))
+
+	try:
+		session.add(TableEntities.Nodes(label_text=label_dict["label_text"]))
+		session.commit()
+	except:
+		print("Something went wrong. <Node Create>")
+		return False
 	return True
 
 """

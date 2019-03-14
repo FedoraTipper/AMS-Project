@@ -1,9 +1,10 @@
 import handlers.mysqldb as DBHandler
-import utilities.sql as SQLUtil
 import utilities.node as NodeUtil
-conn = DBHandler.create_connection()
+import handlers.classes.TableEntities as TableEntities
+from sqlachemy import update, delete
 
-_table_ = "metadata"
+session = DBHandler.create_session()
+
 
 """
 Function to create metadata category for a specified node
@@ -20,7 +21,13 @@ def create_category(metadata_dict, torn):
 		torn.write({"message": "Metadata category for the specified node already exists"})
 		return False
 
-	conn.execute(SQLUtil.build_insert_statement(_table_, metadata_dict))
+	try:
+		session.add(TableEntities.Metadata(node_id=int(metadata_dict["node_id"]), category=metadata_dict["category"],
+					data=metadata_dict["data"]))
+		session.commit()
+	except:
+		print("Something went wrong. <Metadata Add>")
+		return False
 	return True
 
 """
@@ -30,7 +37,10 @@ Output: Boolean value - (True indicates category for the node exists)
 Caveats: None
 """
 def category_exists(category, node_id):
-	return int(conn.execute("SELECT COUNT(meta_id) FROM %s WHERE category = '%s' AND node_id = %d;" %(_table_, category, int(node_id))).fetchall()[0][0]) != 0
+	return int(session.query(TableEntities.Metadata).filter(
+							(TableEntities.Metadata.category == category) & 
+							(TableEntities.Metadata.node_id == int(node_id)))
+							.count()) != 0
 
 """
 Function to determine if a metadata record exists in the database
@@ -39,7 +49,9 @@ Output: Boolean value - (True indicates that the id exists)
 Caveats: None
 """
 def metadata_exists(metadata_id):
-	return int(conn.execute("SELECT COUNT(meta_id) FROM %s WHERE meta_id = %d;" % (_table_, int(metadata_id))).fetchall()[0][0]) != 0
+	return int(session.query(TableEntities.Metadata).filter(
+							TableEntities.Metadata.meta_id == int(metadata_id))
+							.count()) != 0
 
 """
 Function to get all metadata records from the database
@@ -48,8 +60,8 @@ Output: JSON formatted string of all metadata records
 Caveats: None
 """
 def get_all_metadata():
-	metadata = conn.execute("SELECT meta_id, category, metadata, node_id FROM %s;" % (_table_))
-	return {'data': [dict(zip(tuple (metadata.keys()) ,i)) for i in metadata.cursor]}
+	entries = session.query(TableEntities.Metadata).all()
+	return {'data': [entry.as_dict() for entry in entries]}
 
 """
 Function to get a single metadata record from the database
@@ -58,8 +70,9 @@ Output: JSON formatted string of metadata records for specified node
 Caveats: None
 """
 def get_metadata(node_id):
-	metadata = conn.execute("SELECT meta_id, category, metadata, node_id FROM %s WHERE node_id = %d;" % (_table_, int(node_id)))
-	return {'data': [dict(zip(tuple (metadata.keys()) ,i)) for i in metadata.cursor]}
+	entries = session.query(TableEntities.Metadata)
+	.filter(TableEntities.Metadata.node_id == int(node_id)).all()
+	return {'data': [entry.as_dict() for entry in entries]}
 
 """
 Function to retrieve a metadata's id given the node ID and category
@@ -68,7 +81,8 @@ Output: Metadata id int
 Caveats: None
 """
 def get_metadata_id(category, node_id):
-	return(conn.execute("SELECT meta_id FROM {} WHERE node_id = {} AND category = '{}';".format(_table_, int(node_id), category)).fetchall()[0][0])
+	return  (session.query(TableEntities.Metadata).filter((TableEntities.Metadata.category == category) & 
+			(TableEntities.Metadata.node_id == int(node_id))).one().meta_id)
 
 """
 Function to change a metadata record in the database
@@ -90,10 +104,15 @@ def change_metadata(metadata_id, metadata_dict, torn):
 		if category_exists(metadata_dict["category"], metadata_dict["node_id"]):
 			torn.write({"message": "Metadata category already exists"})
 			return False
-
-	statement = SQLUtil.build_update_statement(_table_, metadata_dict) + " WHERE meta_id = %d;" % metadata_id
-	conn.execute(statement)
-
+	try:
+		session.execute(
+			update(TableEntities.Metadata).where(TableEntities.Metadata.metadata_id == int(metadata_id))
+			.values(metadata_dict)
+			)	
+		session.commit()
+	except:
+		print("Something went wrong. <Metadata Update>")
+		return False
 	return True
 
 """
@@ -106,7 +125,14 @@ def delete_metadata(metadata_id, torn):
 	if metadata_exists(metadata_id) == False:
 		torn.write({"message": "Node does not exist"})
 		return False
-	conn.execute("DELETE FROM {} WHERE meta_id = {}".format(_table_, metadata_id))
+	try:
+		session.execute(
+			delete(TableEntities.Metadata).where(TableEntities.Metadata.metadata_id == int(metadata_id))
+			)
+		session.commit()
+	except:
+		print("Something went wrong. <Metadata Delete>")
+		return False
 	return True
 
 """
@@ -116,4 +142,10 @@ Output: None
 Caveats: Returns none as this function is seen as "best effort"
 """
 def delete_metadata_with_node(node_id):
-	conn.execute("DELETE FROM {} WHERE node_id = {}".format(_table_, int(node_id)))
+	try:
+		session.execute(
+			delete(TableEntities.Metadata).where(TableEntities.Metadata.node_id == int(node_id))
+			)
+		session.commit()
+	except:
+		print("Something went wrong. <Metadata Node Delete>")

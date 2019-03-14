@@ -1,9 +1,7 @@
 import handlers.mysqldb as DBHandler
-import utilities.sql as SQLUtil
+from sqlalchemy import update, delete
 
-conn = DBHandler.create_connection()
-
-_table_ = "relationship"
+session = DBHandler.create_session()
 
 """
 Function to get a single relationship record from the database
@@ -12,8 +10,9 @@ Output: JSON formatted string of relationship record
 Caveats: None
 """
 def get_relationship(relationship_id):
-	relationship = conn.execute("SELECT relationship_id, message FROM {} WHERE relationship_id = {}" % (_table_, int(relationship_id)))
-	return {'data': [dict(zip(tuple (relationships.keys()) ,i)) for i in relationships.cursor]}
+	entries = session.query(TableEntities.Relationship)
+	.filter(TableEntities.Relationship.relationship_id == int(relationship_id)).all()
+	return {'data': [entry.as_dict() for entry in entries]}
 
 """
 Function to get all relationship records
@@ -22,8 +21,8 @@ Output: JSON Formatted string of all relationship records
 Caveats: None
 """
 def get_relationships():
-	relationships = conn.execute("SELECT relationship_id, message FROM %s" % (_table_))
-	return {'data': [dict(zip(tuple (relationships.keys()) ,i)) for i in relationships.cursor]}
+	entries = session.query(TableEntities.Relationship).all()
+	return {'data': [entry.as_dict() for entry in entries]}
 
 """
 Function to return a relationship ID given it's message
@@ -32,8 +31,9 @@ Output: Relationship ID
 Caveats: None
 """
 def get_relationship_id(message):
-	print(conn.execute("SELECT relationship_id FROM {} WHERE message = {}".format(_table_, message)).fetchall())
-	return conn.execute("SELECT relationship_id FROM {} WHERE message = {}".format(_table_, message)).fetchall()
+	return  (session.query(TableEntities.Relationship).filter(
+			(TableEntities.Relationship.message == message))
+			.one().meta_id)
 
 """
 Function to create a relationship
@@ -45,7 +45,8 @@ def create_relationship(relationship_dict, torn):
 	if relationship_exists(relationship_dict["message"]):
 		torn.write({"message":"Relationship message already exists"})
 		return False
-	conn.execute(SQLUtil.build_insert_statement(_table_, relationship_dict))
+	session.add(TableEntities.Relationship(message=relationship_dict["message"]))
+	session.commit()
 	return True
 
 """
@@ -55,7 +56,9 @@ Output: Boolean value - (True if the relationship exists)
 Caveats: None
 """
 def relationship_exists(message):
-	return int(conn.execute("SELECT COUNT(relationship_id) FROM {} WHERE message = '{}';".format(_table_, message)).fetchall()[0][0]) != 0
+	return int(session.query(TableEntities.Relationship).filter(
+				TableEntities.Relationship.message == message)
+				.count()) != 0
 
 """
 Function to see whether a relationship id exists
@@ -64,7 +67,8 @@ Output: Boolean value - (True if the relationship ID exists)
 Caveats: None
 """
 def relationship_id_exists(relationship_id):
-	return int(conn.execute("SELECT COUNT(relationship_id) FROM {} WHERE relationship_id = {};".format(_table_, int(relationship_id))).fetchall()[0][0]) != 0
+	return  (session.query(TableEntities.Relationship).filter(TableEntities.Relationship.relationship_id == int(relationship_id))
+			.one().relationship_id)
 
 """
 Function to change link record data
@@ -81,7 +85,17 @@ def change_relationship(relationship_id, relationship_dict, torn):
 		torn.write({"message":"New relationship message exists"})
 		return False
 
-	conn.execute(SQL.build_update_statement(_table_, relationship_dict) + " WHERE relationship_id = {}".format(int(relationship_id)))
+	try:
+		session.execute(
+			update(TableEntities.Relationship).where(TableEntities.Relationship.relationship_id == int(relationship_id))
+			.values(relationship_dict)
+			)	
+		session.commit()
+	except:
+		print("Something went wrong. <Relationship Update>")
+		return False
+
+	return True
 
 """
 Function to delete relationship
@@ -93,13 +107,23 @@ def delete_relationship(relationship_id, torn):
 	if relationship_id_exists(relationship_id) == False:
 		torn.write({"message": "Relationship id does not exist"})
 		return False
-	_table_ = {"links"}
+
 	null_dict = {"relationship_id": False}
 	#Create SQL statements to set relationship ID in FK _table_s to NULL
-	statements = SQLUtil.build_nullify_statements(_table_, null_dict)
-	statements.append("DELETE FROM {}".format(_table_))
-	
-	for sql_statement in statements:
-		conn.execute(sql_statement + " WHERE relationship_id = {};".format(int(relationship_id)))
+	try:
+		#Nullify relationship id's in links table
+		session.execute(
+				update(TableEntities.Links).where(TableEntities.Links.relationship_id == int(relationship_id))
+				.values(null_dict)
+				)	
+		session.commit()
+		#Delete relationship
+		session.execute(
+			delete(TableEntities.Relationship).where(TableEntities.Relationship.relationship_id == int(relationship_id))
+			)
+		session.commit()
+	except:
+		print("Something went wrong. <Relationship Delete>")
+		return False
 
 	return True

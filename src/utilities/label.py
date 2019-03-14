@@ -1,9 +1,9 @@
 import handlers.mysqldb as DBHandler
 import utilities.sql as SQLUtil
+import handlers.classes.TableEntities as TableEntities
+from sqlachemy import update, delete
 
-conn = DBHandler.create_connection()
-
-_table_ = "labels"
+session = DBHandler.create_session()
 
 """
 Function to create a label record
@@ -13,13 +13,16 @@ Caveats: Check if the label text already exists
 """
 def create_label(label_dict, torn):
 	if label_exists(label_dict["label_text"]):
-		torn.write({'message': "Label exists"})
+		torn.write({'message': "Label text already exists"})
 		return False
-	if ("parent" in label_dict and label_dict["parent"] is not None):
-		if (label_id_exists(label_dict["parent"]) == False):
-			torn.write({"message": "Parent label does not exist"})
-			return False
-	conn.execute(SQLUtil.build_insert_statement(_table_, label_dict))
+	
+	try:
+		session.add(TableEntities.Label(label_text=label_dict["label_text"]))
+		session.commit()
+	except:
+		print("Something went wrong. <Label Create>")
+		return False
+
 	return True
 
 """
@@ -29,7 +32,8 @@ Output: Boolean value - (True if the label text exists)
 Caveats: None
 """
 def label_exists(label_text):
-	return int(conn.execute("SELECT COUNT(label_text) FROM %s WHERE label_text = '%s';" % (_table_, label_text)).fetchall()[0][0]) != 0
+	return int(session.query(TableEntities.Label).filter(
+			TableEntities.Label.label_text == label_text).count()) != 0
 
 """
 Function to determine if the label ID exists
@@ -38,7 +42,8 @@ Output: Boolean value - (True if the label id exists)
 Caveats: None
 """
 def label_id_exists(label_id):
-	return int(conn.execute("SELECT COUNT(label_id) FROM %s WHERE label_id = %d;" % (_table_, int(label_id))).fetchall()[0][0]) != 0
+	return int(session.query(TableEntities.Label).filter(
+			TableEntities.Label.label_id == label_id).count()) != 0
 
 """
 Function to return all label records from the database
@@ -47,8 +52,8 @@ Output: JSON formatted string of column names and respective values
 Caveats: None
 """
 def get_labels():
-	labels = conn.execute("SELECT label_id, label_text, parent FROM %s" % (_table_))
-	return {'data': [dict(zip(tuple (labels.keys()) ,i)) for i in labels.cursor]}
+	entries = session.query(TableEntities.Label).all()
+	return {'data': [entry.as_dict() for entry in entries]}
 
 """
 Function to get a single node's data from the database
@@ -57,8 +62,9 @@ Output: JSON formatted string of column names and respective values
 Caveats: None
 """
 def get_label(label_id):
-	label = conn.execute("SELECT label_text, parent FROM %s WHERE label_id = %d" % (_table_, int(label_id)))
-	return {'data': [dict(zip(tuple (label.keys()) ,i)) for i in label.cursor]}
+	entries = session.query(TableEntities.Label)
+	.filter(TableEntities.Label.label_id == int(label_id)).all()
+	return {'data': [entry.as_dict() for entry in entries]}
 
 """
 Function to return a label's id give the label text
@@ -67,7 +73,8 @@ Output: Label ID
 Caveats: None
 """
 def get_label_id(label_text):
-	return(conn.execute("SELECT label_id FROM {} WHERE label_text = '{}'".format(_table_, label_text)).fetchall()[0][0])
+	return  session.query(TableEntities.Label).filter(TableEntities.Label.label_text == label_text) 
+			.one().label_id
 
 """
 Function to change a label record's data
@@ -83,12 +90,15 @@ def change_label(label_id, label_dict, torn):
 		if (label_exists(label_dict["label_text"])):
 			torn.write({"message": "New label text already exists"})
 			return False
-	if ("parent" in label_dict and label_dict["parent"] is not None):
-		if (label_id_exists(label_dict["parent"]) == False):
-			torn.write({"message": "Parent label does not exist"})
-			return False
-	statement = SQLUtil.build_update_statement(_table_, label_dict) + " WHERE label_id = %d;" % int(label_id)
-	conn.execute(statement)
+	try:
+		session.execute(
+			update(TableEntities.Label).where(TableEntities.Label.label_id == int(label_id))
+			.values(label_dict)
+			)	
+		session.commit()
+	except:
+		print("Something went wrong. <Label Update>")
+		return False
 	return True
 
 """
@@ -101,16 +111,24 @@ def delete_label(label_id, torn):
 	if label_id_exists(label_id) == False:
 		torn.write({"message": "Label does not exist"})
 		return False
-	_alt_table_ = {"links", "nodes"}
+
 	null_dict = {"label_id": None}
-	statements = SQLUtil.build_nullify_statements(_alt_table_, null_dict)
-	statements.append("DELETE FROM {}".format(_table_))
-	
-	null_dict = {"parent": None}
-	parent_statement = SQLUtil.build_update_statement(_table_, null_dict)
-	conn.execute(parent_statement + " WHERE parent = {};".format(int(label_id)))
-
-	for sql_statement in statements:
-		conn.execute(sql_statement + " WHERE label_id = {};".format(int(label_id)))
-
+	entities = [TableEntities.Links, TableEntities.Nodes]
+	try:
+		#Nullify label_ids in other tables
+		for entity in entities:			
+			session.execute(	
+				update(entity).where(entity.label_id == int(label_id))
+				.values(null_dict)
+				)
+		session.commit()
+		#Delete the label
+		session.execute(
+			delete(TableEntities.Label).where(TableEntities.Label.label_id == int(label_id))
+			)
+		session.commit()
+	except:
+		print("Something went wrong. <Relationship Delete>")
+		return False
+		
 	return True

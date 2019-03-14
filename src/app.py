@@ -12,7 +12,9 @@ def make_app():
           ("/api/label/", APIHandler.Label),
           ("/api/metadata/", APIHandler.Metadata),
           ("/api/relationship/", APIHandler.Relationship),
-          ("/api/logs/", APIHandler.Log)]
+          ("/api/logs/", APIHandler.Log,
+          ("/api/logs/", APIHandler.View),
+          ("/api/nodetype/", APIHandler.NodeType))]
 
   return Application(urls,
   ssl_options = {
@@ -22,6 +24,8 @@ def make_app():
   
 if __name__ == '__main__':
     app = make_app()
-    app.listen(5000)
+    port = 5000
+    app.listen(port)
+    print("Starting on port %d" % port)
     IOLoop.instance().start()
 
