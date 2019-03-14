@@ -5,6 +5,14 @@ from sqlalchemy.dialects.mysql import LONGTEXT
 
 Base = declarative_base()
 
+"""
+Description of file.
+
+We import in sqlalchemy's functions where we are able to create 
+a theoretical mapping of our choosing. If incorrect settings are applied
+SQLAlchemy will complaign, and it doesn't preemptively check with the database  
+"""
+
 class User(Base):
 	__tablename__  = 'user'
 	user_id = Column(Integer, primary_key=True, autoincrement=True)
