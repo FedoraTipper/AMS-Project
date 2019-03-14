@@ -1,7 +1,6 @@
 import handlers.mysqldb as DBHandler
-import utilities.sql as SQLUtil
 import handlers.classes.TableEntities as TableEntities
-from sqlachemy import update, delete
+from sqlalchemy import update, delete
 
 session = DBHandler.create_session()
 
@@ -26,33 +25,34 @@ def view_exists(name):
 
 def view_id_exists(view_id):
 	return int(session.query(TableEntities.View).filter(
-			TableEntities.View.view_id == view_id).count()) != 0
+			TableEntities.View.view_id == int(view_id)).count()) != 0
 
 def get_views():
 	entries = session.query(TableEntities.View).all()
 	return {'data': [entry.as_dict() for entry in entries]}
 
 def get_view(view_id):
-	entries = session.query(TableEntities.View)
-	.filter(TableEntities.View.view_id == int(view_id)).all()
+	entries = session.query(TableEntities.View).filter(TableEntities.View.view_id == int(view_id)).all()
 	return {'data': [entry.as_dict() for entry in entries]}
 
 def get_view_id(name):
-	return  session.query(TableEntities.View).filter(TableEntities.View.name == name) 
-			.one().view_id
+	return  session.query(TableEntities.View).filter(TableEntities.View.name == name).one().view_id
 
 def change_view(view_id, view_dict, torn):
 	if view_id_exists(view_id) == False:
 		torn.write({"message": "View does not exist"})
 		return False
-	if (view_dict["name"] is not None):
+
+	if (view_dict["name"] is None):
+		torn.write({"message": "Empty update statement"})
+		return False
+	else:
 		if (view_exists(view_dict["name"])):
 			torn.write({"message": "New view name already exists"})
 			return False
 	try:
 		session.execute(
-			update(TableEntities.View).where(TableEntities.View.view_id == int(view_id))
-			.values(view_dict)
+			update(TableEntities.View).where(TableEntities.View.view_id == int(view_id)).values(view_dict)
 			)	
 		session.commit()
 	except:
@@ -71,8 +71,7 @@ def delete_view(view_id, torn):
 		#Nullify label_ids in other tables
 		for entity in entities:			
 			session.execute(	
-				update(entity).where(entity.view_id == int(view_id))
-				.values(null_dict)
+				update(entity).where(entity.view_id == int(view_id)).values(null_dict)
 				)
 		session.commit()
 		#Delete the label

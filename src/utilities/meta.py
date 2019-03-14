@@ -1,7 +1,7 @@
 import handlers.mysqldb as DBHandler
 import utilities.node as NodeUtil
 import handlers.classes.TableEntities as TableEntities
-from sqlachemy import update, delete
+from sqlalchemy import update, delete
 
 session = DBHandler.create_session()
 
@@ -39,8 +39,7 @@ Caveats: None
 def category_exists(category, node_id):
 	return int(session.query(TableEntities.Metadata).filter(
 							(TableEntities.Metadata.category == category) & 
-							(TableEntities.Metadata.node_id == int(node_id)))
-							.count()) != 0
+							(TableEntities.Metadata.node_id == int(node_id))).count()) != 0
 
 """
 Function to determine if a metadata record exists in the database
@@ -50,8 +49,7 @@ Caveats: None
 """
 def metadata_exists(metadata_id):
 	return int(session.query(TableEntities.Metadata).filter(
-							TableEntities.Metadata.meta_id == int(metadata_id))
-							.count()) != 0
+							TableEntities.Metadata.meta_id == int(metadata_id)).count()) != 0
 
 """
 Function to get all metadata records from the database
@@ -70,8 +68,7 @@ Output: JSON formatted string of metadata records for specified node
 Caveats: None
 """
 def get_metadata(node_id):
-	entries = session.query(TableEntities.Metadata)
-	.filter(TableEntities.Metadata.node_id == int(node_id)).all()
+	entries = session.query(TableEntities.Metadata).filter(TableEntities.Metadata.node_id == int(node_id)).all()
 	return {'data': [entry.as_dict() for entry in entries]}
 
 """
@@ -106,8 +103,7 @@ def change_metadata(metadata_id, metadata_dict, torn):
 			return False
 	try:
 		session.execute(
-			update(TableEntities.Metadata).where(TableEntities.Metadata.metadata_id == int(metadata_id))
-			.values(metadata_dict)
+			update(TableEntities.Metadata).where(TableEntities.Metadata.metadata_id == int(metadata_id)).values(metadata_dict)
 			)	
 		session.commit()
 	except:

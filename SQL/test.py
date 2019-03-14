@@ -92,7 +92,9 @@ session._model_changes = {}
 # session.commit()
 # session.add(View(name="Countercept"))
 # session.commit()
-# session.add(Nodes(type_id=2,view_id=1))
+# node = Nodes(type_id=2,view_id=1)
+# node.icon = "hello"
+# session.add(node)
 # session.commit()
 # print(session.query(View).all())
 # entries = session.query(Nodes).all()
@@ -118,16 +120,26 @@ session._model_changes = {}
 # session.execute(update(User).where(User.user_id == 1).values(user_dict))
 # session.commit()
 
-connection = engine.connect()
-sqldata = connection.execute("SELECT * FROM user;")
+# connection = engine.connect()
+# sqldata = connection.execute("SELECT * FROM user;")
 
-entries = session.query(User).all()
+# entries = session.query(User).all()
 
-dict_list = list()
-json = "{'data': ["
+# dict_list = list()
+# json = "{'data': ["
 
-print({'data': [entry.as_dict() for entry in entries]})
+# print({'data': [entry.as_dict() for entry in entries]})
 	
 
-print({'data': [dict(zip(tuple (sqldata.keys()) ,i)) for i in sqldata.cursor]})
+# print({'data': [dict(zip(tuple (sqldata.keys()) ,i)) for i in sqldata.cursor]})
 
+
+# def link_relation_exists(node_id_1, node_id_2):
+# 	return int(session.query(Nodes).filter((
+# 			(Links.node_id_1 == int(node_id_1)) & 
+# 			(Links.node_id_2 == int(node_id_2))) | (
+# 			(Links.node_id_2 == int(node_id_1)) & 
+# 			(Links.node_id_1 == int(node_id_2))))
+# 			.count()) != 0
+
+# print(link_relation_exists(1, 2))

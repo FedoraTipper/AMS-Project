@@ -1,5 +1,8 @@
 import handlers.mysqldb as DBHandler
 import utilities.label as LabelUtil
+import utilities.view as ViewUtil
+import utilities.type as TypeUtil
+import handlers.classes.TableEntities as TableEntities
 from sqlalchemy import update, delete
 
 session = DBHandler.create_session()
@@ -11,26 +14,33 @@ Output: True if operation was successful, False if the operation was not
 Caveats: Check if the node type already exists
 """
 def create_node(node_dict, torn):
-	if node_exists(node_dict["type"]):
-		torn.write({'message': "Node type exists"})
+	if TypeUtil.type_id_exists(node_dict["type"]) == False:
+		torn.write({'message': "Type ID does not exist"})
 		return False
 
+	if ViewUtil.view_id_exists(node_dict["view"]) == False:
+		torn.write({'message': "View ID does not exist"})
+		return False
+
+	node = TableEntities.Nodes(type=node_dict["type"], view=node_dict["view"])
+	
+	if "label_id" in node_dict:
+		if LabelUtil.label_id_exists(node_dict["label_id"]) == False:
+			torn.write({"message": "Label ID does not exist"})
+			return False
+		else: 
+			node.label_id = int(node_dict["label_id"])
+
+	if "icon" in node_dict:
+		node.icon = node_dict["icon"]
+
 	try:
-		session.add(TableEntities.Nodes(label_text=label_dict["label_text"]))
+		session.add(node)
 		session.commit()
 	except:
 		print("Something went wrong. <Node Create>")
 		return False
 	return True
-
-"""
-Function to determine if a node exists
-Inputs: Node type string
-Output: Boolean value - (True if the node type exists)
-Caveats: None
-"""
-def node_exists(node_type):
-	return int(conn.execute("SELECT COUNT(node_id) FROM %s WHERE type = '%s';" %(_table_, node_type)).fetchall()[0][0]) != 0
 
 """
 Function to determine if the node ID exists
@@ -39,7 +49,8 @@ Output: Boolean value - (True if the node id exists)
 Caveats: None
 """
 def node_id_exists(node_id):
-	return int(conn.execute("SELECT COUNT(node_id) FROM %s WHERE node_id = %d;" %(_table_, int(node_id))).fetchall()[0][0]) != 0
+	return int(session.query(TableEntities.Nodes).filter(
+			TableEntities.Nodes.node_id == int(node_id)).count()) != 0
 
 """
 Function to return all nodes from the database
@@ -48,9 +59,8 @@ Output: JSON formatted string of column names and respective values
 Caveats: None
 """
 def get_nodes():
-	nodes = conn.execute("SELECT node_id, type, label_id, icon FROM %s" % (_table_))
-	return {'data': [dict(zip(tuple (nodes.keys()) ,i)) for i in nodes.cursor]}
-
+	entries = session.query(TableEntities.Nodes).all()
+	return {'data': [entry.as_dict() for entry in entries]}
 """
 Function to get a single node's data from the database
 Inputs: Node ID in int format
@@ -58,8 +68,8 @@ Output: JSON formatted string of column names and respective values
 Caveats: None
 """
 def get_node(node_id):
-	node = conn.execute("SELECT node_id, type, label_id, icon FROM %s WHERE node_id = %d" % (_table_, int(node_id)))
-	return {'data': [dict(zip(tuple (node.keys()) ,i)) for i in node.cursor]}
+	entries = session.query(TableEntities.Nodes).filter(TableEntities.Nodes.node_id == int(node_id)).all()
+	return {'data': [entry.as_dict() for entry in entries]}
 
 """
 Function to return a node type's ID
@@ -68,7 +78,7 @@ Output: Node ID in int format
 Caveats: None
 """
 def get_node_id(node_type):
-	return(conn.execute("SELECT node_id FROM {} WHERE type = '{}'".format(_table_, node_type)).fetchall()[0][0])
+	return  session.query(TableEntities.Nodes).filter(TableEntities.Nodes.node_type == node_type).one().node_id
 
 """
 Function to change a node's information that is stored in the database
@@ -80,17 +90,31 @@ def change_node(node_id, node_dict, torn):
 	if node_id_exists(node_id) == False:
 		torn.write({'message': "Node does not exist"})
 		return False
+
 	if "type" in node_dict:
-		if node_exists(node_dict["type"]):
-			torn.write({"message": "New node type already exists"})
+		if TypeUtil.type_id_exists(node_dict["type"]) == False:
+			torn.write({'message': "Type ID does not exist"})
 			return False
+
 	if "label_id" in node_dict:
 		if LabelUtil.label_id_exists(node_dict["label_id"]) == False:
 			torn.write({"message": "Label id does not exist"})
 			return False
 
-	statement = SQLUtil.build_update_statement(_table_, node_dict) + " WHERE node_id = %d;" % node_id
-	conn.execute(statement)
+	if "view_id" in node_dict:
+		if ViewUtil.view_id_exists(node_dict["view_id"]) == False:
+			torn.write({'message': "View ID does not exist"})
+			return False
+
+	try:
+		session.execute(
+			update(TableEntities.Nodes).where(TableEntities.Nodes.node_id == int(node_id)).values(node_dict)
+			)	
+		session.commit()
+	except:
+		print("Something went wrong. <Node Update>")
+		return False
+
 	return True
 
 """
@@ -110,5 +134,11 @@ def delete_node(node_id, torn):
 	import utilities.meta as MetaUtil
 	MetaUtil.delete_metadata_with_node(node_id)
 	#Delete the node
-	conn.execute("DELETE FROM {} WHERE node_id = {}".format(_table_, int(node_id)))
+	try:
+		session.execute(
+			delete(TableEntities.Nodes).where(TableEntities.Nodes.node_id == int(node_id))
+			)
+		session.commit()
+	except:
+		print("Something went wrong. <Node Delete>")
 	return True

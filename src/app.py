@@ -1,26 +1,30 @@
 from tornado.web import Application, RequestHandler
 from tornado.ioloop import IOLoop
-import handlers.api as APIHandler
-import os
+
+import handlers.api.node as NodeHandler
+import handlers.api.user as UserHandler
+import handlers.api.link as LinkHandler
+import handlers.api.label as LabelHandler
+import handlers.api.metadata as MetadataHandler
+import handlers.api.relationship as RelationshipHandler
+import handlers.api.view as ViewHandler
+import handlers.api.type as TypeHandler
+import handlers.api.logs as LogHandler
 
 def make_app():
-  urls = [("/api/auth/", APIHandler.Authenticate),
-          ("/api/register/", APIHandler.Register),
-          ("/api/user/", APIHandler.User),
-          ("/api/node/", APIHandler.Node),
-          ("/api/link/", APIHandler.Link),
-          ("/api/label/", APIHandler.Label),
-          ("/api/metadata/", APIHandler.Metadata),
-          ("/api/relationship/", APIHandler.Relationship),
-          ("/api/logs/", APIHandler.Log,
-          ("/api/logs/", APIHandler.View),
-          ("/api/nodetype/", APIHandler.NodeType))]
+  urls = [("/api/auth/", UserHandler.Authenticate),
+          ("/api/register/", UserHandler.Register),
+          ("/api/user/", UserHandler.User),
+          ("/api/node/", NodeHandler.Node),
+          ("/api/link/", LinkHandler.Link),
+          ("/api/label/", LabelHandler.Label),
+          ("/api/metadata/", MetadataHandler.Metadata),
+          ("/api/relationship/", RelationshipHandler.Relationship),
+          ("/api/logs/", LogHandler.Log,
+          ("/api/view/", ViewHandler.View),
+          ("/api/nodetype/", TypeHandler.NodeType))]
 
-  return Application(urls,
-  ssl_options = {
-    "certfile": os.path.join("certs/server.crt"),
-    "keyfile": os.path.join("certs/server.key")
-  }, debug=True)
+  return Application(urls, debug=True)
   
 if __name__ == '__main__':
     app = make_app()
