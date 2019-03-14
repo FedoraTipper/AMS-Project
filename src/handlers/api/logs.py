@@ -1,5 +1,3 @@
-from tornado.web import RequestHandler
-
 import utilities.error as ErrorUtil
 import handlers.logger as LoggerHandler
 import handlers.jwt as  JWTHandler

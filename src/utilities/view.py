@@ -61,7 +61,7 @@ def change_view(view_id, view_dict, torn):
 	return True
 
 def delete_view(view_id, torn):
-	if label_id_exists(view_id) == False:
+	if view_id_exists(view_id) == False:
 		torn.write({"message": "View does not exist"})
 		return False
 

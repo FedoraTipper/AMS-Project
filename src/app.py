@@ -20,9 +20,9 @@ def make_app():
           ("/api/label/", LabelHandler.Label),
           ("/api/metadata/", MetadataHandler.Metadata),
           ("/api/relationship/", RelationshipHandler.Relationship),
-          ("/api/logs/", LogHandler.Log,
+          ("/api/logs/", LogHandler.Log),
           ("/api/view/", ViewHandler.View),
-          ("/api/nodetype/", TypeHandler.NodeType))]
+          ("/api/type/", TypeHandler.NodeType)]
 
   return Application(urls, debug=True)
   

@@ -1,9 +1,9 @@
 import handlers.mysqldb as DBHandler
 import utilities.sql as SQLUtil
+import handlers.classes.TableEntities as TableEntities
+from sqlalchemy import exc
 
-conn = DBHandler.create_connection()
 session = DBHandler.create_session()
-_table_ = "logs"
 
 _message_format_ = {"add":"({user_data}) added {field} {field_id}; values: {vals}",
 			"change":"({user_data}) changed {field} {field_id}; Changed values: {vals}",
@@ -21,8 +21,10 @@ def log_message(format, message_dict):
 		if "{" + key + "}" in message:
 			message = message.replace("{" + key + "}", message_dict[key])
 	try:
-		session.add(Log(message=message))
-	except:
+		session.add(TableEntities.Log(message=message))
+		session.commit()
+	except exc.SQLAlchemyError as Error:
+		print(Error)
 		print("Something went wrong. <Log add>")
 		return False
 	return "Success"

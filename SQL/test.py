@@ -1,8 +1,8 @@
 from sqlalchemy import Column, DateTime, String, Integer, ForeignKey, func
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine, update
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.dialects.mysql import LONGTEXT
+
 Base = declarative_base()
 
 class User(Base):
@@ -17,7 +17,7 @@ class User(Base):
 class Log(Base):
 	__tablename__ = 'logs'
 	log_id = Column(Integer, primary_key=True, autoincrement=True)
-	message = Column('article_text', nullable=False)
+	message = Column(LONGTEXT, nullable=False)
 	def as_dict(self):
 		return {col.name: getattr(self, col.name) for col in self.__table__.columns}
 
@@ -75,7 +75,7 @@ class Metadata(Base):
 	__tablename__ = 'metadata'
 	meta_id = Column(Integer, primary_key=True, autoincrement=True)
 	category = Column(String, nullable=False)
-	data = Column("article_text", nullable=False)
+	data = Column(LONGTEXT, nullable=False)
 	node_id = Column(Integer, ForeignKey(Nodes.node_id), nullable=False)
 	def as_dict(self):
 		return {col.name: getattr(self, col.name) for col in self.__table__.columns}
