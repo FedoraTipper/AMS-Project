@@ -3,8 +3,8 @@ SQL_Statements = list()
 SQL_Statements.append("""CREATE TABLE user
 (
  user_id   int NOT NULL AUTO_INCREMENT ,
- username  varchar(150) NOT NULL ,
- password  varchar(255) NOT NULL ,
+ username  text NOT NULL ,
+ password  text NOT NULL ,
  privilege int NOT NULL ,
 PRIMARY KEY (user_id)
 );""")
@@ -12,29 +12,45 @@ PRIMARY KEY (user_id)
 SQL_Statements.append("""CREATE TABLE labels
 (
  label_id   int NOT NULL AUTO_INCREMENT ,
- label_text varchar(255) NOT NULL ,
- parent     int ,
-PRIMARY KEY (label_id),
-KEY fkIdx_155 (parent),
-CONSTRAINT FK_155 FOREIGN KEY fkIdx_155 (parent) REFERENCES labels (label_id)
+ label_text text NOT NULL ,
+PRIMARY KEY (label_id)
+);""")
+
+SQL_Statements.append("""CREATE TABLE node_type
+(
+ type_id int NOT NULL AUTO_INCREMENT ,
+ type    text NOT NULL ,
+PRIMARY KEY (type_id)
+);""")
+
+SQL_Statements.append("""CREATE TABLE views
+(
+ view_id int NOT NULL AUTO_INCREMENT,
+ name    text NOT NULL ,
+PRIMARY KEY (view_id)
 );""")
 
 SQL_Statements.append("""CREATE TABLE nodes
 (
  node_id  int NOT NULL AUTO_INCREMENT ,
- type     varchar(255) NOT NULL ,
+ view_id  int NOT NULL ,
+ type_id  int NOT NULL ,
+ icon     text ,
  label_id int ,
- icon     varchar(500) ,
 PRIMARY KEY (node_id),
 KEY fkIdx_123 (label_id),
-CONSTRAINT FK_123 FOREIGN KEY fkIdx_123 (label_id) REFERENCES labels (label_id)
+CONSTRAINT FK_123 FOREIGN KEY fkIdx_123 (label_id) REFERENCES labels (label_id),
+KEY fkIdx_174 (type_id),
+CONSTRAINT FK_174 FOREIGN KEY fkIdx_174 (type_id) REFERENCES node_type (type_id),
+KEY fkIdx_183 (view_id),
+CONSTRAINT FK_183 FOREIGN KEY fkIdx_183 (view_id) REFERENCES views (view_id)
 );""")
 
 SQL_Statements.append("""CREATE TABLE metadata
 (
  meta_id  int NOT NULL AUTO_INCREMENT ,
- category   varchar(350) NOT NULL ,
- metadata varchar(350) NOT NULL ,
+ category text NOT NULL ,
+ data     longtext NOT NULL ,
  node_id  int NOT NULL ,
 PRIMARY KEY (meta_id),
 KEY fkIdx_102 (node_id),
@@ -43,8 +59,8 @@ CONSTRAINT FK_102 FOREIGN KEY fkIdx_102 (node_id) REFERENCES nodes (node_id)
 
 SQL_Statements.append("""CREATE TABLE relationship
 (
- relationship_id int NOT NULL AUTO_INCREMENT,
- message         varchar(255) NOT NULL ,
+ relationship_id int NOT NULL AUTO_INCREMENT ,
+ message         text NOT NULL ,
 PRIMARY KEY (relationship_id)
 );""")
 
@@ -52,21 +68,23 @@ PRIMARY KEY (relationship_id)
 SQL_Statements.append("""CREATE TABLE links
 (
  link_id         int NOT NULL AUTO_INCREMENT ,
+ view_id         int NOT NULL ,
  node_id_1       int NOT NULL ,
  node_id_2       int NOT NULL ,
- label_id        int ,
  relationship_id int ,
+ label_id        int ,
 PRIMARY KEY (link_id),
 KEY fkIdx_106 (node_id_1),
 CONSTRAINT FK_106 FOREIGN KEY fkIdx_106 (node_id_1) REFERENCES nodes (node_id),
 KEY fkIdx_109 (node_id_2),
 CONSTRAINT FK_109 FOREIGN KEY fkIdx_109 (node_id_2) REFERENCES nodes (node_id),
-KEY fkIdx_120 (label_id),
-CONSTRAINT FK_120 FOREIGN KEY fkIdx_120 (label_id) REFERENCES labels (label_id),
 KEY fkIdx_149 (relationship_id),
-CONSTRAINT FK_149 FOREIGN KEY fkIdx_149 (relationship_id) REFERENCES relationship (relationship_id)
+CONSTRAINT FK_149 FOREIGN KEY fkIdx_149 (relationship_id) REFERENCES relationship (relationship_id),
+KEY fkIdx_191 (view_id),
+CONSTRAINT FK_191 FOREIGN KEY fkIdx_191 (view_id) REFERENCES views (view_id),
+KEY fkIdx_196 (label_id),
+CONSTRAINT FK_196 FOREIGN KEY fkIdx_196 (label_id) REFERENCES labels (label_id)
 );""")
-
 
 
 SQL_Statements.append("""CREATE TABLE messages
@@ -80,7 +98,7 @@ PRIMARY KEY (message_id)
 SQL_Statements.append("""CREATE TABLE logs
 (
  log_id  int NOT NULL AUTO_INCREMENT ,
- message varchar(2000) NOT NULL ,
+ message longtext NOT NULL ,
 PRIMARY KEY (log_id)
 );""")
 
@@ -89,7 +107,7 @@ import handlers.mysqldb as DBHandler
 
 conn = DBHandler.create_connection()
 
-previous_tables = ["logs","messages", "metadata", "relationship", "links", "nodes", "labels", "user"];
+previous_tables = ["logs","messages", "metadata", "relationship", "links", "nodes", "node_type", "views", "labels", "user"];
 
 #Drop all current tables
 
@@ -98,17 +116,9 @@ for table in previous_tables:
 	try:
 		conn.execute("DROP TABLE %s;" % table)
 	except:
-		pass
+		print("Failed to drop: %s" % table)
 
 #Start new table
 for statement in SQL_Statements:
 	print("Creating new" )
 	conn.execute(statement)
-
-
-
-
-
-
-
-

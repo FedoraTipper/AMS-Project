@@ -1,7 +1,8 @@
 from sqlalchemy import Column, DateTime, String, Integer, ForeignKey, func
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
-
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session
 Base = declarative_base()
 
 class User(Base):
@@ -54,9 +55,43 @@ class Links(Base):
 	view_id = Column(Integer, ForeignKey(View.view_id), nullable=False)
 	relationship_id = Column(Integer, ForeignKey(Relationship.relationship_id), nullable=False)
 
+
 class Metadata(Base):
 	__tablename__ = 'metadata'
 	meta_id = Column(Integer, primary_key=True, autoincrement=True)
 	category = Column(String, nullable=False)
 	data = Column("article_text", nullable=False)
 	node_id = Column(Integer, ForeignKey(Nodes.node_id), nullable=False)
+
+
+engine = create_engine("mysql+pymysql://apirunner:ZJJFt7rqeg8eMPreru69NX9W9yMfhyechc8Yzz4ogtdEfUB@139.59.172.124:3306/project1")
+Session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+session = Session
+session._model_changes = {}
+
+
+#print(session.query(Nodes).all())
+
+# session.add(NodeType(type="Developer"))
+# session.commit()
+# session.add(View(name="Countercept"))
+# session.commit()
+# session.add(Nodes(type_id=2,view_id=1))
+# session.commit()
+# print(session.query(View).all())
+entries = session.query(Nodes).all()
+
+for entry in entries:
+	print("node_id: %d" % entry.node_id)
+	print("view_id: %d" % entry.view_id)
+	print("type_id: %d" % entry.type_id)
+	print("")
+
+
+session.add(Relationship(message="owns"))
+session.commit()
+
+session.add(Links(node_id_1=2, node_id_2=1, view_id=1, relationship_id=1))
+session.commit()
+print(session.query(Links).one().link_id)
+# print(session.query(Nodes).all().node_id)

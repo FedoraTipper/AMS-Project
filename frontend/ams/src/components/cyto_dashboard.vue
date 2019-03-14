@@ -93,8 +93,8 @@
             <b-input-group prepend="Type" required class="mt-3">
               <b-form-input v-model="form.node_type" required/>
             </b-input-group>
-            <b-input-group prepend="Icon" required class="mt-3">
-              <b-form-input v-model="form.icon" required/>
+            <b-input-group prepend="Icon" class="mt-3">
+              <b-form-input v-model="form.icon"/>
             </b-input-group>
             <b-form-group id="Label_id_group" label="Collection label:" label-for="label_dropdown">
               <b-form-select
@@ -494,7 +494,7 @@ export default {
       this.$cytoscape.instance.then(cy => {
         window.cy = cy;
         cy.elements().remove();
-        this.resetVariables;
+        this.resetVariables();
         let nodes = [];
         let links = [];
         let relationships = {};
@@ -563,7 +563,7 @@ export default {
             this.nodes_form.push(nodes[i]["type"]);
             if (labels_dict_2[nodes[i]["label_id"]]) {
               this.nodes_dict[nodes[i]["type"]] = {
-                nodes_id: nodes[i]["node_id"],
+                node_id: nodes[i]["node_id"],
                 node_type: nodes[i]["type"],
                 label_id: labels_dict_2[nodes[i]["label_id"]]
               };
@@ -656,7 +656,7 @@ export default {
         type: this.form.node_type
       };
       if (this.selected.node_label) {
-        node_details["label_id"] = this.labels_dict[this.selected.node_label];
+        node_details["label_id"] = this.selected.node_label["label_id"];
       }
       if (this.form.icon) {
         node_details["icon"] = this.form.icon;
@@ -678,10 +678,9 @@ export default {
     },
     changeNode() {
       let node_details = {
-        node_id: this.nodes_dict[this.form.node_type]["nodes_id"]
+        node_id: this.nodes_dict[this.form.node_type]["node_id"]
       };
       if (this.selected.node_label) {
-        console.log(this.selected.node_label["label_id"]);
         node_details["label_id"] = this.selected.node_label["label_id"];
       }
       if (this.form.new_node_type) {
@@ -690,7 +689,6 @@ export default {
       if (this.form.icon) {
         node_details["icon"] = this.form.icon;
       }
-      console.log(node_details);
 
       this.axios({
         url: "http://127.0.0.1:5000/api/node/",
@@ -709,7 +707,7 @@ export default {
     },
     deleteNode() {
       let node_details = {
-        node_id: this.nodes_dict["nodes_id"][this.form.node_type]
+        node_id: this.nodes_dict[this.form.node_type]["node_id"]
       };
       this.axios({
         url: "http://127.0.0.1:5000/api/node/",
@@ -727,8 +725,8 @@ export default {
     },
     addLink() {
       let link_details = {
-        node_id_1: this.nodes_dict[this.form.node_type_1]["nodes_id"],
-        node_id_2: this.nodes_dict[this.form.node_type_2]["nodes_id"]
+        node_id_1: this.nodes_dict[this.form.node_type_1]["node_id"],
+        node_id_2: this.nodes_dict[this.form.node_type_2]["node_id"]
       };
       if (this.form.link_label) {
         link_details["label_id"] = this.labels_dict[this.form.link_label];
@@ -745,8 +743,8 @@ export default {
         data: link_details
       }).then(response => {
         if (response.data["message"].includes("Success")) {
-          this.cyUpdate();
           alert("Created link");
+          this.cyUpdate();
         } else {
           alert("Failed to create new link");
         }
@@ -781,8 +779,8 @@ export default {
         data: link_details
       }).then(response => {
         if (response.data["message"].includes("Success")) {
-          this.cyUpdate();
           alert("Changed link");
+          this.cyUpdate();
         } else {
           alert("Failed to change new link");
         }
@@ -807,6 +805,7 @@ export default {
       });
     },
     getMetadata() {
+      this.metadata_list = [];
       let node_id = this.nodes_dict[this.selected.node]["node_id"];
       this.axios({
         url: "http://127.0.0.1:5000/api/metadata/?node_id=" + node_id,
@@ -929,6 +928,7 @@ export default {
     focusNode(node) {
       this.modal_search_show = false;
       //Deselect any selected nodes
+      window.api.expandAll({ animate: false });
       window.cy.nodes().unselect();
       let child_id = String(node[0]["node_id"]);
       let expandList = [cy.$id(child_id)];
@@ -944,11 +944,11 @@ export default {
         }
         //Collapse all nodes on the map
         window.api.collapseAll();
-        window.api.expand(expandList);
+        window.api.expandRecursively(expandList);
         // Highlight the node that was selected. Dirty way since expand has no promise
         setTimeout(function() {
           window.cy.$id(String(node[0]["node_id"])).select();
-        }, 2000);
+        }, 1000);
       } else {
         window.api.collapseAll();
         window.cy.$id(String(node[0]["node_id"])).select();
