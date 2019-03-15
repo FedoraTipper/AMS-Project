@@ -153,7 +153,9 @@ def delete_metadata_with_node(node_id):
 			delete(TableEntities.Metadata).where(TableEntities.Metadata.node_id == int(node_id))
 			)
 		session.commit()
-	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
+		FLHandler.log_error_to_file(Error)
+		return False
+	except exc.SQLAlchemyError as Error:
 		FLHandler.log_error_to_file(Error)
 		return False

@@ -6,7 +6,7 @@ import handlers.config as ConfigHandlers
 
 logging.basicConfig(filename="logs.txt", level=logging.DEBUG, 
 					format='%(asctime)s - %(levelname)s - %(message)s', 
-					filemode='w')
+					filemode='a')
 
 logger = logging.getLogger()
 
@@ -27,3 +27,7 @@ Caveats: None
 """
 def log_error_to_file(message):
 	logger.error(message)
+
+
+def log_info_to_file(message):
+	logger.info(message)

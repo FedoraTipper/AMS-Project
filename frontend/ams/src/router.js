@@ -6,7 +6,7 @@ import Cyto from './components/cyto_dashboard'
 import Admin from './components/admin_dashboard'
 import User from './components/user_dashboard'
 import Signout from './components/signout'
-import CytoTest from './components/cyto_test'
+import CytoTest from './components/cyto_test2'
 
 Vue.use(Router)
 

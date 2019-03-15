@@ -14,15 +14,20 @@
     "cytoscape-automove": "^1.10.1",
     "cytoscape-cola": "^2.3.0",
     "cytoscape-cose-bilkent": "^4.0.0",
+    "cytoscape-cxtmenu": "^3.0.2",
+    "cytoscape-edgehandles": "^3.5.1",
     "cytoscape-expand-collapse": "^3.1.2",
     "forge": "^2.3.0",
     "fuse.js": "^3.4.4",
     "jquery": "^3.3.1",
+    "v-form-builder": "^1.4.0",
     "vue": "^2.6.8",
     "vue-axios": "^2.1.4",
     "vue-cytoscape": "^0.2.8",
+    "vue-drag-drop": "^1.1.4",
     "vue-loader": "^14.2.2",
-    "vue-router": "^3.0.2"
+    "vue-router": "^3.0.2",
+    "vuedraggable": "^2.19.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.4.0",

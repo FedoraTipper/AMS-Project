@@ -6,12 +6,13 @@ import BootstrapVue from 'bootstrap-vue'
 import VueCytoscape from 'vue-cytoscape'
 import router from './router'
 import cytoscape from 'cytoscape'
+import VueDragDrop from 'vue-drag-drop';
 
 Vue.use(BootstrapVue)
 Vue.use(VueAxios, axios)
 Vue.use(VueCytoscape)
 Vue.use(cytoscape)
-
+Vue.use(VueDragDrop);
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'

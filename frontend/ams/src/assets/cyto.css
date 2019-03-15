@@ -1,0 +1,52 @@
+
+#holder {
+  width: 100%;
+  height: 95.8%;
+  position: absolute;
+  background-color: #cfd8dc;
+  float: left;
+  left: 0px;
+}
+#cy {
+  z-index: 999;
+  width: 100%;
+  height: 95.8%;
+  float: left;
+  left: 0px;
+}
+#overlay-button{
+  position: absolute;
+  right: 1%;
+  z-index: 1000;
+  
+}
+#draggabledashboard {
+  position: absolute;
+  z-index: 1000;
+  background-color: whitesmoke;
+  width: 10%;
+  height: 95.8%;
+}
+.drop.over {
+  border-color: #aaa;
+  background: #ccc;
+}
+#draggablesspacing {
+  padding-top: 20px;
+}
+.drag {
+  box-sizing: border-box;
+  display: inline-block;
+  border-radius: 10px;
+  width: 100px;
+  height: 100px;
+  background: #ccc;
+  vertical-align: middle;
+  margin-right: 20px;
+  position: relative;
+  padding: 5px;
+  padding-top: 35px;
+  text-align: center;
+  margin: 3px;
+}
+
