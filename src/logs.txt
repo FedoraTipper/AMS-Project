@@ -697,3 +697,6 @@ TypeError: 'bool' object is not subscriptable
 2019-03-16 15:00:07,297 - INFO - 200 POST /api/node/ (127.0.0.1) 2428.29ms
 2019-03-16 15:00:07,407 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.38ms
 2019-03-16 15:00:09,843 - INFO - 200 POST /api/node/ (127.0.0.1) 2428.92ms
+2019-03-16 15:52:56,498 - INFO - /home/adam/Documents/Git/AMS-Project/src/handlers/api/label.py modified; restarting server
+2019-03-16 15:52:56,719 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 15:52:56,724 - DEBUG - Using selector: EpollSelector

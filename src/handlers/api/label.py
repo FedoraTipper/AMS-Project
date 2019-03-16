@@ -40,10 +40,8 @@ class Label(SetDefaultHeaders):
                                                                 LabelUtil.get_label_id(label_dict["label_text"]),
                                                                 label_dict)
 
-        try:
-            LoggerHandler.log_message("add", formatted_message)
-        except:
-            pass
+
+        LoggerHandler.log_message("add", formatted_message)
 
         self.write({"message": "Success"})
 
@@ -69,10 +67,9 @@ class Label(SetDefaultHeaders):
                                                                 "label", 
                                                                 label_id,
                                                                 label_dict)
-        try:
-            LoggerHandler.log_message("change", formatted_message)
-        except:
-            pass
+
+        LoggerHandler.log_message("change", formatted_message)
+
 
         self.write({"message":"Success"})
 
@@ -92,9 +89,7 @@ class Label(SetDefaultHeaders):
                                                                 "label", 
                                                                 label_dict["label_id"])
 
-        try:
-            LoggerHandler.log_message("delete", formatted_message)
-        except:
-            pass
+
+        LoggerHandler.log_message("delete", formatted_message)
 
         self.write({"message":"Success"})
