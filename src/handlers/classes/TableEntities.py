@@ -73,7 +73,6 @@ class Links(Base):
 	link_id = Column(Integer, primary_key=True, autoincrement=True)
 	node_id_1 = Column(Integer, ForeignKey(Nodes.node_id), nullable=False)
 	node_id_2 = Column(Integer, ForeignKey(Nodes.node_id), nullable=False)
-	label_id = Column(Integer, ForeignKey(Label.label_id), nullable=True)
 	view_id = Column(Integer, ForeignKey(View.view_id), nullable=False)
 	relationship_id = Column(Integer, ForeignKey(Relationship.relationship_id), nullable=True)
 	def as_dict(self):
@@ -84,6 +83,7 @@ class Metadata(Base):
 	meta_id = Column(Integer, primary_key=True, autoincrement=True)
 	category = Column(String, nullable=False)
 	data = Column(LONGTEXT, nullable=False)
-	node_id = Column(Integer, ForeignKey(Nodes.node_id), nullable=False)
+	node_id = Column(Integer, ForeignKey(Nodes.node_id), nullable=True)
+	link_id = Column(Integer, ForeignKey(Links.link_id), nullable=True)
 	def as_dict(self):
 		return {col.name: getattr(self, col.name) for col in self.__table__.columns}

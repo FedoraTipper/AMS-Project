@@ -2,12 +2,11 @@
   <div>
     <b-dropdown
       id="overlay-button"
-      right
-      offset="49"
-      dropdown
+      offset
+      dropleft
       :text="current_view"
       variant="primary"
-      class="m-2"
+      class="m-md-2"
       size="lg"
     >
       <div v-for="view in view_array" :key="view.view_id" v-bind="view_array">
@@ -70,7 +69,11 @@ export default {
         { view_id: "1", name: "Countercept" },
         { view_id: "2", name: "MWR" }
       ],
+      auth_header: {
+        Authorization: localStorage.getItem("Authorization")
+      },
       current_view: "",
+      current_view_number: "",
       config: {
         panningEnabled: true,
         fit: false,
@@ -106,6 +109,18 @@ export default {
               select: element => {
                 this.deleteElement(element);
               }
+            },
+            {
+              content: "Change Label",
+              select: element => {
+                this.changeElement(element);
+              }
+            },
+            {
+              content: "Metadata",
+              select: element => {
+                this.getMetadata(element);
+              }
             }
           ]
         }));
@@ -113,30 +128,44 @@ export default {
     },
     addLink(sourceNode, targetNode, Link) {},
     handleDrop(nodetype) {
-      this.$cytoscape.instance.then(cy => {
-        cy.add({
-          group: "nodes",
-          data: {
-            id: this.i,
-            name: nodetype["type"]["type"],
-            payload: {
-              type_id: nodetype["type"]["type_id"],
-              type: nodetype["type"]["type"],
-              node_id: "",
-              //  Comeback to this and set the view
-              view_id: ""
-            },
-            imglink: null
-          }
-        });
-        this.cytodrop = false;
-        this.i++;
+      let node_details = {
+        view_id: this.current_view_number,
+        type_id: nodetype["type"]["type_id"]
+      };
+      this.axios({
+        url: "http://127.0.0.1:5000/api/node/",
+        headers: this.auth_header,
+        method: "post",
+        data: node_details
+      }).then(response => {
+        if (response.data["message"].includes("Success")) {
+          let returned_id = response.data["payload"];
+          this.$cytoscape.instance.then(cy => {
+            cy.add({
+              group: "nodes",
+              data: {
+                id: returned_id,
+                name: nodetype["type"]["type"],
+                payload: {
+                  type_id: nodetype["type"]["type_id"],
+                  type: nodetype["type"]["type"],
+                  //  Comeback to this and set the view
+                  view_id: this.current_view_number
+                },
+                imglink: null
+              }
+            });
+            this.cytodrop = false;
+          });
+        } else {
+          alert("Failed to create new node. " + response.data["message"]);
+        }
       });
-
       this.update_view();
     },
     change_collection(view) {
       this.current_view = view.name;
+      this.current_view_number = view.view_id;
     },
     update_view() {
       this.$cytoscape.instance.then(cy => {
@@ -145,6 +174,20 @@ export default {
       });
     },
     deleteElement(element) {
+      if (element["_private"]["group"] == "edges") {
+        this.deleteLink(element);
+      } else {
+        this.deleteNode(element);
+      }
+    },
+    changeElement(element) {
+      if (element["_private"]["group"] == "edges") {
+        this.deleteLink(element);
+      } else {
+        this.deleteNode(element);
+      }
+    },
+    getMetadata(element) {
       if (element["_private"]["group"] == "edges") {
         this.deleteLink(element);
       } else {

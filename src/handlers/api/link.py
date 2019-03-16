@@ -27,10 +27,11 @@ class Link(SetDefaultHeaders):
 
         userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
-        body_categories = {"node_id_1": 1, "node_id_2": 1, "label_id":0, "relationship_id":0}
+        body_categories = {"node_id_1": 1, "node_id_2": 1, "view_id": 1, "relationship_id":0}
         link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
-        if link_dict == False or LinkUtil.create_link(link_dict, self) == False:
+        link_id = LinkUtil.create_link(link_dict, self)
+        if link_dict == False or  link_id == False:
             return None
 
         formatted_message = LoggerHandler.form_message_dictionary(userdata, 
@@ -43,7 +44,7 @@ class Link(SetDefaultHeaders):
         except:
             pass
 
-        self.write({"message":"Success"})
+        self.write({"message":"Success", "payload":link_id})
 
     def put(self):
         if JWTHandler.authorize_action(self, 1) == False:
@@ -51,7 +52,7 @@ class Link(SetDefaultHeaders):
 
         userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
-        body_categories = {"link_id": 1, "node_id_1": 0, "node_id_2": 0, "label_id": 0, "relationship_id":0}
+        body_categories = {"link_id": 1, "view_id": 0, "node_id_1": 0, "node_id_2": 0, "relationship_id":0}
         link_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         print(link_dict)

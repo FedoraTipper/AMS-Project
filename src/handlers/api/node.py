@@ -28,17 +28,18 @@ class Node(SetDefaultHeaders):
         body_categories = {"type_id": 1, "view_id": 1, "label_id": 0, "icon":0}
         node_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
-        if node_dict == False or NodeUtil.create_node(node_dict, self) == False:
+        node_id = NodeUtil.create_node(node_dict, self)
+        if node_dict == False or node_id == False:
             return None
 
         formatted_message = LoggerHandler.form_message_dictionary(userdata, 
                                                                 "node", 
-                                                                "type_id",
+                                                                node_id,
                                                                 node_dict)
 
         LoggerHandler.log_message("add", formatted_message)
 
-        self.write({"message": "Success"})
+        self.write({"message": "Success", "payload":node_id})
 
     def put(self):
         if JWTHandler.authorize_action(self, 1) == False:

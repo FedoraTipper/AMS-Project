@@ -41,11 +41,19 @@ def create_node(node_dict, torn):
 	try:
 		session.add(node)
 		session.commit()
+
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
 		FLHandler.log_error_to_file(Error)
 		return False
-	return True
+
+	node_id = session.query(TableEntities.Nodes).order_by(TableEntities.Nodes.node_id.desc()).first()
+	#create metadata category for type of node
+	type_name = TypeUtil.get_type(node_dict["type_id"])["data"][0]["type"]
+	import utilities.meta as MetadataUtil
+	metadata_dict = {"node_id": int(node_id.node_id), "category":"Type", "data": type_name}
+	MetadataUtil.create_type_category(metadata_dict)
+	return node_id.node_id
 
 """
 Function to determine if the node ID exists

@@ -46,16 +46,7 @@ KEY fkIdx_183 (view_id),
 CONSTRAINT FK_183 FOREIGN KEY fkIdx_183 (view_id) REFERENCES views (view_id)
 );""")
 
-SQL_Statements.append("""CREATE TABLE metadata
-(
- meta_id  int NOT NULL AUTO_INCREMENT ,
- category text NOT NULL ,
- data     longtext NOT NULL ,
- node_id  int NOT NULL ,
-PRIMARY KEY (meta_id),
-KEY fkIdx_102 (node_id),
-CONSTRAINT FK_102 FOREIGN KEY fkIdx_102 (node_id) REFERENCES nodes (node_id)
-);""")
+
 
 SQL_Statements.append("""CREATE TABLE relationship
 (
@@ -72,7 +63,6 @@ SQL_Statements.append("""CREATE TABLE links
  node_id_1       int NOT NULL ,
  node_id_2       int NOT NULL ,
  relationship_id int ,
- label_id        int ,
 PRIMARY KEY (link_id),
 KEY fkIdx_106 (node_id_1),
 CONSTRAINT FK_106 FOREIGN KEY fkIdx_106 (node_id_1) REFERENCES nodes (node_id),
@@ -81,19 +71,22 @@ CONSTRAINT FK_109 FOREIGN KEY fkIdx_109 (node_id_2) REFERENCES nodes (node_id),
 KEY fkIdx_149 (relationship_id),
 CONSTRAINT FK_149 FOREIGN KEY fkIdx_149 (relationship_id) REFERENCES relationship (relationship_id),
 KEY fkIdx_191 (view_id),
-CONSTRAINT FK_191 FOREIGN KEY fkIdx_191 (view_id) REFERENCES views (view_id),
-KEY fkIdx_196 (label_id),
-CONSTRAINT FK_196 FOREIGN KEY fkIdx_196 (label_id) REFERENCES labels (label_id)
+CONSTRAINT FK_191 FOREIGN KEY fkIdx_191 (view_id) REFERENCES views (view_id)
 );""")
 
-
-SQL_Statements.append("""CREATE TABLE messages
+SQL_Statements.append("""CREATE TABLE metadata
 (
- message_id int NOT NULL AUTO_INCREMENT,
- text       varchar(2000) NOT NULL ,
-PRIMARY KEY (message_id)
+ meta_id  int NOT NULL AUTO_INCREMENT ,
+ category text NOT NULL ,
+ data     longtext NOT NULL ,
+ node_id  int ,
+ link_id  int ,
+PRIMARY KEY (meta_id),
+KEY fkIdx_102 (node_id),
+CONSTRAINT FK_102 FOREIGN KEY fkIdx_102 (node_id) REFERENCES nodes (node_id),
+KEY fkIdx_208 (link_id),
+CONSTRAINT FK_208 FOREIGN KEY fkIdx_208 (link_id) REFERENCES links (link_id)
 );""")
-
 
 SQL_Statements.append("""CREATE TABLE logs
 (
@@ -107,7 +100,7 @@ import handlers.mysqldb as DBHandler
 
 conn = DBHandler.create_connection()
 
-previous_tables = ["logs","messages", "metadata", "relationship", "links", "nodes", "node_type", "views", "labels", "user"];
+previous_tables = ["logs",  "metadata", "links", "relationship", "nodes",  "node_type", "views", "labels", "user"];
 
 #Drop all current tables
 

@@ -3,3 +3,454 @@
 2019-03-15 14:07:24,448 - INFO - /home/admin/Documents/git/AMS-Project/src/handlers/filelogger.py modified; restarting server
 2019-03-15 14:07:24,786 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
 2019-03-15 14:07:24,793 - DEBUG - Using selector: EpollSelector
+2019-03-16 10:25:24,903 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 10:26:59,331 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 10:27:23,724 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 10:27:23,730 - DEBUG - Using selector: EpollSelector
+2019-03-16 11:43:26,499 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 11:43:26,506 - DEBUG - Using selector: EpollSelector
+2019-03-16 11:43:56,209 - INFO - 200 POST /api/view/ (::1) 6327.04ms
+2019-03-16 11:45:18,299 - INFO - 200 GET /api/view/ (::1) 189.97ms
+2019-03-16 11:45:42,667 - INFO - 200 POST /api/type/ (::1) 4019.53ms
+2019-03-16 11:45:46,180 - INFO - 200 POST /api/type/ (::1) 1516.11ms
+2019-03-16 11:45:51,934 - INFO - 200 GET /api/type/ (::1) 192.75ms
+2019-03-16 11:46:19,027 - INFO - 200 POST /api/node/ (::1) 4209.13ms
+2019-03-16 11:46:34,404 - INFO - 200 POST /api/node/ (::1) 1703.54ms
+2019-03-16 11:46:48,249 - WARNING - 401 GET /api/node/ (::1) 0.38ms
+2019-03-16 11:46:59,579 - INFO - 200 GET /api/node/ (::1) 193.99ms
+2019-03-16 11:51:38,760 - ERROR - Uncaught exception POST /api/link/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/link/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/link.py", line 33, in post
+    link_id = LinkUtil.create_link(link_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/link.py", line 33, in create_link
+    if ViewUtil.view_id_exists(link_dict["view_id"]) == False:
+KeyError: 'view_id'
+2019-03-16 11:51:38,761 - ERROR - 500 POST /api/link/ (::1) 2997.85ms
+2019-03-16 11:51:54,595 - WARNING - 401 GET /api/link/ (::1) 0.29ms
+2019-03-16 11:52:06,638 - INFO - 200 GET /api/link/ (::1) 187.61ms
+2019-03-16 11:53:42,008 - INFO - /home/adam/Documents/Git/AMS-Project/src/handlers/api/link.py modified; restarting server
+2019-03-16 11:53:42,234 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 11:53:42,239 - DEBUG - Using selector: EpollSelector
+2019-03-16 11:53:56,193 - ERROR - Uncaught exception POST /api/link/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/link/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/link.py", line 39, in post
+    LinkUtil.get_link_id(link_dict["node_id_1"], link_dict["node_id_2"]),
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/link.py", line 112, in get_link_id
+    (TableEntities.Links.node_id_2 == int(node_id_2))).one().meta_id)
+AttributeError: 'Links' object has no attribute 'meta_id'
+2019-03-16 11:53:56,194 - ERROR - 500 POST /api/link/ (::1) 9022.84ms
+2019-03-16 11:54:32,742 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/link.py modified; restarting server
+2019-03-16 11:54:32,959 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 11:54:32,964 - DEBUG - Using selector: EpollSelector
+2019-03-16 11:54:43,461 - WARNING - 400 POST /api/link/ (::1) 5580.77ms
+2019-03-16 11:54:52,561 - INFO - 200 GET /api/link/ (::1) 194.13ms
+2019-03-16 11:55:16,767 - ERROR - Uncaught exception POST /api/metadata/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/metadata/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py", line 34, in post
+    if "node_id" not in metadata_dict and "link_id" not in metadata_dict:
+TypeError: argument of type 'bool' is not iterable
+2019-03-16 11:55:16,768 - ERROR - 500 POST /api/metadata/ (::1) 1.50ms
+2019-03-16 11:57:09,970 - INFO - /home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py modified; restarting server
+2019-03-16 11:57:10,222 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 11:57:10,226 - DEBUG - Using selector: EpollSelector
+2019-03-16 11:57:12,474 - ERROR - Uncaught exception POST /api/metadata/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/metadata/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py", line 34, in post
+    if ("node_id" not in metadata_dict) and ("link_id" not in metadata_dict):
+TypeError: argument of type 'bool' is not iterable
+2019-03-16 11:57:12,475 - ERROR - 500 POST /api/metadata/ (::1) 1.55ms
+2019-03-16 11:58:11,233 - INFO - /home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py modified; restarting server
+2019-03-16 11:58:11,512 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 11:58:11,517 - DEBUG - Using selector: EpollSelector
+2019-03-16 11:58:12,489 - ERROR - Uncaught exception POST /api/metadata/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/metadata/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py", line 34, in post
+    if (("node_id" not in metadata_dict) and ("link_id" not in metadata_dict)):
+TypeError: argument of type 'bool' is not iterable
+2019-03-16 11:58:12,490 - ERROR - 500 POST /api/metadata/ (::1) 1.31ms
+2019-03-16 11:58:18,019 - INFO - /home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py modified; restarting server
+2019-03-16 11:58:18,254 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 11:58:18,259 - DEBUG - Using selector: EpollSelector
+2019-03-16 11:58:19,027 - ERROR - Uncaught exception POST /api/metadata/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/metadata/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py", line 34, in post
+    if (("node_id" not in metadata_dict) & ("link_id" not in metadata_dict)):
+TypeError: argument of type 'bool' is not iterable
+2019-03-16 11:58:19,028 - ERROR - 500 POST /api/metadata/ (::1) 1.56ms
+2019-03-16 12:00:27,766 - INFO - /home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py modified; restarting server
+2019-03-16 12:00:28,019 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:00:28,024 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:00:31,732 - ERROR - Uncaught exception POST /api/metadata/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/metadata/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py", line 33, in post
+    test = "node_id" not in metadata_dict
+TypeError: argument of type 'bool' is not iterable
+2019-03-16 12:00:31,733 - ERROR - 500 POST /api/metadata/ (::1) 1.82ms
+2019-03-16 12:01:10,530 - INFO - /home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py modified; restarting server
+2019-03-16 12:01:10,785 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:01:18,826 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:01:39,838 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:01:39,843 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:01:42,831 - ERROR - Uncaught exception POST /api/metadata/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/metadata/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py", line 37, in post
+    test = "node_id" not in metadata_dict
+TypeError: argument of type 'bool' is not iterable
+2019-03-16 12:01:42,832 - ERROR - 500 POST /api/metadata/ (::1) 1.49ms
+2019-03-16 12:01:55,349 - INFO - /home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py modified; restarting server
+2019-03-16 12:01:55,606 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:01:55,611 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:02:26,617 - INFO - /home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py modified; restarting server
+2019-03-16 12:02:26,855 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:02:35,378 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:02:52,486 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:02:52,490 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:02:54,618 - ERROR - Uncaught exception POST /api/metadata/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/metadata/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py", line 37, in post
+    if ("node_id" not in metadata_dict + "link_id" not in metadata_dict):
+TypeError: unsupported operand type(s) for +: 'dict' and 'str'
+2019-03-16 12:02:54,619 - ERROR - 500 POST /api/metadata/ (::1) 1.93ms
+2019-03-16 12:03:06,998 - INFO - /home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py modified; restarting server
+2019-03-16 12:03:07,268 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:03:07,273 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:03:14,460 - ERROR - Uncaught exception POST /api/metadata/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/metadata/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py", line 48, in post
+    int(MetadataUtil.get_metadata_id_with_node(metadata_dict["category"],metadata_dict["node_id"])),
+AttributeError: module 'utilities.meta' has no attribute 'get_metadata_id_with_node'
+2019-03-16 12:03:14,463 - ERROR - 500 POST /api/metadata/ (::1) 6016.14ms
+2019-03-16 12:06:28,780 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/meta.py modified; restarting server
+2019-03-16 12:06:29,039 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:06:29,044 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:07:20,546 - INFO - /home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py modified; restarting server
+2019-03-16 12:07:20,770 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:08:02,445 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:09:08,407 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:09:08,411 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:09:15,938 - WARNING - 400 POST /api/metadata/ (::1) 5245.72ms
+2019-03-16 12:09:31,148 - INFO - 200 GET /api/metadata/?node_id=1 (::1) 187.89ms
+2019-03-16 12:10:17,187 - ERROR - Uncaught exception POST /api/metadata/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/metadata/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py", line 42, in post
+    meta_id = MetadataUtil.create_category(metadata_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/meta.py", line 23, in create_category
+    if LinkUtil.link_id_exists(metadata_dict["link_id"]) == False:
+AttributeError: module 'utilities.link' has no attribute 'link_id_exists'
+2019-03-16 12:10:17,188 - ERROR - 500 POST /api/metadata/ (::1) 1.20ms
+2019-03-16 12:10:57,418 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/meta.py modified; restarting server
+2019-03-16 12:10:57,681 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:10:57,686 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:11:11,692 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/meta.py modified; restarting server
+2019-03-16 12:11:11,956 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:11:11,961 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:11:23,530 - ERROR - Uncaught exception POST /api/metadata/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/metadata/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/metadata.py", line 42, in post
+    meta_id = MetadataUtil.create_category(metadata_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/meta.py", line 45, in create_category
+    session.add(TableEntities.Metadata(link_id=int(metadata_dict["node_id"]), category=metadata_dict["category"],
+KeyError: 'node_id'
+2019-03-16 12:11:23,534 - ERROR - 500 POST /api/metadata/ (::1) 5248.89ms
+2019-03-16 12:11:45,469 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/meta.py modified; restarting server
+2019-03-16 12:11:45,725 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:11:45,729 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:12:02,003 - INFO - 200 POST /api/metadata/ (::1) 9270.92ms
+2019-03-16 12:12:08,210 - INFO - 200 GET /api/metadata/?node_id=1 (::1) 196.09ms
+2019-03-16 12:12:15,073 - WARNING - 400 GET /api/metadata/ (::1) 0.42ms
+2019-03-16 12:12:30,318 - INFO - 200 GET /api/metadata/?link_id=1 (::1) 196.50ms
+2019-03-16 12:14:42,236 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/node.py modified; restarting server
+2019-03-16 12:18:59,148 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:18:59,152 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:19:10,692 - ERROR - Uncaught exception POST /api/node/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/node/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 31, in post
+    node_id = NodeUtil.create_node(node_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 54, in create_node
+    MetadataUtil.create_category(metadata_dict, torn)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/meta.py", line 18, in create_category
+    if NodeUtil.node_id_exists(metadata_dict["node_id"]) == False:
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 65, in node_id_exists
+    TableEntities.Nodes.node_id == int(node_id)).count()) != 0
+TypeError: int() argument must be a string, a bytes-like object or a number, not 'Nodes'
+2019-03-16 12:19:10,693 - ERROR - 500 POST /api/node/ (::1) 8543.39ms
+2019-03-16 12:19:30,653 - INFO - 200 GET /api/node/ (::1) 186.66ms
+2019-03-16 12:21:08,655 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/meta.py modified; restarting server
+2019-03-16 12:21:08,876 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:21:08,881 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:21:24,353 - ERROR - Uncaught exception POST /api/node/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/node/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 31, in post
+    node_id = NodeUtil.create_node(node_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 54, in create_node
+    MetadataUtil.create_category(metadata_dict, torn)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/meta.py", line 18, in create_category
+    if NodeUtil.node_id_exists(metadata_dict["node_id"]) == False:
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 65, in node_id_exists
+    TableEntities.Nodes.node_id == int(node_id)).count()) != 0
+TypeError: int() argument must be a string, a bytes-like object or a number, not 'Nodes'
+2019-03-16 12:21:24,354 - ERROR - 500 POST /api/node/ (::1) 8558.51ms
+2019-03-16 12:21:55,883 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/node.py modified; restarting server
+2019-03-16 12:21:56,114 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:21:56,118 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:22:27,517 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:22:27,521 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:22:56,957 - ERROR - Uncaught exception POST /api/node/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/node/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 31, in post
+    node_id = NodeUtil.create_node(node_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 54, in create_node
+    MetadataUtil.create_type_category(metadata_dict)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/meta.py", line 58, in create_type_category
+    session.add(TableEntities.Metadata(node_id=int(metadata_dict["node_id"]), category=metadata_dict["category"],
+TypeError: int() argument must be a string, a bytes-like object or a number, not 'Nodes'
+2019-03-16 12:22:56,961 - ERROR - 500 POST /api/node/ (::1) 8677.44ms
+2019-03-16 12:23:27,524 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/node.py modified; restarting server
+2019-03-16 12:23:27,756 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:23:27,761 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:23:41,263 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/node.py modified; restarting server
+2019-03-16 12:23:41,509 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:23:41,513 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:23:55,764 - ERROR - Uncaught exception POST /api/node/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/node/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 31, in post
+    node_id = NodeUtil.create_node(node_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 55, in create_node
+    MetadataUtil.create_type_category(metadata_dict)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/meta.py", line 60, in create_type_category
+    session.commit()
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/scoping.py", line 153, in do
+    return getattr(self.registry(), name)(*args, **kwargs)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/session.py", line 943, in commit
+    self.transaction.commit()
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/session.py", line 467, in commit
+    self._prepare_impl()
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/session.py", line 447, in _prepare_impl
+    self.session.flush()
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/session.py", line 2254, in flush
+    self._flush(objects)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/session.py", line 2380, in _flush
+    transaction.rollback(_capture_exception=True)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py", line 66, in __exit__
+    compat.reraise(exc_type, exc_value, exc_tb)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/util/compat.py", line 249, in reraise
+    raise value
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/session.py", line 2344, in _flush
+    flush_context.execute()
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/unitofwork.py", line 391, in execute
+    rec.execute(self)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/unitofwork.py", line 556, in execute
+    uow
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/persistence.py", line 181, in save_obj
+    mapper, table, insert)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/persistence.py", line 866, in _emit_insert_statements
+    execute(statement, params)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/engine/base.py", line 948, in execute
+    return meth(self, multiparams, params)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/sql/elements.py", line 269, in _execute_on_connection
+    return connection._execute_clauseelement(self, multiparams, params)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/engine/base.py", line 1060, in _execute_clauseelement
+    compiled_sql, distilled_params
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/engine/base.py", line 1200, in _execute_context
+    context)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/engine/base.py", line 1416, in _handle_dbapi_exception
+    util.reraise(*exc_info)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/util/compat.py", line 249, in reraise
+    raise value
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/engine/base.py", line 1193, in _execute_context
+    context)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/engine/default.py", line 509, in do_execute
+    cursor.execute(statement, parameters)
+  File "/usr/lib/python3.6/site-packages/pymysql/cursors.py", line 168, in execute
+    query = self.mogrify(query, args)
+  File "/usr/lib/python3.6/site-packages/pymysql/cursors.py", line 147, in mogrify
+    query = query % self._escape_args(args, conn)
+  File "/usr/lib/python3.6/site-packages/pymysql/cursors.py", line 127, in _escape_args
+    return {key: conn.literal(val) for (key, val) in args.items()}
+  File "/usr/lib/python3.6/site-packages/pymysql/cursors.py", line 127, in <dictcomp>
+    return {key: conn.literal(val) for (key, val) in args.items()}
+  File "/usr/lib/python3.6/site-packages/pymysql/connections.py", line 467, in literal
+    return self.escape(obj, self.encoders)
+  File "/usr/lib/python3.6/site-packages/pymysql/connections.py", line 460, in escape
+    return converters.escape_item(obj, self.charset, mapping=mapping)
+  File "/usr/lib/python3.6/site-packages/pymysql/converters.py", line 25, in escape_item
+    val = encoder(val, charset, mapping)
+  File "/usr/lib/python3.6/site-packages/pymysql/converters.py", line 33, in escape_dict
+    quoted = escape_item(v, charset, mapping)
+  File "/usr/lib/python3.6/site-packages/pymysql/converters.py", line 25, in escape_item
+    val = encoder(val, charset, mapping)
+  File "/usr/lib/python3.6/site-packages/pymysql/converters.py", line 42, in escape_sequence
+    return "(" + ",".join(n) + ")"
+TypeError: sequence item 0: expected str instance, dict found
+2019-03-16 12:23:55,774 - ERROR - 500 POST /api/node/ (::1) 11595.59ms
+2019-03-16 12:25:07,516 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/meta.py modified; restarting server
+2019-03-16 12:25:07,741 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:25:07,746 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:25:17,321 - INFO - 200 GET /api/node/ (::1) 2692.20ms
+2019-03-16 12:25:32,266 - INFO - 200 GET /api/metadata/?link_id=4 (::1) 2690.43ms
+2019-03-16 12:25:39,488 - INFO - 200 GET /api/node/ (::1) 193.21ms
+2019-03-16 12:25:48,920 - ERROR - Uncaught exception POST /api/node/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/node/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 31, in post
+    node_id = NodeUtil.create_node(node_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 55, in create_node
+    MetadataUtil.create_type_category(metadata_dict)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/meta.py", line 60, in create_type_category
+    session.commit()
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/scoping.py", line 153, in do
+    return getattr(self.registry(), name)(*args, **kwargs)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/session.py", line 943, in commit
+    self.transaction.commit()
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/session.py", line 467, in commit
+    self._prepare_impl()
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/session.py", line 447, in _prepare_impl
+    self.session.flush()
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/session.py", line 2254, in flush
+    self._flush(objects)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/session.py", line 2380, in _flush
+    transaction.rollback(_capture_exception=True)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/util/langhelpers.py", line 66, in __exit__
+    compat.reraise(exc_type, exc_value, exc_tb)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/util/compat.py", line 249, in reraise
+    raise value
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/session.py", line 2344, in _flush
+    flush_context.execute()
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/unitofwork.py", line 391, in execute
+    rec.execute(self)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/unitofwork.py", line 556, in execute
+    uow
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/persistence.py", line 181, in save_obj
+    mapper, table, insert)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/orm/persistence.py", line 866, in _emit_insert_statements
+    execute(statement, params)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/engine/base.py", line 948, in execute
+    return meth(self, multiparams, params)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/sql/elements.py", line 269, in _execute_on_connection
+    return connection._execute_clauseelement(self, multiparams, params)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/engine/base.py", line 1060, in _execute_clauseelement
+    compiled_sql, distilled_params
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/engine/base.py", line 1200, in _execute_context
+    context)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/engine/base.py", line 1416, in _handle_dbapi_exception
+    util.reraise(*exc_info)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/util/compat.py", line 249, in reraise
+    raise value
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/engine/base.py", line 1193, in _execute_context
+    context)
+  File "/usr/lib/python3.6/site-packages/sqlalchemy/engine/default.py", line 509, in do_execute
+    cursor.execute(statement, parameters)
+  File "/usr/lib/python3.6/site-packages/pymysql/cursors.py", line 168, in execute
+    query = self.mogrify(query, args)
+  File "/usr/lib/python3.6/site-packages/pymysql/cursors.py", line 147, in mogrify
+    query = query % self._escape_args(args, conn)
+  File "/usr/lib/python3.6/site-packages/pymysql/cursors.py", line 127, in _escape_args
+    return {key: conn.literal(val) for (key, val) in args.items()}
+  File "/usr/lib/python3.6/site-packages/pymysql/cursors.py", line 127, in <dictcomp>
+    return {key: conn.literal(val) for (key, val) in args.items()}
+  File "/usr/lib/python3.6/site-packages/pymysql/connections.py", line 467, in literal
+    return self.escape(obj, self.encoders)
+  File "/usr/lib/python3.6/site-packages/pymysql/connections.py", line 460, in escape
+    return converters.escape_item(obj, self.charset, mapping=mapping)
+  File "/usr/lib/python3.6/site-packages/pymysql/converters.py", line 25, in escape_item
+    val = encoder(val, charset, mapping)
+  File "/usr/lib/python3.6/site-packages/pymysql/converters.py", line 33, in escape_dict
+    quoted = escape_item(v, charset, mapping)
+  File "/usr/lib/python3.6/site-packages/pymysql/converters.py", line 25, in escape_item
+    val = encoder(val, charset, mapping)
+  File "/usr/lib/python3.6/site-packages/pymysql/converters.py", line 42, in escape_sequence
+    return "(" + ",".join(n) + ")"
+TypeError: sequence item 0: expected str instance, dict found
+2019-03-16 12:25:48,923 - ERROR - 500 POST /api/node/ (::1) 6361.47ms
+2019-03-16 12:26:24,749 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/node.py modified; restarting server
+2019-03-16 12:26:24,971 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:26:24,975 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:26:29,978 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/node.py modified; restarting server
+2019-03-16 12:26:30,205 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:26:30,209 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:27:32,630 - INFO - 200 GET /api/type/ (::1) 2607.19ms
+2019-03-16 12:27:35,197 - INFO - 200 GET /api/type/?type_id=1 (::1) 185.82ms
+2019-03-16 12:27:45,212 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/node.py modified; restarting server
+2019-03-16 12:27:45,435 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:27:45,439 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:28:08,516 - ERROR - Uncaught exception POST /api/node/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/node/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 31, in post
+    node_id = NodeUtil.create_node(node_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 52, in create_node
+    type_name = TypeUtil.get_type(node_dict["type_id"])["data"]["type"]
+TypeError: list indices must be integers or slices, not str
+2019-03-16 12:28:08,517 - ERROR - 500 POST /api/node/ (::1) 8859.87ms
+2019-03-16 12:28:56,942 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/node.py modified; restarting server
+2019-03-16 12:28:57,164 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 12:28:57,169 - DEBUG - Using selector: EpollSelector
+2019-03-16 12:29:02,245 - INFO - 200 GET /api/type/?type_id=1 (::1) 2609.31ms
+2019-03-16 12:29:19,893 - INFO - 200 POST /api/node/ (::1) 12243.41ms
+2019-03-16 12:29:26,923 - INFO - 200 GET /api/metadata/?link_id=4 (::1) 187.46ms
+2019-03-16 12:29:30,794 - INFO - 200 GET /api/metadata/?link_id=9 (::1) 186.99ms
+2019-03-16 12:29:37,783 - INFO - 200 GET /api/metadata/?node_id=9 (::1) 187.50ms
+2019-03-16 12:36:09,196 - INFO - 200 POST /api/view/ (::1) 1513.58ms
+2019-03-16 12:48:16,031 - INFO - 200 GET /api/node/ (::1) 190.29ms
+2019-03-16 12:53:26,725 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.21ms
+2019-03-16 12:53:26,730 - WARNING - 401 POST /api/node/ (127.0.0.1) 0.30ms
+2019-03-16 12:55:07,156 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.22ms
+2019-03-16 12:55:07,161 - WARNING - 401 POST /api/node/ (127.0.0.1) 0.28ms
+2019-03-16 12:55:31,114 - INFO - 200 GET /api/node/ (::1) 187.60ms
+2019-03-16 12:55:58,492 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.31ms
+2019-03-16 12:55:58,499 - WARNING - 401 POST /api/node/ (127.0.0.1) 0.28ms
+2019-03-16 12:57:08,713 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.26ms
+2019-03-16 12:57:11,189 - INFO - 200 POST /api/node/ (127.0.0.1) 2471.40ms
+2019-03-16 12:57:59,665 - INFO - 200 GET /api/node/ (::1) 186.96ms

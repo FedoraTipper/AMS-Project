@@ -1,6 +1,5 @@
 import handlers.mysqldb as DBHandler
 import utilities.node as NodeUtil
-import utilities.label as LabelUtil
 import utilities.view as ViewUtil
 import utilities.relationship as RelationshipUtil
 import handlers.classes.TableEntities as TableEntities
@@ -12,7 +11,7 @@ session = DBHandler.create_session()
 """
 Function to create a link
 Inputs: Link dictionary; Tornado Object
-Output: True if operation was successful, False if the operation was not
+Output: Newly created link_id if operation was successful, False if the operation was not
 Caveats: Check if both nodes and any FK objects exists, links already exists and if the link is to and from the same node
 """
 def create_link(link_dict, torn):
@@ -40,14 +39,6 @@ def create_link(link_dict, torn):
 								node_id_2=int(link_dict["node_id_2"]),
 								view_id = int(link_dict["view_id"]))
 
-	if "label_id" in link_dict:
-		if LabelUtil.label_id_exists(link_dict["label_id"]) == False:
-			torn.write({"message":"Label does not exist"})
-			torn.set_status(404)
-			return False
-		else:
-			link.label_id = int(link_dict["label_id"])
-
 	if "relationship_id" in link_dict:
 		if RelationshipUtil.relationship_id_exists(link_dict["relationship_id"]) == False:
 			torn.write({"message":"Relationship does not exist"})
@@ -63,7 +54,9 @@ def create_link(link_dict, torn):
 		FLHandler.log_error_to_file(Error)
 		torn.set_status(500)
 		return False
-	return True
+
+	link_id = session.query(TableEntities.Links).order_by(TableEntities.Links.link_id.desc()).first()
+	return link_id
 
 """
 Function to determine if a link exists
@@ -116,7 +109,7 @@ Caveats: None
 """
 def get_link_id(node_id_1, node_id_2):
 	return  (session.query(TableEntities.Links).filter((TableEntities.Links.node_id_1 == int(node_id_1)) & 
-			(TableEntities.Links.node_id_2 == int(node_id_2))).one().meta_id)
+			(TableEntities.Links.node_id_2 == int(node_id_2))).one().link_id)
 
 """
 Function to change link record data
@@ -203,7 +196,11 @@ def delete_link(link_id, torn):
 		torn.set_status(404)
 		torn.write({"message":"Link does not exist"})
 		return False
+	import utilities.meta as MetaUtil
+	links = session.query((TableEntities.Links.node_id_1 == int(node_id)) | (TableEntities.Links.node_id_2 == int(node_id))).all()
 	try:
+		for link in links:
+			MetaUtil.delete_metadata_with_link(link.link_id)
 		session.execute(
 			delete(TableEntities.Links).where(TableEntities.Links.link_id == int(link_id))
 			)
@@ -214,9 +211,18 @@ def delete_link(link_id, torn):
 		return False
 	return True
 
-#Internal function
+"""
+Function to delete a links with nodes
+Inputs: Link ID; Tornado object
+Output: True if operation was successful, False if the operation was not
+Caveats: Delete metadata of links
+"""
 def delete_link_with_node(node_id):
+	import utilities.meta as MetaUtil
+	links = session.query((TableEntities.Links.node_id_1 == int(node_id)) | (TableEntities.Links.node_id_2 == int(node_id))).all()
 	try:
+		for link in links:
+			MetaUtil.delete_metadata_with_link(link.link_id)
 		session.execute(
 			delete(TableEntities.Links).where((TableEntities.Links.node_id_1 == int(node_id)) | (TableEntities.Links.node_id_2 == int(node_id)))
 			)
