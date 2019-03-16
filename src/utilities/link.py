@@ -56,7 +56,7 @@ def create_link(link_dict, torn):
 		return False
 
 	link_id = session.query(TableEntities.Links).order_by(TableEntities.Links.link_id.desc()).first()
-	return link_id
+	return link_id.link_id
 
 """
 Function to determine if a link exists
@@ -219,7 +219,8 @@ Caveats: Delete metadata of links
 """
 def delete_link_with_node(node_id):
 	import utilities.meta as MetaUtil
-	links = session.query((TableEntities.Links.node_id_1 == int(node_id)) | (TableEntities.Links.node_id_2 == int(node_id))).all()
+	links = session.query(TableEntities.Links).filter((TableEntities.Links.node_id_1 == int(node_id)) | (TableEntities.Links.node_id_2 == int(node_id))).all()
+
 	try:
 		for link in links:
 			MetaUtil.delete_metadata_with_link(link.link_id)

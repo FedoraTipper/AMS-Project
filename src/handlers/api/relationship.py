@@ -37,10 +37,8 @@ class Relationship(SetDefaultHeaders):
                                                                 RelationshipUtil.get_relationship_id(body_categories["message"]),
                                                                 relationship_dict)
 
-        try:
-            LoggerHandler.log_message("add", formatted_message)
-        except:
-            pass
+
+        LoggerHandler.log_message("add", formatted_message)
 
         self.write({"message":"Success"})
 
@@ -67,10 +65,8 @@ class Relationship(SetDefaultHeaders):
                                                                 relationship_id,
                                                                 relationship_dict)
 
-        try:
-            LoggerHandler.log_message("change", formatted_message)
-        except:
-            pass
+
+        LoggerHandler.log_message("change", formatted_message)
 
         self.write({"message":"Success"})
 
@@ -93,9 +89,6 @@ class Relationship(SetDefaultHeaders):
                                                                         "relationship", 
                                                                         relationship_dict["relationship_id"])
 
-        try:
-            LoggerHandler.log_message("delete", formatted_message)
-        except:
-            pass
+        LoggerHandler.log_message("delete", formatted_message)
 
         self.write({"message":"Success"})

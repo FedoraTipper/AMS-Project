@@ -454,3 +454,246 @@ TypeError: list indices must be integers or slices, not str
 2019-03-16 12:57:08,713 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.26ms
 2019-03-16 12:57:11,189 - INFO - 200 POST /api/node/ (127.0.0.1) 2471.40ms
 2019-03-16 12:57:59,665 - INFO - 200 GET /api/node/ (::1) 186.96ms
+2019-03-16 14:05:16,930 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 1.44ms
+2019-03-16 14:05:19,393 - INFO - 200 POST /api/node/ (127.0.0.1) 2458.27ms
+2019-03-16 14:05:58,289 - INFO - 200 GET /api/node/ (::1) 188.36ms
+2019-03-16 14:06:02,680 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.25ms
+2019-03-16 14:06:05,473 - ERROR - Uncaught exception DELETE /api/node/ (127.0.0.1)
+HTTPServerRequest(protocol='http', host='127.0.0.1:5000', method='DELETE', uri='/api/node/', version='HTTP/1.1', remote_ip='127.0.0.1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 82, in delete
+    if node_dict == False or NodeUtil.delete_node(node_dict["node_id"], self) == False:
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 152, in delete_node
+    LinkUtil.delete_link_with_node(node_id)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/link.py", line 225, in delete_link_with_node
+    MetaUtil.delete_metadata_with_link(link.link_id)
+AttributeError: 'result' object has no attribute 'link_id'
+2019-03-16 14:06:05,475 - ERROR - 500 DELETE /api/node/ (127.0.0.1) 2793.54ms
+2019-03-16 14:06:41,383 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.35ms
+2019-03-16 14:06:43,833 - INFO - 200 POST /api/node/ (127.0.0.1) 2447.15ms
+2019-03-16 14:06:50,351 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.34ms
+2019-03-16 14:06:50,734 - ERROR - Uncaught exception DELETE /api/node/ (127.0.0.1)
+HTTPServerRequest(protocol='http', host='127.0.0.1:5000', method='DELETE', uri='/api/node/', version='HTTP/1.1', remote_ip='127.0.0.1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 82, in delete
+    if node_dict == False or NodeUtil.delete_node(node_dict["node_id"], self) == False:
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 152, in delete_node
+    LinkUtil.delete_link_with_node(node_id)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/link.py", line 225, in delete_link_with_node
+    MetaUtil.delete_metadata_with_link(link.link_id)
+AttributeError: 'result' object has no attribute 'link_id'
+2019-03-16 14:06:50,735 - ERROR - 500 DELETE /api/node/ (127.0.0.1) 375.83ms
+2019-03-16 14:08:53,672 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/link.py modified; restarting server
+2019-03-16 14:08:54,147 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 14:08:54,154 - DEBUG - Using selector: EpollSelector
+2019-03-16 14:08:58,397 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.29ms
+2019-03-16 14:09:03,805 - ERROR - Uncaught exception DELETE /api/node/ (127.0.0.1)
+HTTPServerRequest(protocol='http', host='127.0.0.1:5000', method='DELETE', uri='/api/node/', version='HTTP/1.1', remote_ip='127.0.0.1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 82, in delete
+    if node_dict == False or NodeUtil.delete_node(node_dict["node_id"], self) == False:
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 152, in delete_node
+    LinkUtil.delete_link_with_node(node_id)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/link.py", line 226, in delete_link_with_node
+    MetaUtil.delete_metadata_with_link(link.link_id)
+AttributeError: 'result' object has no attribute 'link_id'
+2019-03-16 14:09:03,806 - ERROR - 500 DELETE /api/node/ (127.0.0.1) 5405.44ms
+2019-03-16 14:10:38,161 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/link.py modified; restarting server
+2019-03-16 14:10:38,406 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 14:10:38,411 - DEBUG - Using selector: EpollSelector
+2019-03-16 14:10:43,839 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.56ms
+2019-03-16 14:10:49,076 - ERROR - Uncaught exception DELETE /api/node/ (127.0.0.1)
+HTTPServerRequest(protocol='http', host='127.0.0.1:5000', method='DELETE', uri='/api/node/', version='HTTP/1.1', remote_ip='127.0.0.1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 82, in delete
+    if node_dict == False or NodeUtil.delete_node(node_dict["node_id"], self) == False:
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 152, in delete_node
+    LinkUtil.delete_link_with_node(node_id)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/link.py", line 227, in delete_link_with_node
+    MetaUtil.delete_metadata_with_link(link.link_id)
+AttributeError: 'result' object has no attribute 'link_id'
+2019-03-16 14:10:49,080 - ERROR - 500 DELETE /api/node/ (127.0.0.1) 5236.37ms
+2019-03-16 14:11:02,498 - INFO - 200 GET /api/link/ (::1) 187.58ms
+2019-03-16 14:11:33,918 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/link.py modified; restarting server
+2019-03-16 14:11:34,185 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 14:11:34,191 - DEBUG - Using selector: EpollSelector
+2019-03-16 14:11:36,198 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/link.py modified; restarting server
+2019-03-16 14:11:36,461 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 14:11:36,466 - DEBUG - Using selector: EpollSelector
+2019-03-16 14:11:39,181 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.28ms
+2019-03-16 14:11:44,579 - ERROR - Uncaught exception DELETE /api/node/ (127.0.0.1)
+HTTPServerRequest(protocol='http', host='127.0.0.1:5000', method='DELETE', uri='/api/node/', version='HTTP/1.1', remote_ip='127.0.0.1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 82, in delete
+    if node_dict == False or NodeUtil.delete_node(node_dict["node_id"], self) == False:
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 152, in delete_node
+    LinkUtil.delete_link_with_node(node_id)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/link.py", line 227, in delete_link_with_node
+    MetaUtil.delete_metadata_with_link(link.link_id)
+AttributeError: 'result' object has no attribute 'link_id'
+2019-03-16 14:11:44,583 - ERROR - 500 DELETE /api/node/ (127.0.0.1) 5397.54ms
+2019-03-16 14:12:37,355 - ERROR - Uncaught exception POST /api/link/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='POST', uri='/api/link/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/link.py", line 47, in post
+    self.write({"message":"Success", "payload":link_id})
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 746, in write
+    chunk = escape.json_encode(chunk)
+  File "/usr/lib/python3.6/site-packages/tornado/escape.py", line 81, in json_encode
+    return json.dumps(value).replace("</", "<\\/")
+  File "/usr/lib/python3.6/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+  File "/usr/lib/python3.6/json/encoder.py", line 199, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/usr/lib/python3.6/json/encoder.py", line 257, in iterencode
+    return _iterencode(o, 0)
+  File "/usr/lib/python3.6/json/encoder.py", line 180, in default
+    o.__class__.__name__)
+TypeError: Object of type 'Links' is not JSON serializable
+2019-03-16 14:12:37,360 - ERROR - 500 POST /api/link/ (::1) 7155.64ms
+2019-03-16 14:13:05,182 - INFO - 200 GET /api/link/ (::1) 193.56ms
+2019-03-16 14:13:47,473 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/link.py modified; restarting server
+2019-03-16 14:13:47,722 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 14:13:47,727 - DEBUG - Using selector: EpollSelector
+2019-03-16 14:15:14,854 - ERROR - Uncaught exception DELETE /api/node/ (::1)
+HTTPServerRequest(protocol='http', host='localhost:5000', method='DELETE', uri='/api/node/', version='HTTP/1.1', remote_ip='::1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 82, in delete
+    if node_dict == False or NodeUtil.delete_node(node_dict["node_id"], self) == False:
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 152, in delete_node
+    LinkUtil.delete_link_with_node(node_id)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/link.py", line 227, in delete_link_with_node
+    MetaUtil.delete_metadata_with_link(link.link_id)
+AttributeError: 'result' object has no attribute 'link_id'
+2019-03-16 14:15:14,855 - ERROR - 500 DELETE /api/node/ (::1) 5228.06ms
+2019-03-16 14:16:02,236 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/link.py modified; restarting server
+2019-03-16 14:16:02,492 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 14:16:02,496 - DEBUG - Using selector: EpollSelector
+2019-03-16 14:16:13,531 - INFO - 200 GET /api/node/ (::1) 2713.43ms
+2019-03-16 14:16:22,542 - INFO - 200 GET /api/link/ (::1) 2693.95ms
+2019-03-16 14:16:28,100 - INFO - 200 GET /api/node/ (::1) 196.31ms
+2019-03-16 14:16:39,229 - INFO - 200 DELETE /api/node/ (::1) 8043.12ms
+2019-03-16 14:17:06,004 - INFO - /home/adam/Documents/Git/AMS-Project/src/utilities/link.py modified; restarting server
+2019-03-16 14:17:06,264 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 14:17:06,268 - DEBUG - Using selector: EpollSelector
+2019-03-16 14:17:21,007 - INFO - 200 GET /api/link/ (::1) 2706.40ms
+2019-03-16 14:17:29,735 - INFO - 200 GET /api/node/ (::1) 2708.95ms
+2019-03-16 14:17:49,785 - INFO - 200 POST /api/link/ (::1) 7355.96ms
+2019-03-16 14:18:09,307 - INFO - 200 DELETE /api/node/ (::1) 5782.78ms
+2019-03-16 14:18:41,000 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.21ms
+2019-03-16 14:18:41,209 - WARNING - 404 DELETE /api/node/ (127.0.0.1) 195.18ms
+2019-03-16 14:19:02,652 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.23ms
+2019-03-16 14:19:07,682 - INFO - 200 POST /api/node/ (127.0.0.1) 5025.39ms
+2019-03-16 14:19:13,245 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.36ms
+2019-03-16 14:19:15,948 - INFO - 200 DELETE /api/node/ (127.0.0.1) 2699.23ms
+2019-03-16 14:19:32,748 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.22ms
+2019-03-16 14:19:32,753 - ERROR - Uncaught exception POST /api/node/ (127.0.0.1)
+HTTPServerRequest(protocol='http', host='127.0.0.1:5000', method='POST', uri='/api/node/', version='HTTP/1.1', remote_ip='127.0.0.1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 31, in post
+    node_id = NodeUtil.create_node(node_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 18, in create_node
+    if TypeUtil.type_id_exists(node_dict["type_id"]) == False:
+TypeError: 'bool' object is not subscriptable
+2019-03-16 14:19:32,754 - ERROR - 500 POST /api/node/ (127.0.0.1) 1.83ms
+2019-03-16 14:19:45,164 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.21ms
+2019-03-16 14:19:45,167 - ERROR - Uncaught exception POST /api/node/ (127.0.0.1)
+HTTPServerRequest(protocol='http', host='127.0.0.1:5000', method='POST', uri='/api/node/', version='HTTP/1.1', remote_ip='127.0.0.1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 31, in post
+    node_id = NodeUtil.create_node(node_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 18, in create_node
+    if TypeUtil.type_id_exists(node_dict["type_id"]) == False:
+TypeError: 'bool' object is not subscriptable
+2019-03-16 14:19:45,168 - ERROR - 500 POST /api/node/ (127.0.0.1) 0.73ms
+2019-03-16 14:19:55,511 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.31ms
+2019-03-16 14:19:58,028 - INFO - 200 POST /api/node/ (127.0.0.1) 2513.62ms
+2019-03-16 14:20:02,177 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.34ms
+2019-03-16 14:20:04,883 - INFO - 200 DELETE /api/node/ (127.0.0.1) 2703.10ms
+2019-03-16 14:28:46,771 - INFO - /home/adam/Documents/Git/AMS-Project/src/handlers/api/link.py modified; restarting server
+2019-03-16 14:28:47,002 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 14:28:47,007 - DEBUG - Using selector: EpollSelector
+2019-03-16 14:29:44,509 - INFO - /home/adam/Documents/Git/AMS-Project/src/handlers/api/relationship.py modified; restarting server
+2019-03-16 14:29:44,743 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 14:29:44,748 - DEBUG - Using selector: EpollSelector
+2019-03-16 14:30:06,751 - INFO - /home/adam/Documents/Git/AMS-Project/src/handlers/api/user.py modified; restarting server
+2019-03-16 14:30:06,987 - DEBUG - registered 'pbkdf2_sha256' handler: <class 'passlib.handlers.pbkdf2.pbkdf2_sha256'>
+2019-03-16 14:30:06,991 - DEBUG - Using selector: EpollSelector
+2019-03-16 14:54:32,076 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.36ms
+2019-03-16 14:54:32,080 - ERROR - Uncaught exception POST /api/node/ (127.0.0.1)
+HTTPServerRequest(protocol='http', host='127.0.0.1:5000', method='POST', uri='/api/node/', version='HTTP/1.1', remote_ip='127.0.0.1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 31, in post
+    node_id = NodeUtil.create_node(node_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 18, in create_node
+    if TypeUtil.type_id_exists(node_dict["type_id"]) == False:
+TypeError: 'bool' object is not subscriptable
+2019-03-16 14:54:32,081 - ERROR - 500 POST /api/node/ (127.0.0.1) 1.60ms
+2019-03-16 14:54:36,487 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.24ms
+2019-03-16 14:54:36,490 - ERROR - Uncaught exception POST /api/node/ (127.0.0.1)
+HTTPServerRequest(protocol='http', host='127.0.0.1:5000', method='POST', uri='/api/node/', version='HTTP/1.1', remote_ip='127.0.0.1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 31, in post
+    node_id = NodeUtil.create_node(node_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 18, in create_node
+    if TypeUtil.type_id_exists(node_dict["type_id"]) == False:
+TypeError: 'bool' object is not subscriptable
+2019-03-16 14:54:36,490 - ERROR - 500 POST /api/node/ (127.0.0.1) 0.75ms
+2019-03-16 14:54:44,463 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.37ms
+2019-03-16 14:54:44,471 - ERROR - Uncaught exception POST /api/node/ (127.0.0.1)
+HTTPServerRequest(protocol='http', host='127.0.0.1:5000', method='POST', uri='/api/node/', version='HTTP/1.1', remote_ip='127.0.0.1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 31, in post
+    node_id = NodeUtil.create_node(node_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 18, in create_node
+    if TypeUtil.type_id_exists(node_dict["type_id"]) == False:
+TypeError: 'bool' object is not subscriptable
+2019-03-16 14:54:44,471 - ERROR - 500 POST /api/node/ (127.0.0.1) 0.83ms
+2019-03-16 14:55:36,008 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.24ms
+2019-03-16 14:55:50,567 - INFO - 200 POST /api/node/ (127.0.0.1) 14555.20ms
+2019-03-16 14:55:59,528 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.32ms
+2019-03-16 14:56:01,964 - INFO - 200 POST /api/node/ (127.0.0.1) 2428.60ms
+2019-03-16 14:57:44,649 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.32ms
+2019-03-16 14:57:47,081 - INFO - 200 POST /api/node/ (127.0.0.1) 2428.01ms
+2019-03-16 14:57:48,140 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.33ms
+2019-03-16 14:57:50,578 - INFO - 200 POST /api/node/ (127.0.0.1) 2433.09ms
+2019-03-16 14:59:58,177 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.32ms
+2019-03-16 14:59:58,181 - ERROR - Uncaught exception POST /api/node/ (127.0.0.1)
+HTTPServerRequest(protocol='http', host='127.0.0.1:5000', method='POST', uri='/api/node/', version='HTTP/1.1', remote_ip='127.0.0.1')
+Traceback (most recent call last):
+  File "/usr/lib/python3.6/site-packages/tornado/web.py", line 1590, in _execute
+    result = method(*self.path_args, **self.path_kwargs)
+  File "/home/adam/Documents/Git/AMS-Project/src/handlers/api/node.py", line 31, in post
+    node_id = NodeUtil.create_node(node_dict, self)
+  File "/home/adam/Documents/Git/AMS-Project/src/utilities/node.py", line 18, in create_node
+    if TypeUtil.type_id_exists(node_dict["type_id"]) == False:
+TypeError: 'bool' object is not subscriptable
+2019-03-16 14:59:58,181 - ERROR - 500 POST /api/node/ (127.0.0.1) 1.16ms
+2019-03-16 15:00:04,865 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.31ms
+2019-03-16 15:00:07,297 - INFO - 200 POST /api/node/ (127.0.0.1) 2428.29ms
+2019-03-16 15:00:07,407 - INFO - 204 OPTIONS /api/node/ (127.0.0.1) 0.38ms
+2019-03-16 15:00:09,843 - INFO - 200 POST /api/node/ (127.0.0.1) 2428.92ms

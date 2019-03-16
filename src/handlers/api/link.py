@@ -39,10 +39,8 @@ class Link(SetDefaultHeaders):
                                                                 LinkUtil.get_link_id(link_dict["node_id_1"], link_dict["node_id_2"]),
                                                                 link_dict)
 
-        try:
-            LoggerHandler.log_message("add", formatted_message)
-        except:
-            pass
+
+        LoggerHandler.log_message("add", formatted_message)
 
         self.write({"message":"Success", "payload":link_id})
 
@@ -71,10 +69,8 @@ class Link(SetDefaultHeaders):
                                                                 link_id,
                                                                 link_dict)
 
-        try:
-            LoggerHandler.log_message("change", formatted_message)
-        except:
-            pass
+
+        LoggerHandler.log_message("change", formatted_message)
 
         self.write({"message":"Success"})
 
@@ -94,9 +90,7 @@ class Link(SetDefaultHeaders):
                                                                 "link", 
                                                                 link_dict["link_id"])
 
-        try:
-            LoggerHandler.log_message("delete", formatted_message)
-        except:
-            pass
+
+        LoggerHandler.log_message("delete", formatted_message)
 
         self.write({"message":"Success"})

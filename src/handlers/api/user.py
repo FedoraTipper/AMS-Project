@@ -87,7 +87,3 @@ class User(SetDefaultHeaders):
             return None
 
         self.write({'message': "Success"})
-
-    def delete(self):
-        if JWTHandler.authorize_action(self, 2) == False:
-            return None

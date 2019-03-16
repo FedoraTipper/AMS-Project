@@ -126,7 +126,42 @@ export default {
         }));
       });
     },
-    addLink(sourceNode, targetNode, Link) {},
+    addLink(sourceNode, targetNode, link) {
+      let link_details = {
+        node_id_1: sourceNode["_private"]["data"]["id"],
+        node_id_2: targetNode["_private"]["data"]["id"],
+        view_id: this.current_view_number
+      };
+      this.$cytoscape.instance.then(cy => {
+        console.log(cy);
+      });
+      console.log("AAA");
+      console.log(link[0]);
+
+      // try{
+      //   this.axios({
+      //   url: "http://127.0.0.1:5000/api/link/",
+      //   headers: this.auth_header,
+      //   method: "post",
+      //   data: node_details
+      // }).then(response => {
+      //   if (response.data["message"].includes("Success")) {
+      //     let returned_id = response.data["payload"];
+      //     this.$cytoscape.instance.then(cy => {
+      //                 cy.remove(link)
+      //     });
+
+      //   } else {
+      //     alert("Failed to create new link. " + response.data["message"]);
+      //     this.$cytoscape.instance.then(cy => {
+      //                 cy.remove(link)
+      //     });
+      //   }
+      // });
+      // }catch{
+      //   cy.remove(link)
+      // }
+    },
     handleDrop(nodetype) {
       let node_details = {
         view_id: this.current_view_number,
@@ -156,12 +191,12 @@ export default {
               }
             });
             this.cytodrop = false;
+            this.update_view();
           });
         } else {
           alert("Failed to create new node. " + response.data["message"]);
         }
       });
-      this.update_view();
     },
     change_collection(view) {
       this.current_view = view.name;
@@ -195,13 +230,45 @@ export default {
       }
     },
     deleteNode(node) {
-      this.$cytoscape.instance.then(cy => {
-        cy.remove(node);
+      let node_details = {
+        node_id: node["_private"]["data"]["id"]
+      };
+      this.axios({
+        url: "http://127.0.0.1:5000/api/node/",
+        headers: this.auth_header,
+        method: "delete",
+        data: node_details
+      }).then(response => {
+        if (response.data["message"].includes("Success")) {
+          this.$cytoscape.instance.then(cy => {
+            cy.remove(node);
+          });
+        } else {
+          alert("Failed to delete node. " + response.data["message"]);
+        }
       });
+      this.update_view();
     },
     deleteLink(link) {
       this.$cytoscape.instance.then(cy => {
-        cy.remove(link);
+        let link_details = {
+          link_id: link["_private"]["data"]["id"]
+        };
+        this.axios({
+          url: "http://127.0.0.1:5000/api/link/",
+          headers: this.auth_header,
+          method: "delete",
+          data: link_details
+        }).then(response => {
+          if (response.data["message"].includes("Success")) {
+            this.$cytoscape.instance.then(cy => {
+              cy.remove(link);
+            });
+          } else {
+            alert("Failed to delete node. " + response.data["message"]);
+          }
+        });
+        this.update_view();
       });
     }
   },
