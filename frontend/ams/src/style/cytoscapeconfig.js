@@ -15,7 +15,7 @@ module.exports.config = [{
   "style": {
     "line-color": "#42a5f5",
     "label": "data(name)",
-    "curve-style": "straight",
+    'curve-style': 'straight',
     "target-arrow-color": "#0d47a1",
     "target-arrow-shape": "triangle"
   }

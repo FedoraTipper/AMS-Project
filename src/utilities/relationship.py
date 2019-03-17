@@ -1,6 +1,7 @@
 import handlers.mysqldb as DBHandler
 from sqlalchemy import update, delete, exc
 import handlers.filelogger as FLHandler
+import handlers.classes.TableEntities as TableEntities
 
 session = DBHandler.create_session()
 

@@ -4,7 +4,7 @@
       id="overlay-button"
       offset
       dropleft
-      :text="current_view"
+      :text="current_view.name"
       variant="primary"
       class="m-md-2"
       size="lg"
@@ -47,10 +47,13 @@
 <script>
 import cytoscape from "cytoscape";
 import edgehandle from "cytoscape-edgehandles";
+import cola from "cytoscape-cola";
 import cxtmenu from "cytoscape-cxtmenu";
 import { Drag, Drop } from "vue-drag-drop";
 //Load cytoscapes theme config instance
-let cytoscapeconfig = require("../assets/cytoscapeconfig.js");
+let cytoscapeconfig = require("../style/cytoscapeconfig.js");
+//Load external API functions
+let APIUtil = (window.APIUtil = require("../js/api_functions.js"));
 
 export default {
   // Create components to allow for drag and drop
@@ -61,33 +64,49 @@ export default {
   data() {
     return {
       cytodrop: false,
-      type_array: [
-        { type_id: "1", type: "Hello1" },
-        { type_id: "2", type: "Hello2" }
-      ],
-      view_array: [
-        { view_id: "1", name: "Countercept" },
-        { view_id: "2", name: "MWR" }
-      ],
+      type_array: [],
+      view_array: [],
+      label_array: [],
+      relationship_array: [],
+      type_count: {},
       auth_header: {
         Authorization: localStorage.getItem("Authorization")
       },
-      current_view: "",
-      current_view_number: "",
+      current_view: {
+        name: "",
+        id: ""
+      },
       config: {
         panningEnabled: true,
         fit: false,
         animate: false,
         boxSelectionEnabled: false,
         style: cytoscapeconfig.config
-      },
-      i: 0
+      }
     };
   },
   methods: {
     preConfig(cytoscape) {
       edgehandle(cytoscape);
       cxtmenu(cytoscape);
+      cytoscape.use(cola);
+    },
+    load_assets() {
+      //Load all assets from database
+      this.$cytoscape.instance.then(cy => {
+        window.APIUtil.load_assets(
+          this.type_array,
+          this.type_count,
+          this.view_array,
+          this.current_view,
+          this.label_array,
+          this.relationship_array,
+          this.auth_header,
+          cy
+        ).then(() => {
+          this.update_view();
+        });
+      });
     },
     loadModules() {
       this.$cytoscape.instance.then(cy => {
@@ -130,7 +149,7 @@ export default {
       let link_details = {
         node_id_1: sourceNode["_private"]["data"]["id"],
         node_id_2: targetNode["_private"]["data"]["id"],
-        view_id: this.current_view_number
+        view_id: this.current_view.id
       };
       this.$cytoscape.instance.then(cy => {
         console.log(cy);
@@ -162,50 +181,38 @@ export default {
       //   cy.remove(link)
       // }
     },
-    handleDrop(nodetype) {
-      let node_details = {
-        view_id: this.current_view_number,
-        type_id: nodetype["type"]["type_id"]
-      };
-      this.axios({
-        url: "http://127.0.0.1:5000/api/node/",
-        headers: this.auth_header,
-        method: "post",
-        data: node_details
-      }).then(response => {
-        if (response.data["message"].includes("Success")) {
-          let returned_id = response.data["payload"];
-          this.$cytoscape.instance.then(cy => {
-            cy.add({
-              group: "nodes",
-              data: {
-                id: returned_id,
-                name: nodetype["type"]["type"],
-                payload: {
-                  type_id: nodetype["type"]["type_id"],
-                  type: nodetype["type"]["type"],
-                  //  Comeback to this and set the view
-                  view_id: this.current_view_number
-                },
-                imglink: null
-              }
-            });
-            this.cytodrop = false;
+    handleDrop(node_type) {
+      if (this.current_view.id != "") {
+        let node_details = {
+          view_id: this.current_view.id,
+          type_id: node_type["type"]["type_id"]
+        };
+        this.$cytoscape.instance.then(cy => {
+          window.APIUtil.add_node(
+            node_details,
+            node_type["type"]["type"],
+            this.current_view,
+            this.auth_header,
+            cy
+          ).then(() => {
             this.update_view();
           });
-        } else {
-          alert("Failed to create new node. " + response.data["message"]);
-        }
-      });
+        });
+        this.cytodrop = false;
+      } else {
+        alert("Pick a view");
+      }
     },
     change_collection(view) {
-      this.current_view = view.name;
-      this.current_view_number = view.view_id;
+      this.current_view.name = view.name;
+      this.current_view.id = view.view_id;
     },
     update_view() {
       this.$cytoscape.instance.then(cy => {
-        cy.layout({ name: "circle", fit: true }).run();
-        cy.center();
+        for (let i = 0; i < 5; i++) {
+          cy.center();
+          cy.layout({ name: "circle", fit: true }).run();
+        }
       });
     },
     deleteElement(element) {
@@ -233,43 +240,19 @@ export default {
       let node_details = {
         node_id: node["_private"]["data"]["id"]
       };
-      this.axios({
-        url: "http://127.0.0.1:5000/api/node/",
-        headers: this.auth_header,
-        method: "delete",
-        data: node_details
-      }).then(response => {
-        if (response.data["message"].includes("Success")) {
-          this.$cytoscape.instance.then(cy => {
-            cy.remove(node);
-          });
-        } else {
-          alert("Failed to delete node. " + response.data["message"]);
-        }
+      this.$cytoscape.instance.then(cy => {
+        window.APIUtil.delete_node(node_details, node, this.auth_header, cy);
       });
       this.update_view();
     },
     deleteLink(link) {
+      let link_details = {
+        link_id: link["_private"]["data"]["id"]
+      };
       this.$cytoscape.instance.then(cy => {
-        let link_details = {
-          link_id: link["_private"]["data"]["id"]
-        };
-        this.axios({
-          url: "http://127.0.0.1:5000/api/link/",
-          headers: this.auth_header,
-          method: "delete",
-          data: link_details
-        }).then(response => {
-          if (response.data["message"].includes("Success")) {
-            this.$cytoscape.instance.then(cy => {
-              cy.remove(link);
-            });
-          } else {
-            alert("Failed to delete node. " + response.data["message"]);
-          }
-        });
-        this.update_view();
+        window.APIUtil.delete_link(link_details, link, this.auth_header, cy);
       });
+      this.update_view();
     }
   },
   mounted: function() {
@@ -277,12 +260,13 @@ export default {
       canvas.style.left = "0";
     });
     this.$nextTick(this.loadModules());
+    this.$nextTick(this.load_assets());
     this.update_view();
   }
 };
 </script>
 
 <style>
-@import "../assets/cyto.css";
+@import "../style/cyto.css";
 </style>
 
