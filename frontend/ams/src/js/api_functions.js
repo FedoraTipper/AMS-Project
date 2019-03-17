@@ -143,7 +143,7 @@ export function add_node(node_details, node_type, current_view, auth_header, cy)
                 alert("Failed to create new node. " + response.data["message"]);
             }
         });
-        setTimeout(resolve, 3500);
+        setTimeout(resolve, 4000);
         cy.$id(returned_id).select();
     });
 
@@ -168,20 +168,42 @@ export function delete_node(node_details, node, auth_header, cy) {
 }
 
 export function delete_link(link_details, link, auth_header, cy) {
-    axios({
-        url: "http://127.0.0.1:5000/api/link/",
-        headers: auth_header,
-        method: "delete",
-        data: link_details
-    }).then(response => {
-        if (response.data["message"].includes("Success")) {
+    return new Promise(function (resolve, reject) {
+        axios({
+            url: "http://127.0.0.1:5000/api/link/",
+            headers: auth_header,
+            method: "delete",
+            data: link_details
+        }).then(response => {
+            if (response.data["message"].includes("Success")) {
+                cy.remove(link);
+                resolve(true)
+            } else {
+                alert("Failed to delete node. " + response.data["message"]);
+                resolve(false);
+            }
+        });
+    });
+}
 
-            cy.remove(link);
-            return true
-
-        } else {
-            alert("Failed to delete node. " + response.data["message"]);
-            return false;
-        }
+export function get_metadata(uri, metadata_list, auth_header) {
+    return new Promise(function (resolve, reject) {
+        axios({
+            url: "http://127.0.0.1:5000/api/metadata/" + uri,
+            headers: auth_header,
+            method: "get"
+        }).then(response => {
+            let response_data = response["data"].data;
+            if (response_data.length != 0) {
+                for (let i = 0; i < response_data.length; i++) {
+                    metadata_list.push({
+                        meta_id: response_data[i]["meta_id"],
+                        category: response_data[i]["category"],
+                        metadata: response_data[i]["data"]
+                    });
+                }
+            }
+            resolve()
+        });
     });
 }

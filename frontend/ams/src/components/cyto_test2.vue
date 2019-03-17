@@ -1,5 +1,62 @@
 <template>
   <div>
+    <b-modal size="xl" v-model="modal_metadata_show" ok-only>
+      <div id="metadata_table">
+        <b-card-group class="text-center">
+          <b-row>
+            <b-col md="10" class="my-1">
+              <b-form-group label-cols-sm="3" label="Filter" class="mb-0">
+                <b-input-group>
+                  <b-form-input v-model="filter" placeholder="Type to Search"/>
+                  <b-input-group-append>
+                    <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+                  </b-input-group-append>
+                </b-input-group>
+              </b-form-group>
+            </b-col>
+          </b-row>
+
+          <!-- Main table element -->
+          <b-table
+            show-empty
+            stacked="md"
+            :items="metadata_list"
+            :fields="metadata_table_fields"
+            :current-page="currentPage"
+            :per-page="perPage"
+            :filter="filter"
+            :striped="true"
+            :bordered="true"
+            :hover="true"
+            :outlines="true"
+            :dark="true"
+            @filtered="onFiltered"
+          >
+            <template slot="name" slot-scope="row">{{ row.value.first }} {{ row.value.last }}</template>
+
+            <template slot="row-details" slot-scope="row">
+              <b-card>
+                <ul>
+                  <li v-for="(value, key) in row.item" :key="key">{{ key }}: {{ value }}</li>
+                </ul>
+              </b-card>
+            </template>
+          </b-table>
+
+          <b-row>
+            <b-col md="6" class="my-1">
+              <b-pagination
+                :total-rows="totalMetaRows"
+                :per-page="perPage"
+                v-model="currentPage"
+                class="my-0"
+              />
+            </b-col>
+          </b-row>
+        </b-card-group>
+      </div>
+    </b-modal>
+
     <b-dropdown
       id="overlay-button"
       offset
@@ -75,6 +132,23 @@ export default {
       current_view: {
         name: "",
         id: ""
+      },
+      modal_metadata_show: false,
+      metadata_list: [],
+      currentPage: 1,
+      perPage: 5,
+      filter: null,
+      totalMetaRows: 0,
+      metadata_table_fields: {
+        meta_id: {
+          label: "Metadata ID"
+        },
+        category: {
+          label: "Metadata Category"
+        },
+        metadata: {
+          label: "Field Data"
+        }
       },
       config: {
         panningEnabled: true,
@@ -230,11 +304,25 @@ export default {
       }
     },
     getMetadata(element) {
+      let uri = "?";
       if (element["_private"]["group"] == "edges") {
-        this.deleteLink(element);
+        uri += "link_id=" + element["_private"]["data"]["payload"]["link_id"];
       } else {
-        this.deleteNode(element);
+        uri += "node_id=" + element["_private"]["data"]["id"];
       }
+      this.metadata_list = [];
+      window.APIUtil.get_metadata(
+        uri,
+        this.metadata_list,
+        this.auth_header
+      ).then(response => {
+        this.totalMetaRows = this.metadata_list.length;
+        if (this.totalMetaRows != 0) {
+          this.modal_metadata_show = true;
+        } else {
+          alert("No metadata found for the asset");
+        }
+      });
     },
     deleteNode(node) {
       let node_details = {
@@ -253,6 +341,10 @@ export default {
         window.APIUtil.delete_link(link_details, link, this.auth_header, cy);
       });
       this.update_view();
+    },
+    onFiltered(filteredItems) {
+      this.totalRows = filteredItems.length;
+      this.currentPage = 1;
     }
   },
   mounted: function() {
