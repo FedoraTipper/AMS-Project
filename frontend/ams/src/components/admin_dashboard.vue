@@ -67,7 +67,10 @@
               <b-form-input v-model="form.username" required/>
             </b-input-group>
             <b-input-group prepend="Password" required class="mt-3">
-              <b-form-input v-model="form.password" required/>
+              <b-form-input v-model="form.password" type="password" required/>
+            </b-input-group>
+            <b-input-group prepend="Confirm Password" required class="mt-3">
+              <b-form-input v-model="form.confirm_password" type="password" required/>
             </b-input-group>
             <b-form-group id="privilege" label="Privilege" label-for="privilege">
               <b-form-select id="privilege_dropdown" :options="[0,1]" v-model="form.privilege"/>
@@ -132,24 +135,28 @@ export default {
         username: this.form.username,
         privilege: this.form.privilege
       };
-      const hash = crypto.createHash("sha256");
-      user_details["password"] = hash
-        .update(this.form.password, "utf-8")
-        .digest()
-        .toString("hex");
+      if (this.form.password == this.form.confirm_password) {
+        const hash = crypto.createHash("sha256");
+        user_details["password"] = hash
+          .update(this.form.password, "utf-8")
+          .digest()
+          .toString("hex");
 
-      this.axios({
-        url: "http://127.0.0.1:5000/api/register/",
-        headers: this.auth_header,
-        method: "post",
-        data: user_details
-      }).then(response => {
-        if (response.data["message"].includes("Success")) {
-          alert("User created");
-        } else {
-          alert("Failed to create a new user");
-        }
-      });
+        this.axios({
+          url: "http://127.0.0.1:5000/api/register/",
+          headers: this.auth_header,
+          method: "post",
+          data: user_details
+        }).then(response => {
+          if (response.data["message"].includes("Success")) {
+            alert("User created");
+          } else {
+            alert("Failed to create a new user");
+          }
+        });
+      } else {
+        alert("Passwords do not match");
+      }
     }
   },
   mounted: function() {
@@ -163,12 +170,14 @@ export default {
   top: 6%;
   width: 65%;
   right: 19%;
+  margin-top: 2%;
   position: absolute;
 }
 #user_form {
   top: 65%;
   width: 65%;
   right: 19%;
+  margin-top: 4%;
   position: absolute;
 }
 </style>

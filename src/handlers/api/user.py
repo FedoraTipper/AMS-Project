@@ -7,8 +7,7 @@ import utilities.error as ErrorUtil
 import utilities.user as UserUtil
 
 class Authenticate(SetDefaultHeaders):
-    def post(self):        
-        FLHandler.log_debug_to_file("hello")
+    def post(self):
         body_categories = {"username": 1, "password": 1}
         user_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
@@ -18,7 +17,7 @@ class Authenticate(SetDefaultHeaders):
             self.set_status(401)
             self.write({"message":"Authentication failed"})
             return None
-
+        print(user_dict["password"])
         if(UserUtil.compare_password(user_dict["username"], user_dict["password"]) == False):
             statement = "Failed login attempt %s : %s", (user_dict["username"], user_dict["password"])
             FLHandler.log_debug_to_file(statement)
@@ -62,6 +61,36 @@ class Register(SetDefaultHeaders):
 
 
         self.write({'message': "Success"})
+
+class Password(SetDefaultHeaders):
+    def put(self):
+        if JWTHandler.authorize_action(self, 1) == False:
+            return None
+
+        user_data = JWTHandler.decode_userdata(self.request.headers["Authorization"])
+
+        body_categories = {"old_password": 1, "new_password": 1}
+        password_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+        print(UserUtil.compare_password(user_data["username"], password_dict["old_password"]))
+        if UserUtil.compare_password(user_data["username"], password_dict["old_password"]):
+            user_id = user_data["uid"]
+            if UserUtil.change_password(user_id, password_dict["new_password"]):
+                self.write({"message":"Success"})
+            else:
+                self.set_status(500)
+                self.write({"message":"Failed to change password"})
+                return None
+        else:
+            self.write({"message":"Failed to change password"})
+            return None
+
+        formatted_message = LoggerHandler.form_message_dictionary(user_data, 
+                                                        "user", 
+                                                        user_data["uid"],
+                                                        {"old_password":"", "new_password":""})
+    
+        LoggerHandler.log_message("add", formatted_message)
+        return None
 
 class User(SetDefaultHeaders):
     def get(self):

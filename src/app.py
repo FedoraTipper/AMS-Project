@@ -15,6 +15,7 @@ def make_app():
   urls = [("/api/auth/", UserHandler.Authenticate),
           ("/api/register/", UserHandler.Register),
           ("/api/user/", UserHandler.User),
+          ("/api/password/", UserHandler.Password),
           ("/api/node/", NodeHandler.Node),
           ("/api/link/", LinkHandler.Link),
           ("/api/label/", LabelHandler.Label),

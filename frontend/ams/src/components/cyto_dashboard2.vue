@@ -1,5 +1,28 @@
 <template>
   <div>
+    <b-modal size="xl" v-model="modal_element_change" ok-only>
+      <b-form @submit="modal_function">
+        <b-form-group v-if="modal_node" label="Type:">
+          <b-form-select
+            v-model="selected.type"
+            :options="type_dict"
+            :value-field="type_array.type"
+          />
+        </b-form-group>
+        <b-form-group label="Label:">
+          <b-form-select
+            v-model="selected.label_relationship"
+            :options="form.label_relationship"
+            :value-field="form.field"
+          />
+        </b-form-group>
+        <b-input-group prepend="Icon" v-if="modal_node" class="mt-3">
+          <b-form-input v-model="selected.icon"/>
+        </b-input-group>
+        <b-button type="submit" variant="primary">Change</b-button>
+      </b-form>
+    </b-modal>
+
     <b-modal size="xl" v-model="modal_metadata_show" ok-only>
       <div id="metadata_table">
         <b-card-group class="text-center">
@@ -137,6 +160,20 @@ export default {
         id: ""
       },
       modal_metadata_show: false,
+      modal_element_change: false,
+      modal_node: false,
+      form: {
+        label_relationship: {},
+        field: ""
+      },
+      selected: {
+        label_relationship: "",
+        type: "",
+        icon: ""
+      },
+      modal_function: "",
+      global_element: "",
+      element_payload: {},
       metadata_list: [],
       currentPage: 1,
       perPage: 5,
@@ -181,8 +218,11 @@ export default {
           cy
         ).then(response => {
           this.type_dict = response["dicts"][0];
+          //this.type_array = response["arrays"][0];
           this.label_dict = response["dicts"][1];
+          //this.label_array = response["arrays"][1];
           this.relationship_dict = response["dicts"][2];
+          // this.relationship_array = response["arrays"][2];
           this.update_view();
         });
       });
@@ -209,7 +249,7 @@ export default {
               }
             },
             {
-              content: "Change Label",
+              content: "Change Details",
               select: element => {
                 this.changeElement(element);
               }
@@ -219,6 +259,15 @@ export default {
               select: element => {
                 this.getMetadata(element);
               }
+            }
+          ]
+        }));
+        let core_menu = (window.core_menu = cy.cxtmenu({
+          selector: "core",
+          commands: [
+            {
+              content: "Search",
+              select: this.search()
             }
           ]
         }));
@@ -309,15 +358,100 @@ export default {
     },
     changeElement(element) {
       if (element["_private"]["group"] == "edges") {
-        this.deleteLink(element);
+        this.form.label_relationship = this.relationship_dict;
+        this.form.field = this.relationship_dict.message;
+        this.selected.label_relationship =
+          element["_private"]["data"]["payload"]["relationship_id"];
+        this.element_payload = element["_private"]["data"]["payload"];
+        this.element_payload["element_id"] = element["_private"]["data"]["id"];
+        this.modal_node = false;
+        this.modal_function = this.change_link;
+        this.modal_element_change = true;
       } else {
-        this.deleteNode(element);
+        this.form.label_relationship = this.label_dict;
+        this.form.field = this.label_dict.label_text;
+        //Load node already set fields
+        this.selected.label_relationship =
+          element["_private"]["data"]["payload"]["label_id"];
+        this.selected.type = element["_private"]["data"]["payload"]["type_id"];
+        this.selected.icon = element["_private"]["data"]["payload"]["icon"];
+        this.element_payload = element["_private"]["data"]["payload"];
+        this.element_payload["element_id"] = element["_private"]["data"]["id"];
+        this.modal_node = true;
+        this.modal_function = this.change_node;
+        this.modal_element_change = true;
+      }
+    },
+    change_node() {
+      let node_details = {
+        node_id: this.element_payload["element_id"]
+      };
+      let change = false;
+      if (
+        this.selected.label_relationship &&
+        this.selected.label_relationship != this.element_payload["label_id"]
+      ) {
+        node_details["label_id"] = this.selected.label_relationship;
+        change = true;
+      }
+      if (this.selected.type != this.element_payload["type_id"]) {
+        node_details["type_id"] = this.selected.type;
+        change = true;
+      }
+      if (
+        this.selected.icon &&
+        this.selected.icon != this.element_payload["icon"]
+      ) {
+        node_details["icon"] = this.selected.icon;
+        change = true;
+      }
+      if (change) {
+        this.$cytoscape.instance.then(cy => {
+          window.APIUtil.change_node(
+            node_details,
+            this.label_dict[this.selected.label_relationship],
+            this.type_dict[this.selected.type],
+            this.auth_header,
+            cy
+          ).then(() => {
+            this.update_view();
+            this.modal_element_change = false;
+          });
+        });
+      } else {
+        alert("Nothing to change");
+        this.modal_element_change = false;
+      }
+    },
+    change_link() {
+      let link_details = {
+        link_id: this.element_payload["link_id"]
+      };
+      if (
+        this.selected.label_relationship &&
+        this.selected.label_relationship !=
+          this.element_payload["relationship_id"]
+      ) {
+        link_details["relationship_id"] = this.selected.label_relationship;
+        this.$cytoscape.instance.then(cy => {
+          window.APIUtil.change_link(
+            link_details,
+            this.relationship_dict[this.selected.label_relationship],
+            this.auth_header,
+            cy
+          );
+        });
+        this.modal_element_change = false;
+      } else {
+        alert("Nothing to change");
+        this.modal_element_change = false;
       }
     },
     getMetadata(element) {
       let uri = "?";
       if (element["_private"]["group"] == "edges") {
         uri += "link_id=" + element["_private"]["data"]["payload"]["link_id"];
+        console.log(uri);
       } else {
         uri += "node_id=" + element["_private"]["data"]["id"];
       }
@@ -356,7 +490,8 @@ export default {
     onFiltered(filteredItems) {
       this.totalRows = filteredItems.length;
       this.currentPage = 1;
-    }
+    },
+    search() {}
   },
   mounted: function() {
     document.querySelectorAll("canvas").forEach(canvas => {

@@ -85,6 +85,23 @@ def create_user(user_dict, torn):
 	return True
 
 """
+Function to allow a user to change it's password
+Inputs: user_id; user's new password
+Output: False if user error occured; True if the operation was successful
+Caveats: Password is hashed using pbkdf sha256 with 48k rounds and salt size of 64 bits
+"""
+def change_password(user_id, new_password):
+	password = pbkdf2_sha256.hash(new_password, salt_size=64, rounds=48000)
+	try:
+		session.execute(
+			update(TableEntities.User).where(TableEntities.User.user_id == int(user_id)).values({"password":password})
+			)	
+		session.commit()
+		return True
+	except exc.SQLAlchemyError as Error:
+		FLHandler.log_error_to_file(Error)
+		return False
+"""
 Function that is able to change user infTableEntitiesation values besides 
 # """
 # def change_user_fields(user_dict, torn):

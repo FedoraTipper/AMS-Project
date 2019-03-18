@@ -183,7 +183,7 @@ def change_metadata(metadata_id, metadata_dict, torn):
 def change_metadata_internal(metadata_id, metadata_dict):
 	try:
 		session.execute(
-			update(TableEntities.Metadata).where(TableEntities.Metadata.metadata_id == int(metadata_id)).values(metadata_dict)
+			update(TableEntities.Metadata).where(TableEntities.Metadata.meta_id == int(metadata_id)).values(metadata_dict)
 			)
 		session.commit()
 		return True
