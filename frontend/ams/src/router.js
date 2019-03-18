@@ -6,7 +6,7 @@ import Cyto from './components/cyto_dashboard'
 import Admin from './components/admin_dashboard'
 import User from './components/user_dashboard'
 import Signout from './components/signout'
-import CytoTest from './components/cyto_test2'
+import Cyto2 from './components/cyto_dashboard2'
 
 Vue.use(Router)
 
@@ -24,7 +24,7 @@ const router = new Router({
     {
         path: '/cyto',
         name: "Dashboard",
-        component: Cyto
+        component: Cyto2
     },
     {
         path: '/admin',
@@ -35,11 +35,6 @@ const router = new Router({
         path: '/user',
         name: 'User Dashboard',
         component: User
-    },
-    {
-        path: '/cytotest',
-        name: 'Cytotest',
-        component: CytoTest
     }]
 });
 

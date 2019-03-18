@@ -82,7 +82,7 @@ class Relationship(SetDefaultHeaders):
         if relationship_dict == False:
             return None
 
-        if RelationshipUtil.delete_link(relationship_dict["relationship_id"], self) == False:
+        if RelationshipUtil.delete_link_with_relationship(relationship_dict["relationship_id"], self) == False:
             return None
 
         formatted_message = LoggerHandler.form_delete_message_dictionary(userdata, 

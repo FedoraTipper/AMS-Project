@@ -122,10 +122,13 @@ export default {
     return {
       cytodrop: false,
       type_array: [],
+      type_dict: {},
       view_array: [],
+      view_dict: {},
       label_array: [],
+      label_dict: {},
       relationship_array: [],
-      type_count: {},
+      relationship_dict: {},
       auth_header: {
         Authorization: localStorage.getItem("Authorization")
       },
@@ -170,14 +173,16 @@ export default {
       this.$cytoscape.instance.then(cy => {
         window.APIUtil.load_assets(
           this.type_array,
-          this.type_count,
           this.view_array,
           this.current_view,
           this.label_array,
           this.relationship_array,
           this.auth_header,
           cy
-        ).then(() => {
+        ).then(response => {
+          this.type_dict = response["dicts"][0];
+          this.label_dict = response["dicts"][1];
+          this.relationship_dict = response["dicts"][2];
           this.update_view();
         });
       });
@@ -226,34 +231,26 @@ export default {
         view_id: this.current_view.id
       };
       this.$cytoscape.instance.then(cy => {
-        console.log(cy);
+        let condition_1 =
+          "[source = '" + sourceNode["_private"]["data"]["id"] + "']";
+        let condition_2 =
+          "[target = '" + targetNode["_private"]["data"]["id"] + "']";
+        let condition_3 =
+          "[source = '" + targetNode["_private"]["data"]["id"] + "']";
+        let condition_4 =
+          "[target = '" + sourceNode["_private"]["data"]["id"] + "']";
+        let edge_condition_1 = cy.edges(condition_1 + condition_2);
+        let edge_condition_2 = cy.edges(condition_3 + condition_4);
+        if (sourceNode == targetNode) {
+          alert("Can't add link to same node");
+          cy.remove(link);
+        } else if (edge_condition_1.length + edge_condition_2.length != 1) {
+          alert("Link already exists");
+          cy.remove(link);
+        } else {
+          window.APIUtil.add_link(link_details, link, this.auth_header, cy);
+        }
       });
-      console.log("AAA");
-      console.log(link[0]);
-
-      // try{
-      //   this.axios({
-      //   url: "http://127.0.0.1:5000/api/link/",
-      //   headers: this.auth_header,
-      //   method: "post",
-      //   data: node_details
-      // }).then(response => {
-      //   if (response.data["message"].includes("Success")) {
-      //     let returned_id = response.data["payload"];
-      //     this.$cytoscape.instance.then(cy => {
-      //                 cy.remove(link)
-      //     });
-
-      //   } else {
-      //     alert("Failed to create new link. " + response.data["message"]);
-      //     this.$cytoscape.instance.then(cy => {
-      //                 cy.remove(link)
-      //     });
-      //   }
-      // });
-      // }catch{
-      //   cy.remove(link)
-      // }
     },
     handleDrop(node_type) {
       if (this.current_view.id != "") {
@@ -278,8 +275,22 @@ export default {
       }
     },
     change_collection(view) {
-      this.current_view.name = view.name;
-      this.current_view.id = view.view_id;
+      if (this.current_view.id != view.view_id) {
+        this.current_view.name = view.name;
+        this.current_view.id = view.view_id;
+        this.$cytoscape.instance.then(cy => {
+          window.APIUtil.load_view(
+            view.view_id,
+            this.type_dict,
+            this.label_dict,
+            this.relationship_dict,
+            this.auth_header,
+            cy
+          ).then(() => {
+            this.update_view();
+          });
+        });
+      }
     },
     update_view() {
       this.$cytoscape.instance.then(cy => {
@@ -335,7 +346,7 @@ export default {
     },
     deleteLink(link) {
       let link_details = {
-        link_id: link["_private"]["data"]["id"]
+        link_id: link["_private"]["data"]["payload"]["link_id"]
       };
       this.$cytoscape.instance.then(cy => {
         window.APIUtil.delete_link(link_details, link, this.auth_header, cy);

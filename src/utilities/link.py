@@ -196,11 +196,10 @@ def delete_link(link_id, torn):
 		torn.set_status(404)
 		torn.write({"message":"Link does not exist"})
 		return False
-	import utilities.meta as MetaUtil
-	links = session.query((TableEntities.Links.node_id_1 == int(node_id)) | (TableEntities.Links.node_id_2 == int(node_id))).all()
+
 	try:
-		for link in links:
-			MetaUtil.delete_metadata_with_link(link.link_id)
+		import utilities.meta as MetaUtil
+		MetaUtil.delete_metadata_with_link(link_id)
 		session.execute(
 			delete(TableEntities.Links).where(TableEntities.Links.link_id == int(link_id))
 			)
@@ -220,6 +219,23 @@ Caveats: Delete metadata of links
 def delete_link_with_node(node_id):
 	import utilities.meta as MetaUtil
 	links = session.query(TableEntities.Links).filter((TableEntities.Links.node_id_1 == int(node_id)) | (TableEntities.Links.node_id_2 == int(node_id))).all()
+
+	try:
+		for link in links:
+			MetaUtil.delete_metadata_with_link(link.link_id)
+		session.execute(
+			delete(TableEntities.Links).where((TableEntities.Links.node_id_1 == int(node_id)) | (TableEntities.Links.node_id_2 == int(node_id)))
+			)
+		session.commit()
+	except exc.SQLAlchemyError as Error:
+		torn.set_status(500)
+		FLHandler.log_error_to_file(Error)
+		return False
+	return True
+
+def delete_link_with_relationship(relationship_id):
+	import utilities.meta as MetaUtil
+	links = session.query(TableEntities.Links).filter((TableEntities.Links.relationship_id == int(relationship_id))).all()
 
 	try:
 		for link in links:

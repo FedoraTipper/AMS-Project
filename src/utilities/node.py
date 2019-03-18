@@ -41,7 +41,6 @@ def create_node(node_dict, torn):
 	try:
 		session.add(node)
 		session.commit()
-
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
 		FLHandler.log_error_to_file(Error)
@@ -128,6 +127,12 @@ def change_node(node_id, node_dict, torn):
 			update(TableEntities.Nodes).where(TableEntities.Nodes.node_id == int(node_id)).values(node_dict)
 			)	
 		session.commit()
+
+		type_name = TypeUtil.get_type(node_dict["type_id"])["data"][0]["type"]
+		import utilities.meta as MetadataUtil
+		metadata_id = MetadataUtil.get_metadata_id("Type", node_id)
+		metadata_dict = {"node_id": node_id, "category":"Type", "data": type_name}
+		MetadataUtil.change_metadata_internal(metadata_id, metadata_dict)
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
 		FLHandler.log_error_to_file(Error)

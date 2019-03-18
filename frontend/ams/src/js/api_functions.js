@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-export function load_assets(type_array, type_count, view_array, current_view, label_array,
-    relationship_array, auth_header, cy) {
+export function load_assets(type_array, view_array, current_view, label_array, relationship_array, auth_header, cy) {
     return new Promise(function (resolve, reject) {
         const requests = [
             axios({
@@ -54,6 +53,8 @@ export function load_assets(type_array, type_count, view_array, current_view, la
                 label_dict[labels[i].label_id] = labels[i].label_text
             }
             let nodes = values[3].data["data"];
+            cy.elements().remove();
+            let type_count = {}
             for (let i = 0; i < nodes.length; i++) {
                 if (nodes[i].view_id == current_view.id) {
                     let node_name = ""
@@ -103,13 +104,15 @@ export function load_assets(type_array, type_count, view_array, current_view, la
                             source: links[i].node_id_1,
                             target: links[i].node_id_2,
                             payload: {
-                                relationship_id: relationship_dict[links[i].relationship_id],
+                                link_id: links[i].link_id,
+                                relationship_id: links[i].relationship_id,
                                 view_id: links[i].view_id
                             }
                         }
                     });
                 }
             }
+            resolve({ "dicts": [types_dict, label_dict, relationship_dict] })
         });
         setTimeout(resolve, 2500)
     });
@@ -167,6 +170,38 @@ export function delete_node(node_details, node, auth_header, cy) {
     });
 }
 
+export function add_link(link_details, premade_link_obj, auth_header, cy) {
+    return new Promise(function (resolve) {
+        try {
+            axios({
+                url: "http://127.0.0.1:5000/api/link/",
+                headers: auth_header,
+                method: "post",
+                data: link_details
+            }).then(response => {
+                if (response.data["message"].includes("Success")) {
+                    let returned_id = response.data["payload"]
+                    premade_link_obj[0]["_private"]["data"]["id"] = "l" + returned_id
+                    premade_link_obj[0]["_private"]["data"]["payload"] = {
+                        link_id: returned_id
+                    }
+                    resolve(true)
+                } else {
+                    alert("Failed to delete node. " + response.data["message"]);
+                    cy.remove(premade_link_obj);
+                    resolve(false);
+                }
+            });
+        } catch{
+            //Since adding a link is a leading action. If anything fails, it needs to be deleted.
+            alert("Something went wrong, reverting link")
+            cy.remove(premade_link_obj);
+            resolve(false)
+        }
+
+    });
+}
+
 export function delete_link(link_details, link, auth_header, cy) {
     return new Promise(function (resolve, reject) {
         axios({
@@ -205,5 +240,82 @@ export function get_metadata(uri, metadata_list, auth_header) {
             }
             resolve()
         });
+    });
+}
+
+export function load_view(view_id, types_dict, label_dict,
+    relationship_dict, auth_header, cy) {
+    return new Promise(function (resolve) {
+        const requests = [
+            axios({
+                url: "http://127.0.0.1:5000/api/node/",
+                headers: auth_header,
+                method: "get"
+            }),
+            axios({
+                url: "http://127.0.0.1:5000/api/link/",
+                headers: auth_header,
+                method: "get"
+            })
+        ];
+        Promise.all(requests).then(values => {
+            let nodes = values[0].data["data"]
+            let links = values[1].data["data"]
+            cy.elements().remove()
+            let type_count = {}
+            for (let i = 0; i < nodes.length; i++) {
+                if (nodes[i].view_id == view_id) {
+                    let node_name = ""
+
+                    if (nodes[i].label_id == null) {
+                        let count = 0
+                        if (type_count[types_dict[nodes[i].type_id]] == null) {
+                            type_count[types_dict[nodes[i].type_id]] = 1
+                            count = 1;
+                        } else {
+                            count = ++type_count[types_dict[nodes[i].type_id]];
+                        }
+                        node_name = types_dict[nodes[i].type_id] + " " + count
+                    } else {
+                        node_name = label_dict[nodes[i].label_id]
+                    }
+                    cy.add({
+                        group: "nodes",
+                        data: {
+                            id: nodes[i].node_id,
+                            name: node_name,
+                            payload: {
+                                type_id: nodes[i].type_id,
+                                type: types_dict[nodes[i].type_id],
+                                view_id: view_id,
+                                label_id: nodes[i].label_id,
+                                label_text: label_dict[nodes[i].label_id]
+                            },
+                            imglink: null
+                        }
+                    });
+                }
+            }
+
+            for (let i = 0; i < links.length; i++) {
+                if (links[i].view_id == view_id) {
+                    cy.add({
+                        group: "edges",
+                        data: {
+                            id: "l" + links[i].link_id,
+                            name: relationship_dict[links[i].relationship_id],
+                            source: links[i].node_id_1,
+                            target: links[i].node_id_2,
+                            payload: {
+                                relationship_id: links[i].relationship_id,
+                                view_id: links[i].view_id
+                            }
+                        }
+                    });
+                }
+            }
+            setTimeout(resolve, 2500)
+        })
+
     });
 }

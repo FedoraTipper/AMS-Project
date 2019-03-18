@@ -30,7 +30,7 @@ class Authenticate(SetDefaultHeaders):
         token = JWTHandler.create_token(UserUtil.get_uid(username), username,  (UserUtil.get_privilege(username) + 1))
 
         self.add_header("Authorization", token)
-        self.write({"message":"Authenticated"})
+        self.write({"message":"Authenticated", "payload":{"User": username, "privilege": (UserUtil.get_privilege(username) + 1) >= 2}})
 
 class Register(SetDefaultHeaders):
     def post(self):

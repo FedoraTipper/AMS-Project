@@ -175,16 +175,22 @@ def change_metadata(metadata_id, metadata_dict, torn):
 			torn.write({"message": "Category specified with no object id. Include link_id or node_id"})
 			return False
 
+	if change_metadata_internal(metadata_id, metadata_dict):
+		return True
+	else: 
+		return False
+
+def change_metadata_internal(metadata_id, metadata_dict):
 	try:
 		session.execute(
 			update(TableEntities.Metadata).where(TableEntities.Metadata.metadata_id == int(metadata_id)).values(metadata_dict)
-			)	
+			)
 		session.commit()
+		return True
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
 		FLHandler.log_error_to_file(Error)
 		return False
-	return True
 
 """
 Function to delete a metadata record from the database

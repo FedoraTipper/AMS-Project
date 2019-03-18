@@ -41,7 +41,7 @@ def check_fields(result_body, categories, torn):
 		else:
 			if isinstance(json_results[category], list):
 				if json_results[category][0] != b'':
-					result_dict[category] = str(json_results[category][0])[-2:-1]
+					result_dict[category] = json_results[category][0].decode("UTF-8")
 				else:
 					return False
 			else:

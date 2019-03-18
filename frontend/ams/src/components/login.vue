@@ -71,8 +71,13 @@ export default {
         .post("http://127.0.0.1:5000/api/auth/", user_details)
         .then(response => {
           if (response.data["message"].includes("Authenticated")) {
-            var auth_token = response.headers["authorization"];
+            let auth_token = response.headers["authorization"];
+            let payload = response.data["payload"];
+            let username = payload["User"];
+            let privilege = payload["privilege"];
             localStorage.setItem("Authorization", auth_token);
+            localStorage.setItem("User", username);
+            localStorage.setItem("Privilege", privilege);
             this.$router.push("/cyto");
           } else {
             this.dismissCountDown = this.dismissSecs;
