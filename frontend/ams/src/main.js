@@ -7,6 +7,7 @@ import VueCytoscape from 'vue-cytoscape'
 import router from './router'
 import cytoscape from 'cytoscape'
 import VueDragDrop from 'vue-drag-drop';
+import store from "./store/store";
 
 Vue.use(BootstrapVue)
 Vue.use(VueAxios, axios)
@@ -23,5 +24,6 @@ Vue.config.productionTip = false
 
 new Vue({
   router,
+  store,
   render: h => h(App),
 }).$mount('#app')

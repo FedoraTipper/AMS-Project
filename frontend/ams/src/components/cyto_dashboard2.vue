@@ -23,6 +23,29 @@
       </b-form>
     </b-modal>
 
+    <b-modal size="xl" v-model="modal_type_show" ok-only>
+      <b-form @submit="modal_function">
+        <b-form-group v-if="modal_node" label="Type:">
+          <b-form-select
+            v-model="selected.type"
+            :options="type_dict"
+            :value-field="type_array.type"
+          />
+        </b-form-group>
+        <b-form-group label="Label:">
+          <b-form-select
+            v-model="selected.label_relationship"
+            :options="form.label_relationship"
+            :value-field="form.field"
+          />
+        </b-form-group>
+        <b-input-group prepend="Icon" v-if="modal_node" class="mt-3">
+          <b-form-input v-model="selected.icon"/>
+        </b-input-group>
+        <b-button type="submit" variant="primary">Change</b-button>
+      </b-form>
+    </b-modal>
+
     <b-modal size="xl" v-model="modal_metadata_show" ok-only>
       <div id="metadata_table">
         <b-card-group class="text-center">
@@ -146,7 +169,7 @@
         </b-container>
       </div>
     </b-modal>
-
+    <!-- Change collection -->
     <b-dropdown
       id="overlay-button"
       offset
@@ -160,7 +183,7 @@
         <b-dropdown-item @click="change_collection(view)">{{view.name}}</b-dropdown-item>
       </div>
     </b-dropdown>
-
+    <!-- Change layout button -->
     <b-dropdown
       id="overlay-button2"
       offset
@@ -183,12 +206,25 @@
       >
         <drag
           class="drag"
+          @dragstart="start_drag"
+          @dragend="end_drag"
           :transfer-data="{type}"
           :effect-allowed="['copy']"
           drop-effect="copy"
         >{{type.type}}</drag>
       </div>
     </div>
+    <drop
+      class="drop"
+      :class="{cytodrop}"
+      @dragover="cytodrop = true"
+      @dragleave="cytodrop = false"
+      @drop="deleteDrop"
+    >
+      <div id="type_button">
+        <b-button size="lg">{{type_action}}</b-button>
+      </div>
+    </drop>
     <!-- Create droppable object -->
     <drop
       class="drop"
@@ -216,6 +252,7 @@ import { Drag, Drop } from "vue-drag-drop";
 let cytoscapeconfig = require("../style/cytoscapeconfig.js");
 //Load external API functions
 let APIUtil = (window.APIUtil = require("../js/api_functions.js"));
+let FunctionUtil = (window.FunctionUtil = require("../js/utility_functions.js"));
 
 export default {
   // Create components to allow for drag and drop
@@ -226,6 +263,7 @@ export default {
   data() {
     return {
       cytodrop: false,
+      type_action: "Add",
       layout_array: ["circle", "dagre", "klay", "cola"],
       current_layout: "circle",
       type_array: [],
@@ -246,6 +284,7 @@ export default {
       modal_metadata_show: false,
       modal_element_change: false,
       modal_search_show: false,
+      modal_type_show: false,
       modal_node: false,
       form: {
         label_relationship: {},
@@ -323,11 +362,8 @@ export default {
           cy
         ).then(response => {
           this.type_dict = response["dicts"][0];
-          //this.type_array = response["arrays"][0];
           this.label_dict = response["dicts"][1];
-          //this.label_array = response["arrays"][1];
           this.relationship_dict = response["dicts"][2];
-          // this.relationship_array = response["arrays"][2];
           this.update_view();
         });
       });
@@ -410,6 +446,18 @@ export default {
               select: () => {
                 this.search();
               }
+            },
+            {
+              content: "Relationships",
+              select: () => {
+                this.search();
+              }
+            },
+            {
+              content: "Labels",
+              select: () => {
+                this.search();
+              }
             }
           ]
         }));
@@ -443,6 +491,12 @@ export default {
         }
       });
     },
+    start_drag() {
+      console.log("HELLO");
+    },
+    end_drag() {
+      console.log("HELLO 2");
+    },
     handleDrop(node_type) {
       if (this.current_view.id != "") {
         let node_details = {
@@ -464,6 +518,9 @@ export default {
       } else {
         alert("Pick a view");
       }
+    },
+    deleteDrop(node_type) {
+      console.log(node_type);
     },
     change_collection(view) {
       if (this.current_view.id != view.view_id) {
@@ -598,7 +655,6 @@ export default {
       let uri = "?";
       if (element["_private"]["group"] == "edges") {
         uri += "link_id=" + element["_private"]["data"]["payload"]["link_id"];
-        console.log(uri);
       } else {
         uri += "node_id=" + element["_private"]["data"]["id"];
       }
@@ -639,21 +695,8 @@ export default {
       this.currentPage = 1;
     },
     search() {
-      this.search_list = [];
-      this.$cytoscape.instance.then(cy => {
-        let nodes = cy.nodes();
-        this.totalSearchRows = nodes.length;
-        for (let i = 0; i < this.totalSearchRows; i++) {
-          let node_details = nodes[i]["_private"]["data"];
-          let node_search_details = {
-            node_id: node_details["id"],
-            node_name: node_details["name"],
-            node_type: node_details["payload"]["type"],
-            label_text: node_details["payload"]["label_text"]
-          };
-          this.search_list.push(node_search_details);
-        }
-      });
+      this.search_list = window.FunctionUtil.build_search_list(window.cy);
+      this.totalSearchRows = this.search_list.length;
       this.modal_search_show = true;
     },
     focusNode(node) {
@@ -681,62 +724,11 @@ export default {
       this.current_layout = layout;
       this.update_view();
     },
-    get_indegrees_nodes(node_id) {
-      let edges = window.cy.edges("[target = '" + node_id + "']");
-      let nodes = [];
-      for (let i = 0; i < edges.length; i++) {
-        let source_node = window.cy.$id(edges.data("source"));
-        nodes.push(source_node);
-      }
-      return nodes;
-    },
-    get_neighbours(node_id) {
-      let nodes = [];
-      let elements = window.cy.$id(String(node_id)).neighborhood();
-      for (let i = 0; i < elements.length; i++) {
-        if (elements[i].isNode()) {
-          nodes.push(elements[i]);
-        }
-      }
-      return nodes;
-    },
-    hide_recursively(node, explored) {
-      let neighbours = this.get_neighbours(node.data("id"));
-      if (neighbours.length == 0) {
-        node["_private"]["data"]["display"] = "none";
-        explored[node.data("id")] = 1;
-        node.hide();
-        return true;
-      } else {
-        node["_private"]["data"]["display"] = "none";
-        explored[node.data("id")] = 1;
-        for (let i = 0; i < neighbours.length; i++) {
-          if (explored[neighbours[i].data("id")] == undefined) {
-            this.hide_recursively(neighbours[i], explored);
-          }
-        }
-
-        return true;
-      }
-    },
     collapse(node) {
-      let indegrees = this.get_indegrees_nodes(node.data("id"));
-      let explored = {};
-      explored[node.data("id")] = 1;
-      for (let i = 0; i < indegrees.length; i++) {
-        if (explored[indegrees[i].data("id")] == undefined) {
-          this.hide_recursively(indegrees[i], explored);
-        }
-      }
-      this.update_view();
-      setTimeout(this.update_view, 5000);
+      window.FunctionUtil.collapse_node(node, window.cy);
     },
     expand(node) {
-      let neighbours = this.get_neighbours(node.data("id"));
-      for (let i = 0; i < neighbours.length; i++) {
-        neighbours[i]["_private"]["data"]["display"] = "element";
-        neighbours[i].show();
-      }
+      window.FunctionUtil.expand_node(node, window.cy);
     }
   },
   mounted: function() {

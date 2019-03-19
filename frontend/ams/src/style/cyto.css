@@ -32,10 +32,18 @@
   width: 10%;
   height: 95.8%;
 }
+
 .drop.over {
   border-color: #aaa;
   background: #ccc;
 }
+#type_button{
+  position: absolute;
+  z-index: 1001;
+ bottom: 5%;
+ left: 2.5%;
+}
+
 #draggablesspacing {
   padding-top: 20px;
 }

@@ -9,7 +9,6 @@ import Signout from './components/signout'
 import Cyto2 from './components/cyto_dashboard2'
 
 Vue.use(Router)
-
 const router = new Router({
     routes: [{
         path: '/',

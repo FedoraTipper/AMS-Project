@@ -254,6 +254,8 @@ export function change_link(link_details, relationship_message, auth_header, cy)
         if (response.data["message"].includes("Success")) {
             let link = cy.getElementById("l" + link_details["link_id"])
             link["_private"]["data"]["name"] = relationship_message;
+            link.deselect();
+            link.select();
         } else {
             alert("Change to link failed")
         }

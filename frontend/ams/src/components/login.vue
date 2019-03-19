@@ -39,6 +39,7 @@
 
 <script>
 import crypto from "crypto";
+import store from "../store/store";
 export default {
   data() {
     return {
@@ -75,6 +76,8 @@ export default {
             let payload = response.data["payload"];
             let username = payload["User"];
             let privilege = payload["privilege"];
+            store.commit("set_privilege", privilege);
+            store.commit("set_username", username);
             localStorage.setItem("Authorization", auth_token);
             localStorage.setItem("User", username);
             localStorage.setItem("Privilege", privilege);

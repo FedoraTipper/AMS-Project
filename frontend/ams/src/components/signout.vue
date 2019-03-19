@@ -1,13 +1,12 @@
 <template></template>
 
 <script>
+import store from "../store/store";
 export default {
-  data() {
-    return {};
-  },
   methods: {
     signout() {
       localStorage.clear();
+      store.commit("clear");
       this.$router.push("/");
     }
   },

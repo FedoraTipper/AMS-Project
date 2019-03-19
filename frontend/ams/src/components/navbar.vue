@@ -28,24 +28,22 @@
 
 
 <script>
+import store from "../store/store";
 export default {
-  data() {
-    return {
-      privilege: false,
-      username: "User",
-      user_show: false
-    };
+  computed: {
+    privilege: () => store.state.privilege,
+    username: () => store.state.username,
+    user_show: () => store.state.user_show
   },
   methods: {
     load_variables() {
-      let priv = localStorage.getItem("Privilege");
+      let privilege = localStorage.getItem("Privilege");
       let user = localStorage.getItem("User");
-      if (priv && priv == "true") {
-        this.privilege = window.privilege = true;
+      if (privilege && privilege == "true") {
+        store.commit("set_privilege", true);
       }
       if (user) {
-        this.user_show = true;
-        this.username = window.username = user;
+        store.commit("set_username", user);
       }
     }
   },
