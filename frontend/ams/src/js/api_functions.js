@@ -83,7 +83,8 @@ export function load_assets(type_array, view_array, current_view, label_array, r
                                 label_text: label_dict[nodes[i].label_id],
                                 icon: nodes[i].icon
                             },
-                            imglink: "https://cors-anywhere.herokuapp.com/" + nodes[i].icon
+                            imglink: "https://cors-anywhere.herokuapp.com/" + nodes[i].icon,
+                            display: "element"
                         }
                     });
                 }
@@ -144,7 +145,8 @@ export function add_node(node_details, node_type, current_view, auth_header, cy)
                             type: node_type,
                             view_id: current_view.id
                         },
-                        imglink: null
+                        imglink: null,
+                        display: "element"
                     }
                 });
             } else {
@@ -348,7 +350,8 @@ export function load_view(view_id, types_dict, label_dict,
                                 label_text: label_dict[nodes[i].label_id],
                                 icon: nodes[i].icon
                             },
-                            imglink: "https://cors-anywhere.herokuapp.com/" + nodes[i].icon
+                            imglink: "https://cors-anywhere.herokuapp.com/" + nodes[i].icon,
+                            display: "element"
                         }
                     });
                 }

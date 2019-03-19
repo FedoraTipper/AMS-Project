@@ -17,7 +17,6 @@ class Authenticate(SetDefaultHeaders):
             self.set_status(401)
             self.write({"message":"Authentication failed"})
             return None
-        print(user_dict["password"])
         if(UserUtil.compare_password(user_dict["username"], user_dict["password"]) == False):
             statement = "Failed login attempt %s : %s", (user_dict["username"], user_dict["password"])
             FLHandler.log_debug_to_file(statement)

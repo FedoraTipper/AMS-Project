@@ -19,6 +19,12 @@
   right: 1%;
   z-index: 999;
 }
+#overlay-button2{
+  position: absolute;
+  right: 1%;
+  top:15%;
+  z-index: 999;
+}
 #draggabledashboard {
   position: absolute;
   z-index: 1000;

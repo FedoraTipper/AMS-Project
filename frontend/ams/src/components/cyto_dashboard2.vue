@@ -80,6 +80,73 @@
       </div>
     </b-modal>
 
+    <b-modal size="xl" v-model="modal_search_show" ok-only>
+      <div class="d-block text-center">
+        <h3>Search for a node</h3>
+      </div>
+      <!-- User Interface controls -->
+      <div id="container">
+        <b-container fluid>
+          <b-card-group class="text-center" id="log_table">
+            <b-row>
+              <b-col md="10" class="my-1">
+                <b-form-group label-cols-sm="3" label="Filter" class="mb-0">
+                  <b-input-group>
+                    <b-form-input v-model="filter" placeholder="Type to Search"/>
+                    <b-input-group-append>
+                      <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+                    </b-input-group-append>
+                  </b-input-group>
+                </b-form-group>
+              </b-col>
+            </b-row>
+
+            <!-- Main table element -->
+            <b-table
+              show-empty
+              stacked="md"
+              :items="search_list"
+              :fields="search_table_fields"
+              :current-page="currentPage"
+              :per-page="perPage"
+              :filter="filter"
+              :striped="true"
+              :bordered="true"
+              :hover="true"
+              :outlines="true"
+              :dark="true"
+              selectable
+              :select-mode="select_mode"
+              selectedVariant="default"
+              @row-selected="focusNode"
+              @filtered="onFiltered"
+            >
+              <template slot="name" slot-scope="row">{{ row.value.first }} {{ row.value.last }}</template>
+
+              <template slot="row-details" slot-scope="row">
+                <b-card>
+                  <ul>
+                    <li v-for="(value, key) in row.item" :key="key">{{ key }}: {{ value }}</li>
+                  </ul>
+                </b-card>
+              </template>
+            </b-table>
+
+            <b-row>
+              <b-col md="6" class="my-1">
+                <b-pagination
+                  :total-rows="totalSearchRows"
+                  :per-page="perPage"
+                  v-model="currentPage"
+                  class="my-0"
+                />
+              </b-col>
+            </b-row>
+          </b-card-group>
+        </b-container>
+      </div>
+    </b-modal>
+
     <b-dropdown
       id="overlay-button"
       offset
@@ -94,6 +161,19 @@
       </div>
     </b-dropdown>
 
+    <b-dropdown
+      id="overlay-button2"
+      offset
+      dropleft
+      :text="current_layout"
+      variant="primary"
+      class="m-md-2"
+      size="lg"
+    >
+      <div v-for="layout in layout_array" :key="layout">
+        <b-dropdown-item @click="change_layout(layout)">{{layout}}</b-dropdown-item>
+      </div>
+    </b-dropdown>
     <div id="draggabledashboard">
       <div
         id="draggablesspacing"
@@ -129,6 +209,8 @@ import cytoscape from "cytoscape";
 import edgehandle from "cytoscape-edgehandles";
 import cola from "cytoscape-cola";
 import cxtmenu from "cytoscape-cxtmenu";
+import dagre from "cytoscape-dagre";
+import klay from "cytoscape-klay";
 import { Drag, Drop } from "vue-drag-drop";
 //Load cytoscapes theme config instance
 let cytoscapeconfig = require("../style/cytoscapeconfig.js");
@@ -144,6 +226,8 @@ export default {
   data() {
     return {
       cytodrop: false,
+      layout_array: ["circle", "dagre", "klay", "cola"],
+      current_layout: "circle",
       type_array: [],
       type_dict: {},
       view_array: [],
@@ -161,6 +245,7 @@ export default {
       },
       modal_metadata_show: false,
       modal_element_change: false,
+      modal_search_show: false,
       modal_node: false,
       form: {
         label_relationship: {},
@@ -175,10 +260,13 @@ export default {
       global_element: "",
       element_payload: {},
       metadata_list: [],
+      search_list: [],
       currentPage: 1,
       perPage: 5,
       filter: null,
       totalMetaRows: 0,
+      totalSearchRows: 0,
+      select_mode: "single",
       metadata_table_fields: {
         meta_id: {
           label: "Metadata ID"
@@ -190,11 +278,25 @@ export default {
           label: "Field Data"
         }
       },
+      search_table_fields: {
+        node_id: {
+          label: "Node ID"
+        },
+        node_name: {
+          label: "Node Name"
+        },
+        node_type: {
+          label: "Node Type"
+        },
+        label_text: {
+          label: "Label"
+        }
+      },
       config: {
         panningEnabled: true,
-        fit: false,
-        animate: false,
-        boxSelectionEnabled: false,
+        fit: true,
+        animate: true,
+        boxSelectionEnabled: true,
         style: cytoscapeconfig.config
       }
     };
@@ -204,10 +306,13 @@ export default {
       edgehandle(cytoscape);
       cxtmenu(cytoscape);
       cytoscape.use(cola);
+      cytoscape.use(dagre);
+      cytoscape.use(klay);
     },
     load_assets() {
       //Load all assets from database
       this.$cytoscape.instance.then(cy => {
+        window.cy = cy;
         window.APIUtil.load_assets(
           this.type_array,
           this.view_array,
@@ -240,7 +345,42 @@ export default {
         }));
         eh.enableDrawMode();
         let menu = (window.menu = cy.cxtmenu({
-          selector: "node, edge",
+          selector: "node",
+          commands: [
+            {
+              content: "Delete",
+              select: element => {
+                this.deleteElement(element);
+              }
+            },
+            {
+              content: "Change Details",
+              select: element => {
+                this.changeElement(element);
+              }
+            },
+            {
+              content: "Metadata",
+              select: element => {
+                this.getMetadata(element);
+              }
+            },
+            {
+              content: "Collapse",
+              select: element => {
+                this.collapse(element);
+              }
+            },
+            {
+              content: "Expand",
+              select: element => {
+                this.expand(element);
+              }
+            }
+          ]
+        }));
+        let link_menu = (window.link_menu = cy.cxtmenu({
+          selector: "edge",
           commands: [
             {
               content: "Delete",
@@ -267,7 +407,9 @@ export default {
           commands: [
             {
               content: "Search",
-              select: this.search()
+              select: () => {
+                this.search();
+              }
             }
           ]
         }));
@@ -345,8 +487,13 @@ export default {
       this.$cytoscape.instance.then(cy => {
         for (let i = 0; i < 5; i++) {
           cy.center();
-          cy.layout({ name: "circle", fit: true }).run();
+          cy.layout({
+            name: this.current_layout,
+            fit: true,
+            animate: true
+          }).run();
         }
+        cy.center();
       });
     },
     deleteElement(element) {
@@ -491,7 +638,106 @@ export default {
       this.totalRows = filteredItems.length;
       this.currentPage = 1;
     },
-    search() {}
+    search() {
+      this.search_list = [];
+      this.$cytoscape.instance.then(cy => {
+        let nodes = cy.nodes();
+        this.totalSearchRows = nodes.length;
+        for (let i = 0; i < this.totalSearchRows; i++) {
+          let node_details = nodes[i]["_private"]["data"];
+          let node_search_details = {
+            node_id: node_details["id"],
+            node_name: node_details["name"],
+            node_type: node_details["payload"]["type"],
+            label_text: node_details["payload"]["label_text"]
+          };
+          this.search_list.push(node_search_details);
+        }
+      });
+      this.modal_search_show = true;
+    },
+    focusNode(node) {
+      this.modal_search_show = false;
+      //Deselect any selected nodes
+      if (node[0]) {
+        this.$cytoscape.instance.then(cy => {
+          node = cy.$id(String(node[0]["node_id"]));
+          // let pos = node.position();
+          // console.log(pos);
+          // let view_pos = {};
+          // view_pos["x"] = pos["x"];
+          // view_pos["y"] = pos["y"];
+          // cy.pan(view_pos);
+          // cy.viewport({
+          //   pan: { x: view_pos["x"], y: view_pos["y"] }
+          // });
+          cy.nodes().unselect();
+          node["_private"]["data"]["display"] = "element";
+          node.select();
+        });
+      }
+    },
+    change_layout(layout) {
+      this.current_layout = layout;
+      this.update_view();
+    },
+    get_indegrees_nodes(node_id) {
+      let edges = window.cy.edges("[target = '" + node_id + "']");
+      let nodes = [];
+      for (let i = 0; i < edges.length; i++) {
+        let source_node = window.cy.$id(edges.data("source"));
+        nodes.push(source_node);
+      }
+      return nodes;
+    },
+    get_neighbours(node_id) {
+      let nodes = [];
+      let elements = window.cy.$id(String(node_id)).neighborhood();
+      for (let i = 0; i < elements.length; i++) {
+        if (elements[i].isNode()) {
+          nodes.push(elements[i]);
+        }
+      }
+      return nodes;
+    },
+    hide_recursively(node, explored) {
+      let neighbours = this.get_neighbours(node.data("id"));
+      if (neighbours.length == 0) {
+        node["_private"]["data"]["display"] = "none";
+        explored[node.data("id")] = 1;
+        node.hide();
+        return true;
+      } else {
+        node["_private"]["data"]["display"] = "none";
+        explored[node.data("id")] = 1;
+        for (let i = 0; i < neighbours.length; i++) {
+          if (explored[neighbours[i].data("id")] == undefined) {
+            this.hide_recursively(neighbours[i], explored);
+          }
+        }
+
+        return true;
+      }
+    },
+    collapse(node) {
+      let indegrees = this.get_indegrees_nodes(node.data("id"));
+      let explored = {};
+      explored[node.data("id")] = 1;
+      for (let i = 0; i < indegrees.length; i++) {
+        if (explored[indegrees[i].data("id")] == undefined) {
+          this.hide_recursively(indegrees[i], explored);
+        }
+      }
+      this.update_view();
+      setTimeout(this.update_view, 5000);
+    },
+    expand(node) {
+      let neighbours = this.get_neighbours(node.data("id"));
+      for (let i = 0; i < neighbours.length; i++) {
+        neighbours[i]["_private"]["data"]["display"] = "element";
+        neighbours[i].show();
+      }
+    }
   },
   mounted: function() {
     document.querySelectorAll("canvas").forEach(canvas => {

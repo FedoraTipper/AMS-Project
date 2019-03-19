@@ -7,7 +7,8 @@ module.exports.config = [{
     "background-image": "data(imglink)",
     "background-fit": "cover",
     "height": 24,
-    "width": 24
+    "width": 24,
+    "display": "data(display)"
   }
 },
 {
