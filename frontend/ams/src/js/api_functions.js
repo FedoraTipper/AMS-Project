@@ -44,7 +44,6 @@ export function load_assets(type_array, view_array, current_view, label_array, r
             let types = values[1].data["data"];
             let types_dict = {}
             for (let i = 0; i < types.length; i++) {
-                console.log(types[i])
                 type_array.push(types[i])
                 types_dict[types[i].type_id] = types[i].type
             }
@@ -215,35 +214,32 @@ export function delete_node(node_details, node, auth_header, cy) {
 }
 
 export function add_link(link_details, premade_link_obj, auth_header, cy) {
-    return new Promise(function (resolve) {
-        try {
-            axios({
-                url: "http://127.0.0.1:5000/api/link/",
-                headers: auth_header,
-                method: "post",
-                data: link_details
-            }).then(response => {
-                if (response.data["message"].includes("Success")) {
-                    let returned_id = response.data["payload"]
-                    premade_link_obj[0].data()["id"] = "l" + returned_id
-                    premade_link_obj[0].data()["payload"] = {
-                        link_id: returned_id
-                    }
-                    resolve(true)
-                } else {
-                    alert("Failed to delete node. " + response.data["message"]);
-                    cy.remove(premade_link_obj);
-                    resolve(false);
+    try {
+        axios({
+            url: "http://127.0.0.1:5000/api/link/",
+            headers: auth_header,
+            method: "post",
+            data: link_details
+        }).then(response => {
+            if (response.data["message"].includes("Success")) {
+                let returned_id = response.data["payload"]
+                premade_link_obj[0].data()["id"] = "l" + returned_id
+                premade_link_obj[0].data()["payload"] = {
+                    link_id: returned_id
                 }
-            });
-        } catch{
-            //Since adding a link is a leading action. If anything fails, it needs to be deleted.
-            alert("Something went wrong, reverting link")
-            cy.remove(premade_link_obj);
-            resolve(false)
-        }
-
-    });
+                return true
+            } else {
+                alert("Failed to delete node. " + response.data["message"]);
+                cy.remove(premade_link_obj);
+                return false;
+            }
+        });
+    } catch{
+        //Since adding a link is a leading action. If anything fails, it needs to be deleted.
+        alert("Something went wrong, reverting link")
+        cy.remove(premade_link_obj);
+        return false
+    }
 }
 
 export function change_link(link_details, relationship_message, auth_header, cy) {

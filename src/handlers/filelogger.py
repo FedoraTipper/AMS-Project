@@ -10,24 +10,30 @@ logging.basicConfig(filename="app.log", level=logging.DEBUG,
 
 logger = logging.getLogger()
 
-"""
-Function to log a debug message to file
-Inputs: message
-Output: None
-Caveats: None
-"""
 def log_debug_to_file(message):
+	"""
+	Function to log a debug message to file
+	Inputs: message
+	Output: None
+	Caveats: None
+	"""
 	logger.debug(message)
 
-"""
-Function to log an error message to file
-Inputs: message
-Output: None
-Caveats: None
-"""
 def log_error_to_file(message):
+	"""
+	Function to log an error message to file
+	Inputs: message
+	Output: None
+	Caveats: None
+	"""
 	logger.error(message)
 
 
 def log_info_to_file(message):
+	"""
+	Function to log an info message to file
+	Inputs: message
+	Output: None
+	Caveats: None
+	"""
 	logger.info(message)

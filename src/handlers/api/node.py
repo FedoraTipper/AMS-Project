@@ -6,7 +6,17 @@ import utilities.error as ErrorUtil
 import utilities.node as NodeUtil
 
 class Node(SetDefaultHeaders):
+    """
+    Class to handle node API requests
+    Functions: get, post, put, delete
+    """
     def get(self):
+        """
+        Function to get nodes or a single node record
+        Inputs: Tornado web request
+        Output: Node data
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -20,6 +30,12 @@ class Node(SetDefaultHeaders):
             self.write(NodeUtil.get_node(node_dict["node_id"]))
 
     def post(self):
+        """
+        Function to create a node record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -42,6 +58,12 @@ class Node(SetDefaultHeaders):
         self.write({"message": "Success", "payload":node_id})
 
     def put(self):
+        """
+        Function to change a node record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -70,7 +92,13 @@ class Node(SetDefaultHeaders):
 
         self.write({"message":"Success"})
 
-    def delete(self): 
+    def delete(self):
+        """
+        Function to delete a node record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """ 
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 

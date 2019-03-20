@@ -5,55 +5,44 @@ import handlers.classes.TableEntities as TableEntities
 
 session = DBHandler.create_session()
 
-"""
-Function to get a single relationship record from the database
-Inputs: Relationship ID of the record wanted
-Output: JSON formatted string of relationship record
-Caveats: None
-"""
-
-
 def get_relationship(relationship_id):
+    """
+    Function to get a single relationship record from the database
+    Inputs: Relationship ID of the record wanted
+    Output: JSON formatted string of relationship record
+    Caveats: None
+    """
     entries = session.query(TableEntities.Relationship).filter(
         TableEntities.Relationship.relationship_id == int(relationship_id)).all()
     return {'data': [entry.as_dict() for entry in entries]}
 
-
-"""
-Function to get all relationship records
-Inputs: None
-Output: JSON Formatted string of all relationship records
-Caveats: None
-"""
-
-
 def get_relationships():
+    """
+    Function to get all relationship records
+    Inputs: None
+    Output: JSON Formatted string of all relationship records
+    Caveats: None
+    """
     entries = session.query(TableEntities.Relationship).all()
     return {'data': [entry.as_dict() for entry in entries]}
 
-
-"""
-Function to return a relationship ID given it's message
-Inputs: Message string
-Output: Relationship ID
-Caveats: None
-"""
-
-
 def get_relationship_id(message):
+    """
+    Function to return a relationship ID given it's message
+    Inputs: Message string
+    Output: Relationship ID
+    Caveats: None
+    """
     return (session.query(TableEntities.Relationship).filter(
         (TableEntities.Relationship.message == message)).one().meta_id)
 
-
-"""
-Function to create a relationship
-Inputs: Relationship dictionary; Tornado Object
-Output: True if operation was successful, False if the operation was not
-Caveats: Check if relationship message already exists
-"""
-
-
 def create_relationship(relationship_dict, torn):
+    """
+    Function to create a relationship
+    Inputs: Relationship dictionary; Tornado Object
+    Output: True if operation was successful, False if the operation was not
+    Caveats: Check if relationship message already exists
+    """
     if relationship_exists(relationship_dict["message"]):
         torn.set_status(400)
         torn.write({"message": "Relationship message already exists"})
@@ -68,41 +57,32 @@ def create_relationship(relationship_dict, torn):
         return False
     return True
 
-
-"""
-Function to see whether a relationship exists given its message
-Inputs: Message string
-Output: Boolean value - (True if the relationship exists)
-Caveats: None
-"""
-
-
 def relationship_exists(message):
+    """
+    Function to see whether a relationship exists given its message
+    Inputs: Message string
+    Output: Boolean value - (True if the relationship exists)
+    Caveats: None
+    """
     return int(session.query(TableEntities.Relationship).filter(
         TableEntities.Relationship.message == message).count()) != 0
 
-
-"""
-Function to see whether a relationship id exists
-Inputs: Relationship ID
-Output: Boolean value - (True if the relationship ID exists)
-Caveats: None
-"""
-
-
 def relationship_id_exists(relationship_id):
+    """
+    Function to see whether a relationship id exists
+    Inputs: Relationship ID
+    Output: Boolean value - (True if the relationship ID exists)
+    Caveats: None
+    """
     return (session.query(TableEntities.Relationship).filter(TableEntities.Relationship.relationship_id == int(relationship_id)).one().relationship_id)
 
-
-"""
-Function to change link record data
-Inputs: Link ID; Dictionary of link data to be ammended; Tornado object to write messages
-Output: True if operation was successful, False if the operation was not
-Caveats: Determine if node and other FK objects needed to be changed exist; Determine if link relation already exists
-"""
-
-
 def change_relationship(relationship_id, relationship_dict, torn):
+    """
+    Function to change link record data
+    Inputs: Link ID; Dictionary of link data to be ammended; Tornado object to write messages
+    Output: True if operation was successful, False if the operation was not
+    Caveats: Determine if node and other FK objects needed to be changed exist; Determine if link relation already exists
+    """
     if relationship_id_exists(relationship_id) == False:
         torn.set_status(404)
         torn.write({"message": "Relationship does not exists"})
@@ -126,16 +106,13 @@ def change_relationship(relationship_id, relationship_dict, torn):
 
     return True
 
-
-"""
-Function to delete relationship
-Inputs: Relationship ID
-Output: True if operation was successful, False if the operation was not
-Caveats: Nullify relation ID columns in other tables 
-"""
-
-
 def delete_relationship(relationship_id, torn):
+    """
+    Function to delete relationship
+    Inputs: Relationship ID
+    Output: True if operation was successful, False if the operation was not
+    Caveats: Nullify relation ID columns in other tables 
+    """
     if relationship_id_exists(relationship_id) == False:
         torn.set_status(404)
         torn.write({"message": "Relationship id does not exist"})

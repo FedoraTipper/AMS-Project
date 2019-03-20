@@ -6,7 +6,17 @@ import utilities.error as ErrorUtil
 import utilities.view as ViewUtil
 
 class View(SetDefaultHeaders):
+    """
+    Class to handle view API requests
+    Functions: get, post, put, delete
+    """
     def get(self):
+        """
+        Function to get views or a single view record
+        Inputs: Tornado web request
+        Output: View data
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -21,6 +31,12 @@ class View(SetDefaultHeaders):
             self.write(ViewUtil.get_view(view_dict["view_id"]))
 
     def post(self):
+        """
+        Function to create a view record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -43,6 +59,12 @@ class View(SetDefaultHeaders):
         self.write({"message": "Success"})
 
     def put(self):
+        """
+        Function to change a view record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -69,7 +91,13 @@ class View(SetDefaultHeaders):
 
         self.write({"message":"Success"})
 
-    def delete(self): 
+    def delete(self):
+        """
+        Function to delete a view record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """ 
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 

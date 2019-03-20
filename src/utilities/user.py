@@ -7,59 +7,60 @@ import handlers.filelogger as FLHandler
 
 session = DBHandler.create_session()
 
-"""
-Function to compare user's given password hash instance versus hash stored in the database 
-Inputs: username, user's hashed password
-Output: Boolean value of whether the user details were correct
-Caveats: None
-"""
 def compare_password(username, password):
+	"""
+	Function to compare user's given password hash instance versus hash stored in the database 
+	Inputs: username, user's hashed password
+	Output: Boolean value of whether the user details were correct
+	Caveats: None
+	"""
 	stored_hash = get_password(username)
 	return pbkdf2_sha256.verify(password, stored_hash)
 
-"""
-Function to return the password of a user found in the database
-Inputs: Username
-Output: Hashed password
-Caveats: None
-"""
+
 def get_password(username):
+	"""
+	Function to return the password of a user found in the database
+	Inputs: Username
+	Output: Hashed password
+	Caveats: None
+	"""
 	return (session.query(TableEntities.User).filter(TableEntities.User.username == username)).one().password
 
-"""
-Function to get the user's id found in the database
-Inputs: Username
-Output: User's id in int fTableEntitiesat
-Caveats: None
-"""
 def get_uid(username):
+	"""
+	Function to get the user's id found in the database
+	Inputs: Username
+	Output: User's id in int fTableEntitiesat
+	Caveats: None
+	"""
 	return session.query(TableEntities.User).filter(TableEntities.User.username == username).one().user_id
 
-"""
-Function to return the privilege level of a user
-Inputs: Username
-Output: User's privilege level in int fTableEntitiesat
-Caveats: None
-"""
 def get_privilege(username):
+	"""
+	Function to return the privilege level of a user
+	Inputs: Username
+	Output: User's privilege level in int fTableEntitiesat
+	Caveats: None
+	"""
 	return session.query(TableEntities.User).filter(TableEntities.User.username == username).one().privilege
 
-"""
-Function to determine whether the user exists in the database
-Inputs: Username
-Output: Boolean value  (True set to "they exists")
-Caveats: None
-"""
 def user_exists(username):
+	"""
+	Function to determine whether the user exists in the database
+	Inputs: Username
+	Output: Boolean value  (True set to "they exists")
+	Caveats: None
+	"""
 	return (int(session.query(TableEntities.User).filter(TableEntities.User.username == username).count()) != 0)
 
-"""
-Function to create a user record and to be inserted into the database
-Inputs: Dictionairy of user data; Tornado object to write messages
-Output: None if user error occured; True if the operating was successful
-Caveats: Password is hashed using pbkdf sha256 with 48k rounds and salt size of 64 bits
-"""
 def create_user(user_dict, torn):
+	"""
+	Function to create a user record and to be inserted into the database
+	Inputs: Dictionairy of user data; Tornado object to write messages
+	Output: None if user error occured; True if the operating was successful
+	Caveats: Password is hashed using pbkdf sha256 with 48k rounds and salt size of 64 bits
+	"""
 	if user_exists(user_dict["username"]):
 		torn.set_status(400)
 		torn.write({"message":"Username already exists"})
@@ -84,13 +85,13 @@ def create_user(user_dict, torn):
 	del user_dict
 	return True
 
-"""
-Function to allow a user to change it's password
-Inputs: user_id; user's new password
-Output: False if user error occured; True if the operation was successful
-Caveats: Password is hashed using pbkdf sha256 with 48k rounds and salt size of 64 bits
-"""
 def change_password(user_id, new_password):
+	"""
+	Function to allow a user to change it's password
+	Inputs: user_id; user's new password
+	Output: False if user error occured; True if the operation was successful
+	Caveats: Password is hashed using pbkdf sha256 with 48k rounds and salt size of 64 bits
+	"""
 	password = pbkdf2_sha256.hash(new_password, salt_size=64, rounds=48000)
 	try:
 		session.execute(

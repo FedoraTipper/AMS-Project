@@ -1,9 +1,9 @@
 from tornado.web import RequestHandler
 
-"""
-Class to set default headers for tornado
-"""
 class SetDefaultHeaders(RequestHandler):
+	"""
+	Class to set default headers for tornado
+	"""
 	def set_default_headers(self):	
 		self.set_header("Access-Control-Allow-Origin", "*")
 		self.set_header("Access-Control-Expose-Headers", "Authorization")

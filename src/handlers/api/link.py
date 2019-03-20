@@ -6,7 +6,17 @@ import utilities.error as ErrorUtil
 import utilities.link as LinkUtil
 
 class Link(SetDefaultHeaders):
+    """
+    Class to handle link API requests
+    Functions: get, post, put, delete
+    """
     def get(self):
+        """
+        Function to get links or a single link
+        Inputs: Tornado web request
+        Output: Link data
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -21,7 +31,12 @@ class Link(SetDefaultHeaders):
             self.write(LinkUtil.get_link(link_dict["link_id"]))
 
     def post(self):
-        #User level privilege
+        """
+        Function to create a link
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -45,6 +60,12 @@ class Link(SetDefaultHeaders):
         self.write({"message":"Success", "payload":link_id})
 
     def put(self):
+        """
+        Function to change a link
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -75,6 +96,12 @@ class Link(SetDefaultHeaders):
         self.write({"message":"Success"})
 
     def delete(self):
+        """
+        Function to delete a link
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 

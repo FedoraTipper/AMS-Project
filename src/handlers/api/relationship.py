@@ -6,7 +6,17 @@ import utilities.error as ErrorUtil
 import utilities.relationship as RelationshipUtil
 
 class Relationship(SetDefaultHeaders):
+    """
+    Class to handle relationship API requests
+    Functions: get, post, put, delete
+    """
     def get(self):
+        """
+        Function to get relationships or a single relationship record
+        Inputs: Tornado web request
+        Output: Relationship data
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -21,6 +31,12 @@ class Relationship(SetDefaultHeaders):
             self.write(RelationshipUtil.get_relationships(relationship_dict["relationship_id"])) 
 
     def post(self):
+        """
+        Function to create a relationship record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 2) == False:
             return None
 
@@ -43,6 +59,12 @@ class Relationship(SetDefaultHeaders):
         self.write({"message":"Success"})
 
     def put(self):
+        """
+        Function to change a relationship record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 2) == False:
             return None
 
@@ -71,6 +93,12 @@ class Relationship(SetDefaultHeaders):
         self.write({"message":"Success"})
 
     def delete(self):
+        """
+        Function to delete a relationship record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 2) == False:
             return None
 

@@ -7,7 +7,17 @@ import utilities.error as ErrorUtil
 import utilities.user as UserUtil
 
 class Authenticate(SetDefaultHeaders):
+    """
+    Class to handle Authentication API requests
+    Functions: post
+    """
     def post(self):
+        """
+        Function to authenticate a user
+        Inputs: Tornado web request
+        Output: Success message; Encrypted JWT token and user payload data
+        Caveats: Authentication needs to be passed
+        """
         body_categories = {"username": 1, "password": 1}
         user_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
@@ -31,7 +41,17 @@ class Authenticate(SetDefaultHeaders):
         self.write({"message":"Authenticated", "payload":{"User": username, "privilege": (UserUtil.get_privilege(username) + 1) >= 2}})
 
 class Register(SetDefaultHeaders):
+    """
+    Class to handle registration API requests
+    Functions: post
+    """
     def post(self):
+        """
+        Function to register a new password
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 2) == False:
             return None
 
@@ -62,7 +82,17 @@ class Register(SetDefaultHeaders):
         self.write({'message': "Success"})
 
 class Password(SetDefaultHeaders):
+    """
+    Class to handle password API requests
+    Functions: put
+    """
     def put(self):
+        """
+        Function to change a user password
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -92,7 +122,17 @@ class Password(SetDefaultHeaders):
         return None
 
 class User(SetDefaultHeaders):
+    """
+    Class to handle password API requests
+    Functions: get, put
+    """
     def get(self):
+        """
+        Function to get user data
+        Inputs: Tornado web request
+        Output: User ID
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 2) == False:
             return None
 
@@ -105,6 +145,12 @@ class User(SetDefaultHeaders):
         self.write({"user_id": UserUtil.get_uid(user_dict["username"])})
 
     def put(self):
+        """
+        Function to change user data
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 2) == False:
             return None
 

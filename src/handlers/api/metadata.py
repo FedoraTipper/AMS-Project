@@ -6,7 +6,17 @@ import utilities.error as ErrorUtil
 import utilities.meta as MetadataUtil
 
 class Metadata(SetDefaultHeaders):
+    """
+    Class to handle metadata API requests
+    Functions: get, post, put, delete
+    """
     def get(self):
+        """
+        Function to get metadata or a single metadata record
+        Inputs: Tornado web request
+        Output: Metadata data
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -23,6 +33,12 @@ class Metadata(SetDefaultHeaders):
             self.write(MetadataUtil.get_link_metadata(metadata_dict["link_id"]))
 
     def post(self):
+        """
+        Function to create a metadata record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -53,6 +69,12 @@ class Metadata(SetDefaultHeaders):
         self.write({"message":"Success"})
 
     def put(self):
+        """
+        Function to change a metadata record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -81,6 +103,12 @@ class Metadata(SetDefaultHeaders):
         self.write({"message":"Success"})
 
     def delete(self):
+        """
+        Function to delete a metadata record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 

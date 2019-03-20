@@ -375,7 +375,7 @@ export default {
       this.$cytoscape.instance.then(cy => {
         let eh = (window.eh = cy.edgehandles({
           // Increase delay or will spawn long lasting node object
-          hoverDelay: 400,
+          preview: false,
           snap: true,
           //Send to addLink function, to add the link to the database
           complete: (sourceNode, targetNode, addedEles) => {

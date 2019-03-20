@@ -6,7 +6,17 @@ import utilities.error as ErrorUtil
 import utilities.label as LabelUtil
 
 class Label(SetDefaultHeaders):
+    """
+    Class to handle label API requests
+    Functions: get, post, put, delete
+    """
     def get(self):
+        """
+        Function to get all labels or a single label record
+        Inputs: Tornado web request
+        Output: Label data
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -20,10 +30,13 @@ class Label(SetDefaultHeaders):
         if "label_id" in label_dict:
             self.write(LabelUtil.get_label(label_dict["label_id"]))
 
-    """
-    Only admins may create new labels/collections
-    """
     def post(self):
+        """
+        Function to create a new label
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 2) == False:
             return None
         
@@ -46,6 +59,12 @@ class Label(SetDefaultHeaders):
         self.write({"message": "Success"})
 
     def put(self):
+        """
+        Function to change a label
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 2) == False:
             return None
 
@@ -74,6 +93,12 @@ class Label(SetDefaultHeaders):
         self.write({"message":"Success"})
 
     def delete(self):
+        """
+        Function to delete a label
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 2) == False:
             return None
 

@@ -6,13 +6,13 @@ import handlers.filelogger as FLHandler
 
 session = DBHandler.create_session()
 
-"""
-Function to create a view in the database
-Inputs: Dictionary of view data, Tornado object to write data
-Output: True if operation was successful, False if the operation was not
-Caveats: Check if the view name already exists
-"""
 def create_view(view_dict, torn):
+	"""
+	Function to create a view in the database
+	Inputs: Dictionary of view data, Tornado object to write data
+	Output: True if operation was successful, False if the operation was not
+	Caveats: Check if the view name already exists
+	"""
 	if view_exists(view_dict["name"]):
 		torn.set_status(400)
 		torn.write({'message': "View name already exists"})
@@ -28,62 +28,62 @@ def create_view(view_dict, torn):
 
 	return True
 
-"""
-Function to determine if the view exists by the name
-Inputs: Name
-Output: Boolean value - (True if the view name exists)
-Caveats: None
-"""
 def view_exists(name):
+	"""
+	Function to determine if the view exists by the name
+	Inputs: Name
+	Output: Boolean value - (True if the view name exists)
+	Caveats: None
+	"""
 	return int(session.query(TableEntities.View).filter(
 			TableEntities.View.name == name).count()) != 0
 
-"""
-Function to determine if the view ID exists
-Inputs: view ID int
-Output: Boolean value - (True if the view id exists)
-Caveats: None
-"""
 def view_id_exists(view_id):
+	"""
+	Function to determine if the view ID exists
+	Inputs: view ID int
+	Output: Boolean value - (True if the view id exists)
+	Caveats: None
+	"""
 	return int(session.query(TableEntities.View).filter(
 			TableEntities.View.view_id == int(view_id)).count()) != 0
 
-"""
-Function to return all views from the database
-Inputs: None
-Output: JSON formatted string of column names and respective values
-Caveats: None
-"""
 def get_views():
+	"""
+	Function to return all views from the database
+	Inputs: None
+	Output: JSON formatted string of column names and respective values
+	Caveats: None
+	"""
 	entries = session.query(TableEntities.View).all()
 	return {'data': [entry.as_dict() for entry in entries]}
 
-"""
-Function to return a view from the database
-Inputs: None
-Output: JSON formatted string of column names and respective values
-Caveats: None
-"""
 def get_view(view_id):
+	"""
+	Function to return a view from the database
+	Inputs: None
+	Output: JSON formatted string of column names and respective values
+	Caveats: None
+	"""
 	entries = session.query(TableEntities.View).filter(TableEntities.View.view_id == int(view_id)).all()
 	return {'data': [entry.as_dict() for entry in entries]}
 
-"""
-Function to return a view name's ID
-Inputs: View name
-Output: View ID in int format
-Caveats: None
-"""
 def get_view_id(name):
+	"""
+	Function to return a view name's ID
+	Inputs: View name
+	Output: View ID in int format
+	Caveats: None
+	"""
 	return  session.query(TableEntities.View).filter(TableEntities.View.name == name).one().view_id
 
-"""
-Function to change a view's information
-Inputs: View ID; Dictionary of columns and values that will be ammended to the record; Tornado object
-Output: True if operation was successful, False if the operation was not
-Caveats: Check if the the view name already exists
-"""
 def change_view(view_id, view_dict, torn):
+	"""
+	Function to change a view's information
+	Inputs: View ID; Dictionary of columns and values that will be ammended to the record; Tornado object
+	Output: True if operation was successful, False if the operation was not
+	Caveats: Check if the the view name already exists
+	"""
 	if view_id_exists(view_id) == False:
 		torn.set_status(404)
 		torn.write({"message": "View does not exist"})
@@ -108,13 +108,13 @@ def change_view(view_id, view_dict, torn):
 		return False
 	return True
 
-"""
-Function to delete a view record from the database table
-Inputs: View ID; Tornado object to write any messages
-Output: True if operation was successful, False if the operation was not
-Caveats: This will delete all dependancy's to the view as well
-"""
 def delete_view(view_id, torn):
+	"""
+	Function to delete a view record from the database table
+	Inputs: View ID; Tornado object to write any messages
+	Output: True if operation was successful, False if the operation was not
+	Caveats: This will delete all dependancy's to the view as well
+	"""
 	if view_id_exists(view_id) == False:
 		torn.set_status(404)
 		torn.write({"message": "View does not exist"})

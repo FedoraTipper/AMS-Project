@@ -5,8 +5,19 @@ from handlers.headers import SetDefaultHeaders
 import utilities.error as ErrorUtil
 import utilities.type as TypeUtil
 
+
 class NodeType(SetDefaultHeaders):
+    """
+    Class to handle node type API requests
+    Functions: get, post, put, delete (Typical )
+    """
     def get(self):
+        """
+        Function to get types or a single type record
+        Inputs: Tornado web request
+        Output: Type data
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -21,6 +32,12 @@ class NodeType(SetDefaultHeaders):
             self.write(TypeUtil.get_type(type_dict["type_id"]))
 
     def post(self):
+        """
+        Function to create a type record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -44,6 +61,12 @@ class NodeType(SetDefaultHeaders):
         self.write({"message": "Success","payload":type_id})
 
     def put(self):
+        """
+        Function to change a type record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 
@@ -71,6 +94,12 @@ class NodeType(SetDefaultHeaders):
         self.write({"message":"Success"})
 
     def delete(self): 
+        """
+        Function to delete a type record
+        Inputs: Tornado web request
+        Output: Success message
+        Caveats: Authentication needs to be passed
+        """
         if JWTHandler.authorize_action(self, 1) == False:
             return None
 

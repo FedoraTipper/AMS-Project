@@ -8,13 +8,13 @@ import handlers.filelogger as FLHandler
 
 session = DBHandler.create_session()
 
-"""
-Function to create a node in the database
-Inputs: Dictionary of node data, Tornado object to write data
-Output: True if operation was successful, False if the operation was not
-Caveats: Check if the node type already exists
-"""
 def create_node(node_dict, torn):
+	"""
+	Function to create a node in the database
+	Inputs: Dictionary of node data, Tornado object to write data
+	Output: True if operation was successful, False if the operation was not
+	Caveats: Check if the node type already exists
+	"""
 	if TypeUtil.type_id_exists(node_dict["type_id"]) == False:
 		torn.set_status(404)
 		torn.write({'message': "Type ID does not exist"})
@@ -54,51 +54,52 @@ def create_node(node_dict, torn):
 	MetadataUtil.create_type_category(metadata_dict)
 	return node_id.node_id
 
-"""
-Function to determine if the node ID exists
-Inputs: Node ID int
-Output: Boolean value - (True if the node id exists)
-Caveats: None
-"""
 def node_id_exists(node_id):
+	"""
+	Function to determine if the node ID exists
+	Inputs: Node ID int
+	Output: Boolean value - (True if the node id exists)
+	Caveats: None
+	"""
 	return int(session.query(TableEntities.Nodes).filter(
 			TableEntities.Nodes.node_id == int(node_id)).count()) != 0
 
-"""
-Function to return all nodes from the database
-Inputs: None
-Output: JSON formatted string of column names and respective values
-Caveats: None
-"""
 def get_nodes():
+	"""
+	Function to return all nodes from the database
+	Inputs: None
+	Output: JSON formatted string of column names and respective values
+	Caveats: None
+	"""
 	entries = session.query(TableEntities.Nodes).all()
 	return {'data': [entry.as_dict() for entry in entries]}
-"""
-Function to get a single node's data from the database
-Inputs: Node ID in int format
-Output: JSON formatted string of column names and respective values
-Caveats: None
-"""
+
 def get_node(node_id):
+	"""
+	Function to get a single node's data from the database
+	Inputs: Node ID in int format
+	Output: JSON formatted string of column names and respective values
+	Caveats: None
+	"""
 	entries = session.query(TableEntities.Nodes).filter(TableEntities.Nodes.node_id == int(node_id)).all()
 	return {'data': [entry.as_dict() for entry in entries]}
 
-"""
-Function to return a node's ID
-Inputs: Node type string
-Output: Node ID in int format
-Caveats: None
-"""
 def get_node_id(node_type):
+	"""
+	Function to return a node's ID
+	Inputs: Node type string
+	Output: Node ID in int format
+	Caveats: None
+	"""
 	return  session.query(TableEntities.Nodes).filter(TableEntities.Nodes.node_type == node_type).one().node_id
 
-"""
-Function to change a node's information that is stored in the database
-Inputs: Node ID; Dictionary of columns and values that will be ammended to the record; Tornado object
-Output: True if operation was successful, False if the operation was not
-Caveats: Check if the node and any FK objects exists
-"""
 def change_node(node_id, node_dict, torn):
+	"""
+	Function to change a node's information that is stored in the database
+	Inputs: Node ID; Dictionary of columns and values that will be ammended to the record; Tornado object
+	Output: True if operation was successful, False if the operation was not
+	Caveats: Check if the node and any FK objects exists
+	"""
 	if node_id_exists(node_id) == False:
 		torn.set_status(404)
 		torn.write({'message': "Node does not exist"})
@@ -140,13 +141,13 @@ def change_node(node_id, node_dict, torn):
 
 	return True
 
-"""
-Function to delete a node record from the database table
-Inputs: Node ID; Tornado object to write any messages
-Output: True if operation was successful, False if the operation was not
-Caveats: Check if the node id already exists
-"""
 def delete_node(node_id, torn):
+	"""
+	Function to delete a node record from the database table
+	Inputs: Node ID; Tornado object to write any messages
+	Output: True if operation was successful, False if the operation was not
+	Caveats: Check if the node id already exists
+	"""
 	if node_id_exists(node_id) == False:
 		torn.set_status(404)
 		torn.write({"message":"Node does not exist"})
@@ -170,13 +171,13 @@ def delete_node(node_id, torn):
 
 	return True
 
-"""
-Function to delete a node which depends on a view
-Inputs: View_ID; Tornado object to write any messages
-Output: True if operation was successful, False if the operation was not
-Caveats: Delete links and metadata alongside
-"""
 def delete_node_with_view(view_id, torn):
+	"""
+	Function to delete a node which depends on a view
+	Inputs: View_ID; Tornado object to write any messages
+	Output: True if operation was successful, False if the operation was not
+	Caveats: Delete links and metadata alongside
+	"""
 	node_entries = session.query(TableEntities.Nodes).filter(TableEntities.Nodes.view_id == int(view_id)).all()
 	#Import module in function. Not allowed to cross reference
 	import utilities.link as LinkUtil
@@ -196,13 +197,13 @@ def delete_node_with_view(view_id, torn):
 			return False
 	return True
 
-"""
-Function to delete a node which depends on a node type
-Inputs: type; Tornado object to write any messages
-Output: True if operation was successful, False if the operation was not
-Caveats: Delete links and metadata alongside
-"""
 def delete_node_with_type(type_id, torn):
+	"""
+	Function to delete a node which depends on a node type
+	Inputs: type; Tornado object to write any messages
+	Output: True if operation was successful, False if the operation was not
+	Caveats: Delete links and metadata alongside
+	"""
 	node_entries = session.query(TableEntities.Nodes).filter(TableEntities.Nodes.type_id == int(type_id)).all()
 	#Import module in function. Not allowed to cross reference
 	import utilities.link as LinkUtil
