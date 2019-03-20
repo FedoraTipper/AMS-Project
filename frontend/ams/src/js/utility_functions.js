@@ -4,7 +4,7 @@ export function expand_node(node, cy) {
         cy
     );
     for (let i = 0; i < neighbours.length; i++) {
-        neighbours[i]["_private"]["data"]["display"] = "element";
+        neighbours[i].data()["display"] = "element";
         neighbours[i].show();
     }
 }
@@ -29,18 +29,11 @@ export function collapse_node(node, cy) {
 
 export function hide_recursively(node, explored, cy) {
     let neighbours = this.get_neighbours(node.data("id"), cy);
-    if (neighbours.length == 0) {
-        node["_private"]["data"]["display"] = "none";
-        explored[node.data("id")] = 1;
-        node.show();
-        node.hide();
-    } else {
-        node["_private"]["data"]["display"] = "none";
-        explored[node.data("id")] = 1;
-        for (let i = 0; i < neighbours.length; i++) {
-            if (explored[neighbours[i].data("id")] == undefined) {
-                this.hide_recursively(neighbours[i], explored, cy);
-            }
+    node.data()["display"] = "none";
+    explored[node.data("id")] = 1;
+    for (let i = 0; i < neighbours.length; i++) {
+        if (explored[neighbours[i].data("id")] == undefined) {
+            this.hide_recursively(neighbours[i], explored, cy);
         }
     }
 }
@@ -49,7 +42,7 @@ export function get_indegrees_nodes(node_id, cy) {
     let edges = cy.edges("[target = '" + node_id + "']");
     let nodes = [];
     for (let i = 0; i < edges.length; i++) {
-        let source_node = window.cy.$id(edges.data("source"));
+        let source_node = window.cy.$id(edges[i].data("source"));
         nodes.push(source_node);
     }
     return nodes;
@@ -80,4 +73,28 @@ export function build_search_list(cy) {
         search_list.push(node_search_details);
     }
     return search_list;
+}
+
+export function remove_node_with_type(type, cy) {
+    let nodes = cy.nodes();
+    for (let i = 0; i < nodes.length; i++) {
+        if (nodes[i].data("payload")["type"] == type) {
+            let edges = nodes[i].connectedEdges();
+            //Remove all the edges of the node
+            for (let j = 0; j < edges.length; j++) {
+                cy.remove(edges[j])
+            }
+            cy.remove(nodes[i])
+        }
+    }
+}
+
+export function remove_type(type, type_array) {
+    let array = [];
+    for (let i = 0; i < type_array.length; i++) {
+        if (type_array[i]["type"] != type) {
+            array.push(type_array[i])
+        }
+    }
+    return array;
 }

@@ -24,25 +24,16 @@
     </b-modal>
 
     <b-modal size="xl" v-model="modal_type_show" ok-only>
-      <b-form @submit="modal_function">
-        <b-form-group v-if="modal_node" label="Type:">
-          <b-form-select
-            v-model="selected.type"
-            :options="type_dict"
-            :value-field="type_array.type"
-          />
-        </b-form-group>
-        <b-form-group label="Label:">
-          <b-form-select
-            v-model="selected.label_relationship"
-            :options="form.label_relationship"
-            :value-field="form.field"
-          />
-        </b-form-group>
-        <b-input-group prepend="Icon" v-if="modal_node" class="mt-3">
-          <b-form-input v-model="selected.icon"/>
+      <div class="d-block text-center">
+        <h4>Add a new type</h4>
+      </div>
+      <b-form @submit="add_type">
+        <b-input-group prepend="New Type">
+          <b-form-input v-model="selected.new_type"/>
         </b-input-group>
-        <b-button type="submit" variant="primary">Change</b-button>
+        <div id="draggablesspacing">
+          <b-button type="submit" variant="primary">Add</b-button>
+        </div>
       </b-form>
     </b-modal>
 
@@ -198,31 +189,41 @@
       </div>
     </b-dropdown>
     <div id="draggabledashboard">
-      <div
-        id="draggablesspacing"
-        v-for="type in type_array"
-        :key="type.type_id"
-        v-bind="type_array"
-      >
-        <drag
-          class="drag"
-          @dragstart="start_drag"
-          @dragend="end_drag"
-          :transfer-data="{type}"
-          :effect-allowed="['copy']"
-          drop-effect="copy"
-        >{{type.type}}</drag>
+      <div id="draggablelist">
+        <vue-scroll>
+          <div
+            id="draggablesspacing"
+            v-for="type in type_array"
+            :key="type.type_id"
+            v-bind="type_array"
+          >
+            <drag
+              class="drag"
+              @dragstart="start_drag"
+              @dragend="end_drag"
+              :transfer-data="{type}"
+              :effect-allowed="['copy']"
+              drop-effect="copy"
+            >{{type.type}}</drag>
+          </div>
+        </vue-scroll>
       </div>
     </div>
+
     <drop
       class="drop"
       :class="{cytodrop}"
       @dragover="cytodrop = true"
       @dragleave="cytodrop = false"
-      @drop="deleteDrop"
+      @drop="delete_type"
     >
       <div id="type_button">
-        <b-button size="lg">{{type_action}}</b-button>
+        <b-button
+          block
+          size="lg"
+          @click="modal_type_show=true"
+          :variant="type_button_variant"
+        >{{type_action}}</b-button>
       </div>
     </drop>
     <!-- Create droppable object -->
@@ -264,6 +265,7 @@ export default {
     return {
       cytodrop: false,
       type_action: "Add",
+      type_button_variant: "secondary",
       layout_array: ["circle", "dagre", "klay", "cola"],
       current_layout: "circle",
       type_array: [],
@@ -293,7 +295,8 @@ export default {
       selected: {
         label_relationship: "",
         type: "",
-        icon: ""
+        icon: "",
+        new_type: ""
       },
       modal_function: "",
       global_element: "",
@@ -465,19 +468,15 @@ export default {
     },
     addLink(sourceNode, targetNode, link) {
       let link_details = {
-        node_id_1: sourceNode["_private"]["data"]["id"],
-        node_id_2: targetNode["_private"]["data"]["id"],
+        node_id_1: sourceNode.data("id"),
+        node_id_2: targetNode.data("id"),
         view_id: this.current_view.id
       };
       this.$cytoscape.instance.then(cy => {
-        let condition_1 =
-          "[source = '" + sourceNode["_private"]["data"]["id"] + "']";
-        let condition_2 =
-          "[target = '" + targetNode["_private"]["data"]["id"] + "']";
-        let condition_3 =
-          "[source = '" + targetNode["_private"]["data"]["id"] + "']";
-        let condition_4 =
-          "[target = '" + sourceNode["_private"]["data"]["id"] + "']";
+        let condition_1 = "[source = '" + sourceNode.data("id") + "']";
+        let condition_2 = "[target = '" + targetNode.data("id") + "']";
+        let condition_3 = "[source = '" + targetNode.data("id") + "']";
+        let condition_4 = "[target = '" + sourceNode.data("id") + "']";
         let edge_condition_1 = cy.edges(condition_1 + condition_2);
         let edge_condition_2 = cy.edges(condition_3 + condition_4);
         if (sourceNode == targetNode) {
@@ -492,10 +491,12 @@ export default {
       });
     },
     start_drag() {
-      console.log("HELLO");
+      this.type_action = "Drag here\nto delete";
+      this.type_button_variant = "danger";
     },
     end_drag() {
-      console.log("HELLO 2");
+      this.type_action = "Add";
+      this.type_button_variant = "secondary";
     },
     handleDrop(node_type) {
       if (this.current_view.id != "") {
@@ -519,8 +520,34 @@ export default {
         alert("Pick a view");
       }
     },
-    deleteDrop(node_type) {
-      console.log(node_type);
+    add_type() {
+      let type_details = { type: this.selected.new_type };
+      window.APIUtil.add_type(
+        type_details,
+        this.type_array,
+        this.auth_header
+      ).then(response => {
+        this.type_array = response["type_array"];
+        this.modal_type_show = false;
+      });
+    },
+    delete_type(node_type) {
+      let type = node_type["type"]["type"];
+      let confirmation = confirm(
+        "Are you sure you want to delete " + type + "?"
+      );
+      if (confirmation) {
+        let type_details = node_type["type"];
+        window.APIUtil.delete_type(
+          type_details,
+          this.type_array,
+          this.auth_header,
+          window.cy
+        ).then(response => {
+          this.type_array = response["type_array"];
+          this.update_view();
+        });
+      }
     },
     change_collection(view) {
       if (this.current_view.id != view.view_id) {
@@ -564,10 +591,11 @@ export default {
       if (element["_private"]["group"] == "edges") {
         this.form.label_relationship = this.relationship_dict;
         this.form.field = this.relationship_dict.message;
-        this.selected.label_relationship =
-          element["_private"]["data"]["payload"]["relationship_id"];
-        this.element_payload = element["_private"]["data"]["payload"];
-        this.element_payload["element_id"] = element["_private"]["data"]["id"];
+        this.selected.label_relationship = element.data("payload")[
+          "relationship_id"
+        ];
+        this.element_payload = element.data("id");
+        this.element_payload["element_id"] = element.data("id");
         this.modal_node = false;
         this.modal_function = this.change_link;
         this.modal_element_change = true;
@@ -575,12 +603,11 @@ export default {
         this.form.label_relationship = this.label_dict;
         this.form.field = this.label_dict.label_text;
         //Load node already set fields
-        this.selected.label_relationship =
-          element["_private"]["data"]["payload"]["label_id"];
-        this.selected.type = element["_private"]["data"]["payload"]["type_id"];
-        this.selected.icon = element["_private"]["data"]["payload"]["icon"];
-        this.element_payload = element["_private"]["data"]["payload"];
-        this.element_payload["element_id"] = element["_private"]["data"]["id"];
+        this.selected.label_relationship = element.data("payload")["label_id"];
+        this.selected.type = element.data("payload")["type_id"];
+        this.selected.icon = element.data("payload")["icon"];
+        this.element_payload = element.data("payload");
+        this.element_payload["element_id"] = element.data("id");
         this.modal_node = true;
         this.modal_function = this.change_node;
         this.modal_element_change = true;

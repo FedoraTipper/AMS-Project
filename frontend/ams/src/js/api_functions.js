@@ -1,7 +1,8 @@
 import axios from 'axios';
+import FunctionUtil from './utility_functions'
 
 export function load_assets(type_array, view_array, current_view, label_array, relationship_array, auth_header, cy) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
         const requests = [
             axios({
                 url: "http://127.0.0.1:5000/api/view/",
@@ -43,6 +44,7 @@ export function load_assets(type_array, view_array, current_view, label_array, r
             let types = values[1].data["data"];
             let types_dict = {}
             for (let i = 0; i < types.length; i++) {
+                console.log(types[i])
                 type_array.push(types[i])
                 types_dict[types[i].type_id] = types[i].type
             }
@@ -171,19 +173,19 @@ export function change_node(node_details, label_text, type_name, auth_header, cy
                 let name = null
                 if (node_details["type_id"]) {
                     name = type_name;
-                    node["_private"]["data"]["payload"]["type_id"] = node_details["type_id"]
-                    node["_private"]["data"]["payload"]["type"] = type_name;
+                    node.data("payload")["type_id"] = node_details["type_id"]
+                    node.data("payload")["type"] = type_name;
                 }
                 if (node_details["label_id"]) {
                     name = label_text
-                    node["_private"]["data"]["payload"]["label_id"] = node_details["label_id"]
-                    node["_private"]["data"]["payload"]["label_text"] = label_text
+                    node.data("payload")["label_id"] = node_details["label_id"]
+                    node.data("payload")["label_text"] = label_text
                 }
                 if (node_details["icon"]) {
-                    node["_private"]["data"]["imglink"] = "https://cors-anywhere.herokuapp.com/" + node_details["icon"]
+                    node.data()["imglink"] = "https://cors-anywhere.herokuapp.com/" + node_details["icon"]
                 }
                 if (name) {
-                    node["_private"]["data"]["name"] = name;
+                    node.data()["name"] = name;
                 }
                 resolve(true)
             } else {
@@ -223,8 +225,8 @@ export function add_link(link_details, premade_link_obj, auth_header, cy) {
             }).then(response => {
                 if (response.data["message"].includes("Success")) {
                     let returned_id = response.data["payload"]
-                    premade_link_obj[0]["_private"]["data"]["id"] = "l" + returned_id
-                    premade_link_obj[0]["_private"]["data"]["payload"] = {
+                    premade_link_obj[0].data()["id"] = "l" + returned_id
+                    premade_link_obj[0].data()["payload"] = {
                         link_id: returned_id
                     }
                     resolve(true)
@@ -253,7 +255,7 @@ export function change_link(link_details, relationship_message, auth_header, cy)
     }).then(response => {
         if (response.data["message"].includes("Success")) {
             let link = cy.getElementById("l" + link_details["link_id"])
-            link["_private"]["data"]["name"] = relationship_message;
+            link.data()["name"] = relationship_message;
             link.deselect();
             link.select();
         } else {
@@ -381,5 +383,46 @@ export function load_view(view_id, types_dict, label_dict,
             setTimeout(resolve, 1500)
         })
 
+    });
+}
+
+export function add_type(type_details, type_array, auth_header) {
+    return new Promise(function (resolve) {
+        axios({
+            url: "http://127.0.0.1:5000/api/type/",
+            headers: auth_header,
+            method: "post",
+            data: type_details
+        }).then(response => {
+            if (response.data["message"].includes("Success")) {
+                let returned_id = response.data["payload"]
+                let new_type_array = type_array;
+                new_type_array.push({ "type_id": returned_id, "type": type_details["type"] })
+                resolve({ "type_array": new_type_array })
+            } else {
+                alert("Failed to add type. " + response.data["message"]);
+                resolve({ "type_array": type_array });
+            }
+        });
+    });
+}
+
+export function delete_type(type_details, type_array, auth_header, cy) {
+    return new Promise(function (resolve) {
+        axios({
+            url: "http://127.0.0.1:5000/api/type/",
+            headers: auth_header,
+            method: "delete",
+            data: type_details
+        }).then(response => {
+            if (response.data["message"].includes("Success")) {
+                window.FunctionUtil.remove_node_with_type(type_details["type"], cy)
+                let new_type_array = window.FunctionUtil.remove_type(type_details["type"], type_array)
+                resolve({ "type_array": new_type_array })
+            } else {
+                alert("Failed to delete type. " + response.data["message"]);
+                resolve({ "type_array": type_array });
+            }
+        });
     });
 }

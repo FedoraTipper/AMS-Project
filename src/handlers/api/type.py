@@ -31,16 +31,17 @@ class NodeType(SetDefaultHeaders):
 
         if type_dict == False or TypeUtil.create_type(type_dict, self) == False:
             return None
+        
+        type_id = TypeUtil.get_type_id(type_dict["type"])
 
         formatted_message = LoggerHandler.form_message_dictionary(userdata, 
                                                                 "node_type", 
-                                                                TypeUtil.get_type_id(type_dict["type"]),
+                                                                type_id,
                                                                 type_dict)
-
 
         LoggerHandler.log_message("add", formatted_message)
 
-        self.write({"message": "Success"})
+        self.write({"message": "Success","payload":type_id})
 
     def put(self):
         if JWTHandler.authorize_action(self, 1) == False:
