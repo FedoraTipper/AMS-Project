@@ -300,6 +300,49 @@ export function get_metadata(uri, metadata_list, auth_header) {
     });
 }
 
+export function add_metadata(metadata_details, metadata_list, auth_header) {
+    return new Promise(function (resolve, reject) {
+        axios({
+            url: "http://127.0.0.1:5000/api/metadata/",
+            headers: auth_header,
+            method: "post",
+            data: metadata_details
+        }).then(response => {
+            if (response.data["message"].includes("Success")) {
+                let returned_id = response.data["payload"]
+                metadata_list.push({
+                    meta_id: returned_id,
+                    category: metadata_details["category"],
+                    metadata: metadata_details["data"]
+                });
+                resolve("Success");
+            } else {
+                alert("Failed to add metadata " + response.data["message"]);
+                resolve("Fail");
+            }
+        });
+    });
+}
+
+export function delete_metadata(metadata_details, metadata_list, auth_header) {
+    return new Promise(function (resolve) {
+        axios({
+            url: "http://127.0.0.1:5000/api/metadata/",
+            headers: auth_header,
+            method: "delete",
+            data: metadata_details
+        }).then(response => {
+            if (response.data["message"].includes("Success")) {
+                let new_array = window.FunctionUtil.remove_element(metadata_details["meta_id"], "meta_id", metadata_list)
+                resolve({ "metadata_list": new_array });
+            } else {
+                alert("Failed to delete metadata " + response.data["message"]);
+                resolve({ "metadata_list": metadata_list });
+            }
+        });
+    });
+}
+
 export function load_view(view_id, types_dict, label_dict,
     relationship_dict, auth_header, cy) {
     return new Promise(function (resolve) {
@@ -520,7 +563,7 @@ export function delete_label(label_details, label_array, label_dict, auth_header
                 let new_dict = label_dict
                 delete new_dict[label_details["label_id"]]
                 let new_array = window.FunctionUtil.remove_element(label_details["label_text"], "label_text", label_array)
-                window.FunctionUtil.remove_nodes_label(label_details["label_text"])
+                window.FunctionUtil.remove_nodes_label(label_details["label_text"], cy)
                 resolve({
                     "label_dict": new_dict,
                     "label_array": new_array

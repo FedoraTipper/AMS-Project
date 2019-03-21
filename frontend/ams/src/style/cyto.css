@@ -65,3 +65,9 @@
   margin: 3px;
 }
 
+#loading_action{
+  position: absolute;
+  bottom: 5%;
+  right: 2%;
+  z-index: 1010;
+}

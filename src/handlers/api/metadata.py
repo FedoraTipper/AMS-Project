@@ -66,7 +66,7 @@ class Metadata(SetDefaultHeaders):
 
         LoggerHandler.log_message("add", formatted_message)
 
-        self.write({"message":"Success"})
+        self.write({"message":"Success", "payload":meta_id})
 
     def put(self):
         """

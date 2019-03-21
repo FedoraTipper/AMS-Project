@@ -1,5 +1,13 @@
 <template>
   <div>
+    <div id="loading_action">
+      <b-spinner
+        v-if="spin"
+        style="width: 3.5rem; height: 3.5rem;"
+        variant="primary"
+        label="Spinning"
+      />
+    </div>
     <b-modal size="xl" v-model="modal_element_change" ok-only>
       <b-form @submit="modal_function">
         <b-form-group v-if="modal_node" label="Type:">
@@ -69,60 +77,78 @@
     </b-modal>
 
     <b-modal size="xl" v-model="modal_metadata_show" ok-only>
-      <div id="metadata_table">
-        <b-card-group class="text-center">
-          <b-row>
-            <b-col md="10" class="my-1">
-              <b-form-group label-cols-sm="3" label="Filter" class="mb-0">
-                <b-input-group>
-                  <b-form-input v-model="filter" placeholder="Type to Search"/>
-                  <b-input-group-append>
-                    <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
-                  </b-input-group-append>
-                </b-input-group>
-              </b-form-group>
-            </b-col>
-          </b-row>
+      <b-tabs card>
+        <b-tab title="Display" active>
+          <div id="metadata_table">
+            <b-card-group class="text-center">
+              <b-row>
+                <b-col md="10" class="my-1">
+                  <b-form-group label-cols-sm="3" label="Filter" class="mb-0">
+                    <b-input-group>
+                      <b-form-input v-model="filter" placeholder="Type to Search"/>
+                      <b-input-group-append>
+                        <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+                      </b-input-group-append>
+                    </b-input-group>
+                  </b-form-group>
+                </b-col>
+              </b-row>
 
-          <!-- Main table element -->
-          <b-table
-            show-empty
-            stacked="md"
-            :items="metadata_list"
-            :fields="metadata_table_fields"
-            :current-page="currentPage"
-            :per-page="perPage"
-            :filter="filter"
-            :striped="true"
-            :bordered="true"
-            :hover="true"
-            :outlines="true"
-            :dark="true"
-            @filtered="onFiltered"
-          >
-            <template slot="name" slot-scope="row">{{ row.value.first }} {{ row.value.last }}</template>
-
-            <template slot="row-details" slot-scope="row">
-              <b-card>
-                <ul>
-                  <li v-for="(value, key) in row.item" :key="key">{{ key }}: {{ value }}</li>
-                </ul>
-              </b-card>
-            </template>
-          </b-table>
-
-          <b-row>
-            <b-col md="6" class="my-1">
-              <b-pagination
-                :total-rows="totalMetaRows"
+              <!-- Main table element -->
+              <b-table
+                show-empty
+                stacked="md"
+                :items="metadata_list"
+                :fields="metadata_table_fields"
+                :current-page="currentPage"
                 :per-page="perPage"
-                v-model="currentPage"
-                class="my-0"
-              />
-            </b-col>
-          </b-row>
-        </b-card-group>
-      </div>
+                :filter="filter"
+                :striped="true"
+                :bordered="true"
+                :hover="true"
+                :outlines="true"
+                :dark="true"
+                @filtered="onFiltered"
+              >
+                <template slot="delete_button" slot-scope="row">
+                  <b-button size="sm" @click="delete_metadata(row.item.meta_id)" variant="danger">x</b-button>
+                </template>
+              </b-table>
+
+              <b-row>
+                <b-col md="6" class="my-1">
+                  <b-pagination
+                    :total-rows="totalMetaRows"
+                    :per-page="perPage"
+                    v-model="currentPage"
+                    class="my-0"
+                  />
+                </b-col>
+              </b-row>
+            </b-card-group>
+          </div>
+        </b-tab>
+        <b-tab title="Add">
+          <b-form @submit="add_metadata">
+            <div class="d-block text-center">
+              <h4>Add a metadata category</h4>
+            </div>
+            <div>
+              <b-input-group prepend="Category">
+                <b-form-input v-model="selected.category" required/>
+              </b-input-group>
+            </div>
+            <div id="draggablesspacing">
+              <b-input-group prepend="Data">
+                <b-form-input v-model="selected.data" required/>
+              </b-input-group>
+            </div>
+            <div id="draggablesspacing">
+              <b-button type="submit" variant="primary">Add</b-button>
+            </div>
+          </b-form>
+        </b-tab>
+      </b-tabs>
     </b-modal>
 
     <b-modal size="xl" v-model="modal_search_show" ok-only>
@@ -294,6 +320,8 @@ export default {
   },
   data() {
     return {
+      spin: true,
+      events: 0,
       cytodrop: false,
       type_action: "Add",
       type_button_variant: "secondary",
@@ -329,7 +357,11 @@ export default {
         type: "",
         icon: "",
         new_type: "",
-        new_label_relationship: ""
+        new_label_relationship: "",
+        category: "",
+        data: "",
+        metadata_node: "",
+        metadata_link: ""
       },
       modal_add_field: "",
       modal_delete_field: "",
@@ -354,6 +386,9 @@ export default {
         },
         metadata: {
           label: "Field Data"
+        },
+        delete_button: {
+          label: "Delete metadata"
         }
       },
       search_table_fields: {
@@ -389,6 +424,13 @@ export default {
         cytoscape.use(klay);
       }
     },
+    determine_loading() {
+      if (this.events == 0) {
+        this.spin = false;
+      } else {
+        this.spin = true;
+      }
+    },
     load_assets() {
       //Load all assets from database
       this.$cytoscape.instance.then(cy => {
@@ -410,6 +452,7 @@ export default {
       });
     },
     loadModules() {
+      this.events++;
       this.$cytoscape.instance.then(cy => {
         let eh = (window.eh = cy.edgehandles({
           // Increase delay or will spawn long lasting node object
@@ -503,6 +546,7 @@ export default {
           ]
         }));
       });
+      this.events--;
     },
     addLink(sourceNode, targetNode, link) {
       let link_details = {
@@ -524,7 +568,9 @@ export default {
           alert("Link already exists");
           cy.remove(link);
         } else {
+          this.events++;
           window.APIUtil.add_link(link_details, link, this.auth_header, cy);
+          this.events--;
         }
       });
     },
@@ -542,6 +588,7 @@ export default {
           view_id: this.current_view.id,
           type_id: node_type["type"]["type_id"]
         };
+        this.events++;
         this.$cytoscape.instance.then(cy => {
           window.APIUtil.add_node(
             node_details,
@@ -550,6 +597,7 @@ export default {
             this.auth_header,
             cy
           ).then(() => {
+            this.events--;
             this.update_view();
           });
         });
@@ -560,6 +608,7 @@ export default {
     },
     add_type() {
       let type_details = { type: this.selected.new_type };
+      this.events++;
       window.APIUtil.add_type(
         type_details,
         this.type_array,
@@ -567,6 +616,7 @@ export default {
       ).then(response => {
         this.type_array = response["type_array"];
         this.modal_type_show = false;
+        this.events--;
       });
     },
     delete_type(node_type) {
@@ -576,6 +626,7 @@ export default {
       );
       if (confirmation) {
         let type_details = node_type["type"];
+        this.events++;
         window.APIUtil.delete_type(
           type_details,
           this.type_array,
@@ -584,6 +635,7 @@ export default {
         ).then(response => {
           this.type_array = response["type_array"];
           this.update_view();
+          this.events--;
         });
       }
     },
@@ -591,6 +643,7 @@ export default {
       if (this.current_view.id != view.view_id) {
         this.current_view.name = view.name;
         this.current_view.id = view.view_id;
+        this.events++;
         this.$cytoscape.instance.then(cy => {
           window.APIUtil.load_view(
             view.view_id,
@@ -600,6 +653,7 @@ export default {
             this.auth_header,
             cy
           ).then(() => {
+            this.events--;
             this.update_view();
           });
         });
@@ -675,6 +729,7 @@ export default {
         change = true;
       }
       if (change) {
+        this.events++;
         this.$cytoscape.instance.then(cy => {
           window.APIUtil.change_node(
             node_details,
@@ -685,6 +740,7 @@ export default {
           ).then(() => {
             this.update_view();
             this.modal_element_change = false;
+            this.events--;
           });
         });
       } else {
@@ -702,6 +758,7 @@ export default {
           this.element_payload["relationship_id"]
       ) {
         link_details["relationship_id"] = this.selected.label_relationship;
+        this.events++;
         this.$cytoscape.instance.then(cy => {
           window.APIUtil.change_link(
             link_details,
@@ -710,6 +767,7 @@ export default {
             cy
           );
         });
+        this.events--;
         this.modal_element_change = false;
       } else {
         alert("Nothing to change");
@@ -718,35 +776,73 @@ export default {
     },
     getMetadata(element) {
       let uri = "?";
+      this.selected.metadata_link = null;
+      this.selected.metadata_node = null;
       if (element["_private"]["group"] == "edges") {
-        uri += "link_id=" + element["_private"]["data"]["payload"]["link_id"];
+        uri += "link_id=" + element.data("payload")["link_id"];
+        this.selected.metadata_link = element.data("payload")["link_id"];
       } else {
-        uri += "node_id=" + element["_private"]["data"]["id"];
+        uri += "node_id=" + element.data("id");
+        this.selected.metadata_node = element.data("id");
       }
       this.metadata_list = [];
+      this.events++;
       window.APIUtil.get_metadata(
         uri,
         this.metadata_list,
         this.auth_header
       ).then(response => {
         this.totalMetaRows = this.metadata_list.length;
-        if (this.totalMetaRows != 0) {
-          this.modal_metadata_show = true;
-        } else {
-          alert("No metadata found for the asset");
-        }
+        this.modal_metadata_show = true;
+        this.events--;
+      });
+    },
+    add_metadata() {
+      let metadata_details = {
+        category: this.selected.category,
+        data: this.selected.category
+      };
+      if (this.selected.metadata_node) {
+        metadata_details["node_id"] = this.selected.metadata_node;
+      } else {
+        metadata_details["link_id"] = this.selected.metadata_link;
+      }
+      this.events++;
+      window.APIUtil.add_metadata(
+        metadata_details,
+        this.metadata_list,
+        this.auth_header
+      ).then(response => {
+        this.events--;
+      });
+    },
+    delete_metadata(metadata_id) {
+      let metadata_details = {
+        meta_id: metadata_id
+      };
+      this.events++;
+      window.APIUtil.delete_metadata(
+        metadata_details,
+        this.metadata_list,
+        this.auth_header
+      ).then(response => {
+        this.metadata_list = response["metadata_list"];
+        this.events--;
       });
     },
     deleteNode(node) {
       let node_details = {
         node_id: node["_private"]["data"]["id"]
       };
+      this.events++;
       this.$cytoscape.instance.then(cy => {
         window.APIUtil.delete_node(node_details, node, this.auth_header, cy);
       });
       this.update_view();
+      this.events--;
     },
     deleteLink(link) {
+      this.events++;
       let link_details = {
         link_id: link["_private"]["data"]["payload"]["link_id"]
       };
@@ -754,6 +850,7 @@ export default {
         window.APIUtil.delete_link(link_details, link, this.auth_header, cy);
       });
       this.update_view();
+      this.events--;
     },
     onFiltered(filteredItems) {
       this.totalRows = filteredItems.length;
@@ -770,17 +867,8 @@ export default {
       if (node[0]) {
         this.$cytoscape.instance.then(cy => {
           node = cy.$id(String(node[0]["node_id"]));
-          // let pos = node.position();
-          // console.log(pos);
-          // let view_pos = {};
-          // view_pos["x"] = pos["x"];
-          // view_pos["y"] = pos["y"];
-          // cy.pan(view_pos);
-          // cy.viewport({
-          //   pan: { x: view_pos["x"], y: view_pos["y"] }
-          // });
           cy.nodes().unselect();
-          node["_private"]["data"]["display"] = "element";
+          node.data()["display"] = "element";
           node.select();
         });
       }
@@ -823,6 +911,7 @@ export default {
         let relationship_details = {
           message: this.selected.new_label_relationship
         };
+        this.events++;
         window.APIUtil.add_relationship(
           relationship_details,
           this.relationship_dict,
@@ -832,6 +921,7 @@ export default {
           this.modal_label_relation_change = false;
           this.relationship_dict = response["relationship_dict"];
           this.relationship_array = response["relationship_array"];
+          this.events--;
         });
       } else {
         alert("Relationship already exists");
@@ -842,6 +932,7 @@ export default {
         relationship_id: this.selected.label_relationship,
         message: this.relationship_dict[this.selected.label_relationship]
       };
+      this.events++;
       window.APIUtil.delete_relationship(
         relationship_details,
         this.relationship_array,
@@ -852,6 +943,7 @@ export default {
         this.modal_label_relation_change = false;
         this.relationship_dict = response["relationship_dict"];
         this.relationship_array = response["relationship_array"];
+        this.events--;
       });
     },
     add_label() {
@@ -864,6 +956,7 @@ export default {
         let label_details = {
           label_text: this.selected.new_label_relationship
         };
+        this.events++;
         window.APIUtil.add_label(
           label_details,
           this.label_array,
@@ -873,6 +966,7 @@ export default {
           this.modal_label_relation_change = false;
           this.label_dict = response["label_dict"];
           this.label_array = response["label_array"];
+          this.events--;
         });
       } else {
         alert("The label already exists");
@@ -883,6 +977,7 @@ export default {
         label_id: this.selected.label_relationship,
         label_text: this.label_dict[this.selected.label_relationship]
       };
+      this.events++;
       window.APIUtil.delete_label(
         label_details,
         this.label_array,
@@ -893,6 +988,7 @@ export default {
         this.modal_label_relation_change = false;
         this.label_dict = response["label_dict"];
         this.label_array = response["label_array"];
+        this.events--;
       });
     }
   },
@@ -900,6 +996,9 @@ export default {
     document.querySelectorAll("canvas").forEach(canvas => {
       canvas.style.left = "0";
     });
+    setInterval(() => {
+      this.determine_loading();
+    }, 250);
     this.$nextTick(this.loadModules());
     this.$nextTick(this.load_assets());
     this.update_view();

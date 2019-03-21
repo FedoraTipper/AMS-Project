@@ -217,7 +217,7 @@ def delete_metadata(metadata_id, torn):
 		return False
 	try:
 		session.execute(
-			delete(TableEntities.Metadata).where(TableEntities.Metadata.metadata_id == int(metadata_id))
+			delete(TableEntities.Metadata).where(TableEntities.Metadata.meta_id == int(metadata_id))
 			)
 		session.commit()
 	except exc.SQLAlchemyError as Error:
