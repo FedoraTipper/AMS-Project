@@ -33,8 +33,7 @@ def get_relationship_id(message):
     Output: Relationship ID
     Caveats: None
     """
-    return (session.query(TableEntities.Relationship).filter(
-        (TableEntities.Relationship.message == message)).one().meta_id)
+    relationship = session.query(TableEntities.Relationship).filter(TableEntities.Relationship.message == message).one().relationship_id
 
 def create_relationship(relationship_dict, torn):
     """
@@ -55,7 +54,8 @@ def create_relationship(relationship_dict, torn):
         torn.set_status(500)
         FLHandler.log_error_to_file(Error)
         return False
-    return True
+    relationship = session.query(TableEntities.Relationship).order_by(TableEntities.Relationship.relationship_id.desc()).first()
+    return relationship.relationship_id
 
 def relationship_exists(message):
     """
@@ -118,7 +118,7 @@ def delete_relationship(relationship_id, torn):
         torn.write({"message": "Relationship id does not exist"})
         return False
 
-    null_dict = {"relationship_id": False}
+    null_dict = {"relationship_id": None}
     # Create SQL statements to set relationship ID in FK _table_s to NULL
     try:
         # Nullify relationship id's in links table

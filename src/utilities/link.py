@@ -235,23 +235,19 @@ def delete_link_with_node(node_id):
 		return False
 	return True
 
-def delete_link_with_relationship(relationship_id):
+def update_link_with_relationship(relationship_id):
 	"""
-	Function to delete links with a given relationship
+	Function to update links with a given relationship id
 	Inputs: Relationship ID
 	Output: True if operation was successful, False if the operation was not
-	Caveats: Delete metadata of links
+	Caveats: None
 	"""
-	import utilities.meta as MetaUtil
-	links = session.query(TableEntities.Links).filter((TableEntities.Links.relationship_id == int(relationship_id))).all()
-
 	try:
-		for link in links:
-			MetaUtil.delete_metadata_with_link(link.link_id)
 		session.execute(
-			delete(TableEntities.Links).where((TableEntities.Links.node_id_1 == int(node_id)) | (TableEntities.Links.node_id_2 == int(node_id)))
+			update(TableEntities.Links).where(TableEntities.Links.relationship_id == int(relationship_id)).values({"relationship_id": None})
 			)
 		session.commit()
+		return True
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
 		FLHandler.log_error_to_file(Error)

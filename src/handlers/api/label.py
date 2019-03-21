@@ -42,21 +42,23 @@ class Label(SetDefaultHeaders):
         
         userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
 
-        body_categories = {"label_text": 1, "parent": 0}
+        body_categories = {"label_text": 1}
         label_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
         if label_dict == False or LabelUtil.create_label(label_dict, self) == False:
             return None
 
+        label_id = LabelUtil.get_label_id(label_dict["label_text"])
+
         formatted_message = LoggerHandler.form_message_dictionary(userdata, 
                                                                 "label", 
-                                                                LabelUtil.get_label_id(label_dict["label_text"]),
+                                                                label_id,
                                                                 label_dict)
 
 
         LoggerHandler.log_message("add", formatted_message)
 
-        self.write({"message": "Success"})
+        self.write({"message": "Success", "payload":label_id})
 
     def put(self):
         """

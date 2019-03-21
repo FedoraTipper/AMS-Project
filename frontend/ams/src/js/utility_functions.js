@@ -98,3 +98,49 @@ export function remove_type(type, type_array) {
     }
     return array;
 }
+
+export function relationship_exists(relationship, relationship_dict) {
+    for (let relation in relationship_dict) {
+        if (relationship_dict[relation] == relationship) {
+            return true;
+        }
+    }
+    return false;
+}
+
+export function remove_element(value, field, element_array) {
+    let array = [];
+    for (let i = 0; i < element_array.length; i++) {
+        if (element_array[i][field] != value) {
+            array.push(element_array[i])
+        }
+    }
+    return array;
+}
+
+export function remove_links_label(relationship, cy) {
+    let edges = cy.edges();
+    for (let i = 0; i < edges.length; i++) {
+        if (edges[i].data("name") == relationship) {
+            edges[i].data()["name"] = ""
+        }
+    }
+}
+
+export function label_exists(label, label_dict) {
+    for (let i in label_dict) {
+        if (label_dict[i] == label) {
+            return true;
+        }
+    }
+    return false;
+}
+
+export function remove_nodes_label(label, cy) {
+    let nodes = cy.nodes();
+    for (let i = 0; i < nodes.length; i++) {
+        if (nodes[i].data("name") == label) {
+            nodes[i].data()["name"] = nodes[i].data("payload")["type"]
+        }
+    }
+}

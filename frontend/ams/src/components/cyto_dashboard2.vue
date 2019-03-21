@@ -23,6 +23,37 @@
       </b-form>
     </b-modal>
 
+    <b-modal size="xl" v-model="modal_label_relation_change" ok-only>
+      <b-tabs card>
+        <b-tab title="Add">
+          <b-form @submit="modal_function">
+            <div class="d-block text-center">
+              <h4>{{modal_add_field}}</h4>
+            </div>
+            <b-form-group>
+              <b-form-input v-model="selected.new_label_relationship"/>
+            </b-form-group>
+            <b-button type="submit" variant="primary">Add</b-button>
+          </b-form>
+        </b-tab>
+        <b-tab title="Delete">
+          <b-form @submit="modal_function_2">
+            <div class="d-block text-center">
+              <h4>{{modal_delete_field}}</h4>
+            </div>
+            <b-form-group>
+              <b-form-select
+                v-model="selected.label_relationship"
+                :options="form.label_relationship"
+                :value-field="form.field"
+              />
+            </b-form-group>
+            <b-button type="submit" variant="danger">Delete</b-button>
+          </b-form>
+        </b-tab>
+      </b-tabs>
+    </b-modal>
+
     <b-modal size="xl" v-model="modal_type_show" ok-only>
       <div class="d-block text-center">
         <h4>Add a new type</h4>
@@ -287,6 +318,7 @@ export default {
       modal_element_change: false,
       modal_search_show: false,
       modal_type_show: false,
+      modal_label_relation_change: false,
       modal_node: false,
       form: {
         label_relationship: {},
@@ -296,9 +328,13 @@ export default {
         label_relationship: "",
         type: "",
         icon: "",
-        new_type: ""
+        new_type: "",
+        new_label_relationship: ""
       },
+      modal_add_field: "",
+      modal_delete_field: "",
       modal_function: "",
+      modal_function_2: "",
       global_element: "",
       element_payload: {},
       metadata_list: [],
@@ -345,11 +381,13 @@ export default {
   },
   methods: {
     preConfig(cytoscape) {
-      edgehandle(cytoscape);
-      cxtmenu(cytoscape);
-      cytoscape.use(cola);
-      cytoscape.use(dagre);
-      cytoscape.use(klay);
+      if (!window.eh) {
+        edgehandle(cytoscape);
+        cxtmenu(cytoscape);
+        cytoscape.use(cola);
+        cytoscape.use(dagre);
+        cytoscape.use(klay);
+      }
     },
     load_assets() {
       //Load all assets from database
@@ -453,13 +491,13 @@ export default {
             {
               content: "Relationships",
               select: () => {
-                this.search();
+                this.setup_relationship_modal();
               }
             },
             {
               content: "Labels",
               select: () => {
-                this.search();
+                this.setup_label_modal();
               }
             }
           ]
@@ -594,7 +632,7 @@ export default {
         this.selected.label_relationship = element.data("payload")[
           "relationship_id"
         ];
-        this.element_payload = element.data("id");
+        this.element_payload = element.data("payload");
         this.element_payload["element_id"] = element.data("id");
         this.modal_node = false;
         this.modal_function = this.change_link;
@@ -756,6 +794,106 @@ export default {
     },
     expand(node) {
       window.FunctionUtil.expand_node(node, window.cy);
+    },
+    setup_relationship_modal() {
+      this.modal_add_field = "Add a new relationship";
+      this.modal_delete_field = "Delete a relationship";
+      this.modal_function = this.add_relationship;
+      this.modal_function_2 = this.delete_relationship;
+      this.form.label_relationship = this.relationship_dict;
+      this.form.field = this.relationship_dict.message;
+      this.modal_label_relation_change = true;
+    },
+    setup_label_modal() {
+      this.modal_add_field = "Add a new label";
+      this.modal_delete_field = "Delete a label";
+      this.modal_function = this.add_label;
+      this.modal_function_2 = this.delete_label;
+      this.form.label_relationship = this.label_dict;
+      this.form.field = this.label_dict.label_text;
+      this.modal_label_relation_change = true;
+    },
+    add_relationship() {
+      if (
+        window.FunctionUtil.relationship_exists(
+          this.selected.new_label_relationship,
+          this.relationship_dict
+        ) == false
+      ) {
+        let relationship_details = {
+          message: this.selected.new_label_relationship
+        };
+        window.APIUtil.add_relationship(
+          relationship_details,
+          this.relationship_dict,
+          this.relationship_array,
+          this.auth_header
+        ).then(response => {
+          this.modal_label_relation_change = false;
+          this.relationship_dict = response["relationship_dict"];
+          this.relationship_array = response["relationship_array"];
+        });
+      } else {
+        alert("Relationship already exists");
+      }
+    },
+    delete_relationship() {
+      let relationship_details = {
+        relationship_id: this.selected.label_relationship,
+        message: this.relationship_dict[this.selected.label_relationship]
+      };
+      window.APIUtil.delete_relationship(
+        relationship_details,
+        this.relationship_array,
+        this.relationship_dict,
+        this.auth_header,
+        window.cy
+      ).then(response => {
+        this.modal_label_relation_change = false;
+        this.relationship_dict = response["relationship_dict"];
+        this.relationship_array = response["relationship_array"];
+      });
+    },
+    add_label() {
+      if (
+        window.FunctionUtil.label_exists(
+          this.selected.new_label_relationship,
+          this.label_dict
+        ) == false
+      ) {
+        let label_details = {
+          label_text: this.selected.new_label_relationship
+        };
+        window.APIUtil.add_label(
+          label_details,
+          this.label_array,
+          this.label_dict,
+          this.auth_header
+        ).then(response => {
+          this.modal_label_relation_change = false;
+          this.label_dict = response["label_dict"];
+          this.label_array = response["label_array"];
+        });
+      } else {
+        alert("The label already exists");
+      }
+    },
+    delete_label() {
+      let label_details = {
+        label_id: this.selected.label_relationship,
+        label_text: this.label_dict[this.selected.label_relationship]
+      };
+      window.APIUtil.delete_label(
+        label_details,
+        this.label_array,
+        this.label_dict,
+        this.auth_header,
+        window.cy
+      ).then(response => {
+        this.modal_label_relation_change = false;
+        this.label_dict = response["label_dict"];
+        this.label_array = response["label_array"];
+      });
     }
   },
   mounted: function() {

@@ -1,5 +1,4 @@
 import axios from 'axios';
-import FunctionUtil from './utility_functions'
 
 export function load_assets(type_array, view_array, current_view, label_array, relationship_array, auth_header, cy) {
     return new Promise(function (resolve) {
@@ -421,4 +420,118 @@ export function delete_type(type_details, type_array, auth_header, cy) {
             }
         });
     });
+}
+
+export function add_relationship(relationship_details, relationship_dict, relationship_array, auth_header) {
+    return new Promise(function (resolve) {
+        axios({
+            url: "http://127.0.0.1:5000/api/relationship/",
+            headers: auth_header,
+            method: "post",
+            data: relationship_details
+        }).then(response => {
+            if (response.data["message"].includes("Success")) {
+                let returned_id = response.data["payload"]
+                let new_dict = relationship_dict
+                new_dict[returned_id] = relationship_details["message"]
+                let new_array = relationship_array
+                new_array.push({ "returned_id": relationship_details["message"] })
+                resolve({
+                    "relationship_dict": new_dict,
+                    "relationship_array": new_array
+                })
+            } else {
+                alert("Failed to add relationship. " + response.data["message"]);
+                resolve({
+                    "relationship_dict": relationship_dict,
+                    "relationship_array": relationship_array
+                })
+            }
+        })
+    })
+}
+
+export function delete_relationship(relationship_details, relationship_array, relationship_dict, auth_header, cy) {
+    return new Promise(function (resolve) {
+        axios({
+            url: "http://127.0.0.1:5000/api/relationship/",
+            headers: auth_header,
+            method: "delete",
+            data: relationship_details
+        }).then(response => {
+            if (response.data["message"].includes("Success")) {
+                let new_dict = relationship_dict
+                delete new_dict[relationship_details["relationship_id"]]
+                let new_array = window.FunctionUtil.remove_element(relationship_details["message"], "message", relationship_array)
+                window.FunctionUtil.remove_links_label(relationship_details["message"], cy)
+                resolve({
+                    "relationship_dict": new_dict,
+                    "relationship_array": new_array
+                })
+            } else {
+                alert("Failed to delete relationship. " + response.data["message"]);
+                resolve({
+                    "relationship_dict": relationship_dict,
+                    "relationship_array": relationship_array
+                })
+            }
+        })
+    })
+}
+
+export function add_label(label_details, label_array, label_dict, auth_header) {
+    return new Promise(function (resolve) {
+        axios({
+            url: "http://127.0.0.1:5000/api/label/",
+            headers: auth_header,
+            method: "post",
+            data: label_details
+        }).then(response => {
+            if (response.data["message"].includes("Success")) {
+                let returned_id = response.data["payload"]
+                let new_dict = label_dict
+                new_dict[returned_id] = label_details["label_text"]
+                let new_array = label_array
+                new_array.push({ "label_id": returned_id, "label_text": label_details["label_text"] })
+                resolve({
+                    "label_dict": new_dict,
+                    "label_array": new_array
+                })
+            } else {
+                alert("Failed to delete label. " + response.data["message"]);
+                resolve({
+                    "label_dict": label_dict,
+                    "label_array": label_array
+                })
+            }
+        })
+    })
+}
+
+export function delete_label(label_details, label_array, label_dict, auth_header, cy) {
+    return new Promise(function (resolve) {
+        axios({
+            url: "http://127.0.0.1:5000/api/label/",
+            headers: auth_header,
+            method: "delete",
+            data: label_details
+        }).then(response => {
+            if (response.data["message"].includes("Success")) {
+                let new_dict = label_dict
+                delete new_dict[label_details["label_id"]]
+                let new_array = window.FunctionUtil.remove_element(label_details["label_text"], "label_text", label_array)
+                window.FunctionUtil.remove_nodes_label(label_details["label_text"])
+                resolve({
+                    "label_dict": new_dict,
+                    "label_array": new_array
+                })
+            } else {
+                alert("Failed to delete label. " + response.data["message"]);
+                resolve({
+                    "label_dict": label_dict,
+                    "label_array": label_array
+                })
+            }
+        })
+    })
 }

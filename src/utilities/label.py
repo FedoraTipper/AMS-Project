@@ -119,12 +119,10 @@ def delete_label(label_id, torn):
         return False
 
     null_dict = {"label_id": None}
-    entities = [TableEntities.Links, TableEntities.Nodes]
     try:
         # Nullify label_ids in other tables
-        for entity in entities:
-            session.execute(
-                update(entity).where(entity.label_id ==
+        session.execute(
+                update(TableEntities.Nodes).where(TableEntities.Nodes.label_id ==
                                      int(label_id)).values(null_dict)
             )
         session.commit()

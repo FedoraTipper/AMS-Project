@@ -45,18 +45,19 @@ class Relationship(SetDefaultHeaders):
         body_categories = {"message": 1}
         relationship_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
 
-        if relationship_dict == False or RelationshipUtil.create_relationship(relationship_dict, self) == False:
+        if relationship_dict == False:
+            return None
+        relationship_id = RelationshipUtil.create_relationship(relationship_dict, self)
+        if relationship_id == False:
             return None
 
         formatted_message = LoggerHandler.form_message_dictionary(userdata, 
                                                                 "relationship", 
-                                                                RelationshipUtil.get_relationship_id(body_categories["message"]),
+                                                                relationship_id,
                                                                 relationship_dict)
 
-
         LoggerHandler.log_message("add", formatted_message)
-
-        self.write({"message":"Success"})
+        self.write({"message":"Success", "payload": int(relationship_id)})
 
     def put(self):
         """
@@ -110,7 +111,7 @@ class Relationship(SetDefaultHeaders):
         if relationship_dict == False:
             return None
 
-        if RelationshipUtil.delete_link_with_relationship(relationship_dict["relationship_id"], self) == False:
+        if RelationshipUtil.delete_relationship(relationship_dict["relationship_id"], self) == False:
             return None
 
         formatted_message = LoggerHandler.form_delete_message_dictionary(userdata, 
