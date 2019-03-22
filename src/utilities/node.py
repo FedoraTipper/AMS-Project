@@ -1,12 +1,12 @@
-import handlers.mysqldb as DBHandler
-import utilities.label as LabelUtil
-import utilities.view as ViewUtil
-import utilities.type as TypeUtil
+import handlers.mysqldb as dbhandler
+import utilities.label as labelutil
+import utilities.view as viewutil
+import utilities.type as typeutil
 import handlers.classes.TableEntities as TableEntities
 from sqlalchemy import update, delete, exc
-import handlers.filelogger as FLHandler
+import handlers.filelogger as flhandler
 
-session = DBHandler.create_session()
+session = dbhandler.create_session()
 
 def create_node(node_dict, torn):
 	"""
@@ -15,12 +15,12 @@ def create_node(node_dict, torn):
 	Output: True if operation was successful, False if the operation was not
 	Caveats: Check if the node type already exists
 	"""
-	if TypeUtil.type_id_exists(node_dict["type_id"]) == False:
+	if typeutil.type_id_exists(node_dict["type_id"]) == False:
 		torn.set_status(404)
 		torn.write({'message': "Type ID does not exist"})
 		return False
 
-	if ViewUtil.view_id_exists(node_dict["view_id"]) == False:
+	if viewutil.view_id_exists(node_dict["view_id"]) == False:
 		torn.set_status(404)
 		torn.write({'message': "View ID does not exist"})
 		return False
@@ -28,7 +28,7 @@ def create_node(node_dict, torn):
 	node = TableEntities.Nodes(type_id=node_dict["type_id"], view_id=node_dict["view_id"])
 	
 	if "label_id" in node_dict:
-		if LabelUtil.label_id_exists(node_dict["label_id"]) == False:
+		if labelutil.label_id_exists(node_dict["label_id"]) == False:
 			torn.set_status(404)
 			torn.write({"message": "Label ID does not exist"})
 			return False
@@ -43,15 +43,15 @@ def create_node(node_dict, torn):
 		session.commit()
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 
 	node_id = session.query(TableEntities.Nodes).order_by(TableEntities.Nodes.node_id.desc()).first()
 	#create metadata category for type of node
-	type_name = TypeUtil.get_type(node_dict["type_id"])["data"][0]["type"]
-	import utilities.meta as MetadataUtil
+	type_name = typeutil.get_type(node_dict["type_id"])["data"][0]["type"]
+	import utilities.meta as metadatautil
 	metadata_dict = {"node_id": int(node_id.node_id), "category":"Type", "data": type_name}
-	MetadataUtil.create_type_category(metadata_dict)
+	metadatautil.create_type_category(metadata_dict)
 	return node_id.node_id
 
 def node_id_exists(node_id):
@@ -106,19 +106,19 @@ def change_node(node_id, node_dict, torn):
 		return False
 
 	if "type" in node_dict:
-		if TypeUtil.type_id_exists(node_dict["type"]) == False:
+		if typeutil.type_id_exists(node_dict["type"]) == False:
 			torn.set_status(404)
 			torn.write({'message': "Type ID does not exist"})
 			return False
 
 	if "label_id" in node_dict:
-		if LabelUtil.label_id_exists(node_dict["label_id"]) == False:
+		if labelutil.label_id_exists(node_dict["label_id"]) == False:
 			torn.set_status(404)
 			torn.write({"message": "Label id does not exist"})
 			return False
 
 	if "view_id" in node_dict:
-		if ViewUtil.view_id_exists(node_dict["view_id"]) == False:
+		if viewutil.view_id_exists(node_dict["view_id"]) == False:
 			torn.set_status(404)
 			torn.write({'message': "View ID does not exist"})
 			return False
@@ -129,14 +129,14 @@ def change_node(node_id, node_dict, torn):
 			)	
 		session.commit()
 		if("type_id" in node_dict):
-			type_name = TypeUtil.get_type(node_dict["type_id"])["data"][0]["type"]
-			import utilities.meta as MetadataUtil
-			metadata_id = MetadataUtil.get_metadata_id("Type", node_id)
+			type_name = typeutil.get_type(node_dict["type_id"])["data"][0]["type"]
+			import utilities.meta as metadatautil
+			metadata_id = metadatautil.get_metadata_id("Type", node_id)
 			metadata_dict = {"node_id": node_id, "category":"Type", "data": type_name}
-			MetadataUtil.change_metadata_internal(metadata_id, metadata_dict)
+			metadatautil.change_metadata_internal(metadata_id, metadata_dict)
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 
 	return True
@@ -153,9 +153,9 @@ def delete_node(node_id, torn):
 		torn.write({"message":"Node does not exist"})
 		return False
 	#Import module in function. Not allowed to cross reference
-	import utilities.link as LinkUtil
+	import utilities.link as linkutil
 	#Delete all links that contain the node id
-	LinkUtil.delete_link_with_node(node_id)
+	linkutil.delete_link_with_node(node_id)
 	import utilities.meta as MetaUtil
 	MetaUtil.delete_metadata_with_node(node_id)
 	#Delete the node
@@ -166,7 +166,7 @@ def delete_node(node_id, torn):
 		session.commit()
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 
 	return True
@@ -180,11 +180,11 @@ def delete_node_with_view(view_id, torn):
 	"""
 	node_entries = session.query(TableEntities.Nodes).filter(TableEntities.Nodes.view_id == int(view_id)).all()
 	#Import module in function. Not allowed to cross reference
-	import utilities.link as LinkUtil
+	import utilities.link as linkutil
 	import utilities.meta as MetaUtil
 
 	for node in node_entries:
-		LinkUtil.delete_link_with_node(node.node_id)
+		linkutil.delete_link_with_node(node.node_id)
 		MetaUtil.delete_metadata_with_node(node.node_id)
 		try:
 			session.execute(
@@ -193,7 +193,7 @@ def delete_node_with_view(view_id, torn):
 			session.commit()
 		except exc.SQLAlchemyError as Error:
 			torn.set_status(500)
-			FLHandler.log_error_to_file(Error)
+			flhandler.log_error_to_file(Error)
 			return False
 	return True
 
@@ -206,11 +206,11 @@ def delete_node_with_type(type_id, torn):
 	"""
 	node_entries = session.query(TableEntities.Nodes).filter(TableEntities.Nodes.type_id == int(type_id)).all()
 	#Import module in function. Not allowed to cross reference
-	import utilities.link as LinkUtil
+	import utilities.link as linkutil
 	import utilities.meta as MetaUtil
 
 	for node in node_entries:
-		LinkUtil.delete_link_with_node(node.node_id)
+		linkutil.delete_link_with_node(node.node_id)
 		MetaUtil.delete_metadata_with_node(node.node_id)
 		try:
 			session.execute(
@@ -219,6 +219,6 @@ def delete_node_with_type(type_id, torn):
 			session.commit()
 		except exc.SQLAlchemyError as Error:
 			torn.set_status(500)
-			FLHandler.log_error_to_file(Error)
+			flhandler.log_error_to_file(Error)
 			return False
 	return True

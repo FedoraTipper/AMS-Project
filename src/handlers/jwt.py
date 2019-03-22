@@ -1,11 +1,11 @@
-import handlers.config as ConfigHandler
+import handlers.config as confighandler
 import jwt
 from Crypto.Cipher import AES
 from Crypto import Random
 import base64
 
-jwt_config = ConfigHandler.get_keys("JWT")
-hash_config = ConfigHandler.get_keys("PBKDF2")
+jwt_config = confighandler.get_keys("JWT")
+hash_config = confighandler.get_keys("PBKDF2")
 iv = Random.new().read(16)
 cipher = AES.new(hash_config[0], AES.MODE_CFB, iv)
 

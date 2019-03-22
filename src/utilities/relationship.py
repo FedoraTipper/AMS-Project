@@ -1,9 +1,9 @@
-import handlers.mysqldb as DBHandler
+import handlers.mysqldb as dbhandler
 from sqlalchemy import update, delete, exc
-import handlers.filelogger as FLHandler
+import handlers.filelogger as flhandler
 import handlers.classes.TableEntities as TableEntities
 
-session = DBHandler.create_session()
+session = dbhandler.create_session()
 
 def get_relationship(relationship_id):
     """
@@ -52,7 +52,7 @@ def create_relationship(relationship_dict, torn):
         session.commit()
     except exc.SQLAlchemyError as Error:
         torn.set_status(500)
-        FLHandler.log_error_to_file(Error)
+        flhandler.log_error_to_file(Error)
         return False
     relationship = session.query(TableEntities.Relationship).order_by(TableEntities.Relationship.relationship_id.desc()).first()
     return relationship.relationship_id
@@ -101,7 +101,7 @@ def change_relationship(relationship_id, relationship_dict, torn):
         )
         session.commit()
     except exc.SQLAlchemyError as Error:
-        FLHandler.log_error_to_file(Error)
+        flhandler.log_error_to_file(Error)
         return False
 
     return True
@@ -136,7 +136,7 @@ def delete_relationship(relationship_id, torn):
         session.commit()
     except exc.SQLAlchemyError as Error:
         torn.set_status(500)
-        FLHandler.log_error_to_file(Error)
+        flhandler.log_error_to_file(Error)
         return False
 
     return True

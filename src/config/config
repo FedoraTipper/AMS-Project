@@ -1,5 +1,5 @@
 [DATABASE]
-Host = 139.59.172.124
+Host = localhost
 Port = 3306
 Database = project1
 Username = apirunner
@@ -15,3 +15,6 @@ Secret = Sixteen byte key
 [FILELOGGING]
 filename = logs.txt
 format= '%(asctime)s - %(levelname)s - %(message)s'
+
+[EXTRA]
+139.59.172.124=139.59.172.124

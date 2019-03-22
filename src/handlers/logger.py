@@ -1,9 +1,9 @@
-import handlers.mysqldb as DBHandler
-import utilities.sql as SQLUtil
+import handlers.mysqldb as dbhandler
+import utilities.sql as sqlutil
 import handlers.classes.TableEntities as TableEntities
 from sqlalchemy import exc
 
-session = DBHandler.create_session()
+session = dbhandler.create_session()
 
 _message_format_ = {"add":"({user_data}) added {field} {field_id}; values: {vals}",
 			"change":"({user_data}) changed {field} {field_id}; Changed values: {vals}",

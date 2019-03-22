@@ -119,6 +119,10 @@ export function load_assets(type_array, view_array, current_view, label_array, r
                 "dicts": [types_dict, label_dict, relationship_dict],
                 "arrays": [type_array, label_array, relationship_array]
             })
+        }).catch(error => {
+            if (error.toString().includes("401")) {
+                alert("Please log in")
+            }
         });
         setTimeout(resolve, 2500)
     });
@@ -478,7 +482,7 @@ export function add_relationship(relationship_details, relationship_dict, relati
                 let new_dict = relationship_dict
                 new_dict[returned_id] = relationship_details["message"]
                 let new_array = relationship_array
-                new_array.push({ "returned_id": relationship_details["message"] })
+                new_array.push({ returned_id: { "relationship_id": returned_id, "message:": relationship_details["message"] } })
                 resolve({
                     "relationship_dict": new_dict,
                     "relationship_array": new_array
@@ -535,7 +539,7 @@ export function add_label(label_details, label_array, label_dict, auth_header) {
                 let new_dict = label_dict
                 new_dict[returned_id] = label_details["label_text"]
                 let new_array = label_array
-                new_array.push({ "label_id": returned_id, "label_text": label_details["label_text"] })
+                new_array.push({ returned_id: { "label_id": returned_id, "label_text": label_details["label_text"] } })
                 resolve({
                     "label_dict": new_dict,
                     "label_array": new_array

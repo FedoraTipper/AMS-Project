@@ -1,11 +1,11 @@
-import handlers.mysqldb as DBHandler
-import utilities.node as NodeUtil
-import utilities.link as LinkUtil
+import handlers.mysqldb as dbhandler
+import utilities.node as nodeutil
+import utilities.link as linkutil
 import handlers.classes.TableEntities as TableEntities
 from sqlalchemy import update, delete, exc
-import handlers.filelogger as FLHandler
+import handlers.filelogger as flhandler
 
-session = DBHandler.create_session()
+session = dbhandler.create_session()
 
 def create_category(metadata_dict, torn):
 	"""
@@ -15,12 +15,12 @@ def create_category(metadata_dict, torn):
 	Caveats: Check if the node and if the category for that node already exists
 	"""
 	if "node_id" in metadata_dict:
-		if NodeUtil.node_id_exists(metadata_dict["node_id"]) == False:
+		if nodeutil.node_id_exists(metadata_dict["node_id"]) == False:
 			torn.set_status(404)
 			torn.write({"message": "Node does not exist"})
 			return False
 	else:
-		if LinkUtil.link_exists(metadata_dict["link_id"]) == False:
+		if linkutil.link_exists(metadata_dict["link_id"]) == False:
 			torn.set_status(404)
 			torn.write({"message": "Link does not exist"})
 			return False
@@ -47,7 +47,7 @@ def create_category(metadata_dict, torn):
 			session.commit()
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 
 	meta_id = session.query(TableEntities.Metadata).order_by(TableEntities.Metadata.meta_id.desc()).first()
@@ -66,8 +66,7 @@ def create_type_category(metadata_dict):
 		session.commit()
 		return True
 	except exc.SQLAlchemyError as Error:
-		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 
 def category_node_exists(category, node_id):
@@ -155,12 +154,12 @@ def change_metadata(metadata_id, metadata_dict, torn):
 		return False
 
 	if "node_id" in metadata_dict:
-		if NodeUtil.node_id_exists(metadata_dict["node_id"]) == False:
+		if nodeutil.node_id_exists(metadata_dict["node_id"]) == False:
 			torn.set_status(404)
 			torn.write({"message": "Node does not exist"})
 			return False
 	elif "link_id" in metadata_dict:
-		if LinkUtil.link_exists(metadata_dict["link_id"]) == False:
+		if linkutil.link_exists(metadata_dict["link_id"]) == False:
 			torn.set_status(404)
 			torn.write({"message": "Link does not exist"})
 			return False
@@ -201,7 +200,7 @@ def change_metadata_internal(metadata_id, metadata_dict):
 		return True
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 
 def delete_metadata(metadata_id, torn):
@@ -222,7 +221,7 @@ def delete_metadata(metadata_id, torn):
 		session.commit()
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 	return True
 
@@ -240,7 +239,7 @@ def delete_metadata_with_node(node_id):
 		session.commit()
 		return True
 	except exc.SQLAlchemyError as Error:
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 
 def delete_metadata_with_link(link_id):
@@ -258,5 +257,5 @@ def delete_metadata_with_link(link_id):
 		return True
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False

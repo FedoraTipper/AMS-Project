@@ -1,10 +1,10 @@
-import handlers.mysqldb as DBHandler
-import utilities.sql as SQLUtil
+import handlers.mysqldb as dbhandler
+import utilities.sql as sqlutil
 import handlers.classes.TableEntities as TableEntities
 from sqlalchemy import update, delete, exc
-import handlers.filelogger as FLHandler
+import handlers.filelogger as flhandler
 
-session = DBHandler.create_session()
+session = dbhandler.create_session()
 
 def create_label(label_dict, torn):
     """
@@ -22,7 +22,7 @@ def create_label(label_dict, torn):
         session.add(TableEntities.Label(label_text=label_dict["label_text"]))
         session.commit()
     except exc.SQLAlchemyError as Error:
-        FLHandler.log_error_to_file(Error)
+        flhandler.log_error_to_file(Error)
         torn.set_status(500)
         return False
 
@@ -101,7 +101,7 @@ def change_label(label_id, label_dict, torn):
         )
         session.commit()
     except exc.SQLAlchemyError as Error:
-        FLHandler.log_error_to_file(Error)
+        flhandler.log_error_to_file(Error)
         torn.set_status(500)
         return False
     return True
@@ -134,7 +134,7 @@ def delete_label(label_id, torn):
         session.commit()
     except exc.SQLAlchemyError as Error:
         torn.set_status(500)
-        FLHandler.log_error_to_file(Error)
+        flhandler.log_error_to_file(Error)
         return False
 
     return True

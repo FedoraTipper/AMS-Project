@@ -1,9 +1,6 @@
-import utilities.error as ErrorUtil
-import handlers.logger as LoggerHandler
-import handlers.jwt as  JWTHandler
+import handlers.logger as loggerhandler
+import handlers.jwt as  jwthandler
 from handlers.headers import SetDefaultHeaders
-
-import utilities.error as ErrorUtil
 
 class Log(SetDefaultHeaders):
     """
@@ -17,7 +14,7 @@ class Log(SetDefaultHeaders):
         Output: Log data
         Caveats: Authentication needs to be passed
         """
-        if JWTHandler.authorize_action(self, 2) == False:
+        if jwthandler.authorize_action(self, 2) == False:
             return None
 
-        self.write(LoggerHandler.get_logs())
+        self.write(loggerhandler.get_logs())

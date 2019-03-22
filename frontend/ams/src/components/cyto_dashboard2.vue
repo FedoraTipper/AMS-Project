@@ -456,7 +456,7 @@ export default {
       this.$cytoscape.instance.then(cy => {
         let eh = (window.eh = cy.edgehandles({
           // Increase delay or will spawn long lasting node object
-          preview: false,
+          preview: true,
           snap: true,
           //Send to addLink function, to add the link to the database
           complete: (sourceNode, targetNode, addedEles) => {
@@ -681,6 +681,7 @@ export default {
     },
     changeElement(element) {
       if (element["_private"]["group"] == "edges") {
+        console.log(this.relationship_dict);
         this.form.label_relationship = this.relationship_dict;
         this.form.field = this.relationship_dict.message;
         this.selected.label_relationship = element.data("payload")[
@@ -800,7 +801,7 @@ export default {
     add_metadata() {
       let metadata_details = {
         category: this.selected.category,
-        data: this.selected.category
+        data: this.selected.data
       };
       if (this.selected.metadata_node) {
         metadata_details["node_id"] = this.selected.metadata_node;
@@ -817,18 +818,23 @@ export default {
       });
     },
     delete_metadata(metadata_id) {
-      let metadata_details = {
-        meta_id: metadata_id
-      };
-      this.events++;
-      window.APIUtil.delete_metadata(
-        metadata_details,
-        this.metadata_list,
-        this.auth_header
-      ).then(response => {
-        this.metadata_list = response["metadata_list"];
-        this.events--;
-      });
+      let confirmation = confirm(
+        "Are you sure you want to delete metadata " + metadata_id
+      );
+      if (confirmation) {
+        let metadata_details = {
+          meta_id: metadata_id
+        };
+        this.events++;
+        window.APIUtil.delete_metadata(
+          metadata_details,
+          this.metadata_list,
+          this.auth_header
+        ).then(response => {
+          this.metadata_list = response["metadata_list"];
+          this.events--;
+        });
+      }
     },
     deleteNode(node) {
       let node_details = {
@@ -884,19 +890,25 @@ export default {
       window.FunctionUtil.expand_node(node, window.cy);
     },
     setup_relationship_modal() {
+      this.selected.new_label_relationship = "";
+      this.selected.label_relationship = null;
       this.modal_add_field = "Add a new relationship";
       this.modal_delete_field = "Delete a relationship";
       this.modal_function = this.add_relationship;
       this.modal_function_2 = this.delete_relationship;
+      this.form.label_relationship = null;
       this.form.label_relationship = this.relationship_dict;
       this.form.field = this.relationship_dict.message;
       this.modal_label_relation_change = true;
     },
     setup_label_modal() {
+      this.selected.new_label_relationship = "";
+      this.selected.label_relationship = null;
       this.modal_add_field = "Add a new label";
       this.modal_delete_field = "Delete a label";
       this.modal_function = this.add_label;
       this.modal_function_2 = this.delete_label;
+      this.form.label_relationship = null;
       this.form.label_relationship = this.label_dict;
       this.form.field = this.label_dict.label_text;
       this.modal_label_relation_change = true;
@@ -942,6 +954,7 @@ export default {
       ).then(response => {
         this.modal_label_relation_change = false;
         this.relationship_dict = response["relationship_dict"];
+        console.log(this.relationship_dict);
         this.relationship_array = response["relationship_array"];
         this.events--;
       });

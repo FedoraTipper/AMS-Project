@@ -1,9 +1,9 @@
-import handlers.mysqldb as DBHandler
+import handlers.mysqldb as dbhandler
 import handlers.classes.TableEntities as TableEntities
 from sqlalchemy import update, delete, exc
-import handlers.filelogger as FLHandler
+import handlers.filelogger as flhandler
 
-session = DBHandler.create_session()
+session = dbhandler.create_session()
 
 def create_type(type_dict, torn):
 	"""
@@ -22,7 +22,7 @@ def create_type(type_dict, torn):
 		session.commit()
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 	return True
 
@@ -106,7 +106,7 @@ def change_type(type_id, type_dict, torn):
 		session.commit()
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 	return True
 
@@ -123,10 +123,10 @@ def delete_type(type_id, torn):
 		return False
 
 	try:
-		import utilities.node as NodeUtil
+		import utilities.node as nodeutil
 		#Delete all objects dependant on the node type that will be deleted
 		#Deleting a node will remove the link and metadata as well
-		NodeUtil.delete_node_with_type(type_id, torn)
+		nodeutil.delete_node_with_type(type_id, torn)
 		#Delete the label
 		session.execute(
 			delete(TableEntities.NodeType).where(TableEntities.NodeType.type_id == int(type_id))
@@ -134,7 +134,7 @@ def delete_type(type_id, torn):
 		session.commit()
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 		
 	return True

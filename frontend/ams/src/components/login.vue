@@ -68,25 +68,34 @@ export default {
         .update(this.form.password, "utf-8")
         .digest()
         .toString("hex");
-      this.axios
-        .post("http://127.0.0.1:5000/api/auth/", user_details)
-        .then(response => {
-          if (response.data["message"].includes("Authenticated")) {
-            let auth_token = response.headers["authorization"];
-            let payload = response.data["payload"];
-            let username = payload["User"];
-            let privilege = payload["privilege"];
-            store.commit("set_privilege", privilege);
-            store.commit("set_username", username);
-            localStorage.setItem("Authorization", auth_token);
-            localStorage.setItem("User", username);
-            localStorage.setItem("Privilege", privilege);
-            this.$router.push("/cyto");
-          } else {
-            this.dismissCountDown = this.dismissSecs;
-          }
-        })
-        .catch(error => console.log(error));
+      try {
+        this.axios
+          .post("http://127.0.0.1:5000/api/auth/", user_details)
+          .then(response => {
+            if (response.data["message"].includes("Authenticated")) {
+              let auth_token = response.headers["authorization"];
+              let payload = response.data["payload"];
+              let username = payload["User"];
+              let privilege = payload["privilege"];
+              store.commit("set_privilege", privilege);
+              store.commit("set_username", username);
+              localStorage.setItem("Authorization", auth_token);
+              localStorage.setItem("User", username);
+              localStorage.setItem("Privilege", privilege);
+              this.$router.push("/cyto");
+            } else {
+              this.dismissCountDown = this.dismissSecs;
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            if (error.toString().includes("401")) {
+              this.dismissCountDown = this.dismissSecs;
+            }
+          });
+      } catch {
+        this.dismissCountDown = this.dismissSecs;
+      }
     }
   }
 };

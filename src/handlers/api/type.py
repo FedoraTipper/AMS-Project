@@ -1,9 +1,9 @@
-import handlers.logger as LoggerHandler
-import handlers.jwt as  JWTHandler
+import handlers.logger as loggerhandler
+import handlers.jwt as  jwthandler
 from handlers.headers import SetDefaultHeaders
 
-import utilities.error as ErrorUtil
-import utilities.type as TypeUtil
+import utilities.error as errorutil
+import utilities.type as typeutil
 
 
 class NodeType(SetDefaultHeaders):
@@ -18,18 +18,18 @@ class NodeType(SetDefaultHeaders):
         Output: Type data
         Caveats: Authentication needs to be passed
         """
-        if JWTHandler.authorize_action(self, 1) == False:
+        if jwthandler.authorize_action(self, 1) == False:
             return None
 
         body_categories = {"type_id":0}
-        type_dict = ErrorUtil.check_fields(self.request.arguments, body_categories, self)
+        type_dict = errorutil.check_fields(self.request.arguments, body_categories, self)
         
         if type_dict == False:
-            self.write(TypeUtil.get_types())
+            self.write(typeutil.get_types())
             return None
 
         if "type_id" in type_dict:
-            self.write(TypeUtil.get_type(type_dict["type_id"]))
+            self.write(typeutil.get_type(type_dict["type_id"]))
 
     def post(self):
         """
@@ -38,25 +38,25 @@ class NodeType(SetDefaultHeaders):
         Output: Success message
         Caveats: Authentication needs to be passed
         """
-        if JWTHandler.authorize_action(self, 1) == False:
+        if jwthandler.authorize_action(self, 1) == False:
             return None
 
-        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
+        userdata = jwthandler.decode_userdata(self.request.headers["Authorization"])
 
         body_categories = {"type": 1}
-        type_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+        type_dict = errorutil.check_fields(self.request.body.decode(), body_categories, self)
 
-        if type_dict == False or TypeUtil.create_type(type_dict, self) == False:
+        if type_dict == False or typeutil.create_type(type_dict, self) == False:
             return None
         
-        type_id = TypeUtil.get_type_id(type_dict["type"])
+        type_id = typeutil.get_type_id(type_dict["type"])
 
-        formatted_message = LoggerHandler.form_message_dictionary(userdata, 
+        formatted_message = loggerhandler.form_message_dictionary(userdata, 
                                                                 "node_type", 
                                                                 type_id,
                                                                 type_dict)
 
-        LoggerHandler.log_message("add", formatted_message)
+        loggerhandler.log_message("add", formatted_message)
 
         self.write({"message": "Success","payload":type_id})
 
@@ -67,13 +67,13 @@ class NodeType(SetDefaultHeaders):
         Output: Success message
         Caveats: Authentication needs to be passed
         """
-        if JWTHandler.authorize_action(self, 1) == False:
+        if jwthandler.authorize_action(self, 1) == False:
             return None
 
-        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
+        userdata = jwthandler.decode_userdata(self.request.headers["Authorization"])
 
         body_categories = {"type_id": 1, "type": 1}
-        type_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+        type_dict = errorutil.check_fields(self.request.body.decode(), body_categories, self)
 
         if type_dict == False:
             return None
@@ -81,15 +81,15 @@ class NodeType(SetDefaultHeaders):
         type_id = type_dict["type_id"]
         del type_dict["type_id"]
 
-        if TypeUtil.change_type(type_id, type_dict, self) == False:
+        if typeutil.change_type(type_id, type_dict, self) == False:
             return None
 
-        formatted_message = LoggerHandler.form_message_dictionary(userdata, 
+        formatted_message = loggerhandler.form_message_dictionary(userdata, 
                                                                 "node_type", 
                                                                 type_id,
                                                                 type_dict)
 
-        LoggerHandler.log_message("change", formatted_message)
+        loggerhandler.log_message("change", formatted_message)
 
         self.write({"message":"Success"})
 
@@ -100,21 +100,21 @@ class NodeType(SetDefaultHeaders):
         Output: Success message
         Caveats: Authentication needs to be passed
         """
-        if JWTHandler.authorize_action(self, 1) == False:
+        if jwthandler.authorize_action(self, 1) == False:
             return None
 
-        userdata = JWTHandler.decode_userdata(self.request.headers["Authorization"])
+        userdata = jwthandler.decode_userdata(self.request.headers["Authorization"])
 
         body_categories = {"type_id":1}
-        type_dict = ErrorUtil.check_fields(self.request.body.decode(), body_categories, self)
+        type_dict = errorutil.check_fields(self.request.body.decode(), body_categories, self)
 
-        if type_dict == False or TypeUtil.delete_type(type_dict["type_id"], self) == False:
+        if type_dict == False or typeutil.delete_type(type_dict["type_id"], self) == False:
             return None
 
-        formatted_message = LoggerHandler.form_delete_message_dictionary(userdata, 
+        formatted_message = loggerhandler.form_delete_message_dictionary(userdata, 
                                                                 "node_type", 
                                                                 type_dict["type_id"])
 
-        LoggerHandler.log_message("delete", formatted_message)
+        loggerhandler.log_message("delete", formatted_message)
 
         self.write({"message":"Success"})

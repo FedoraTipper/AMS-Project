@@ -1,12 +1,12 @@
-import handlers.mysqldb as DBHandler
-import utilities.node as NodeUtil
-import utilities.view as ViewUtil
-import utilities.relationship as RelationshipUtil
+import handlers.mysqldb as dbhandler
+import utilities.node as nodeutil
+import utilities.view as viewutil
+import utilities.relationship as relationshiputil
 import handlers.classes.TableEntities as TableEntities
-import handlers.filelogger as FLHandler
+import handlers.filelogger as flhandler
 from sqlalchemy import update, delete, exc
 
-session = DBHandler.create_session()
+session = dbhandler.create_session()
 
 def create_link(link_dict, torn):
 	"""
@@ -30,7 +30,7 @@ def create_link(link_dict, torn):
 		torn.set_status(400)
 		return False
 
-	if ViewUtil.view_id_exists(link_dict["view_id"]) == False:
+	if viewutil.view_id_exists(link_dict["view_id"]) == False:
 		torn.write({"message":"View ID does not exist"})
 		torn.set_status(404)
 		return False
@@ -40,7 +40,7 @@ def create_link(link_dict, torn):
 								view_id = int(link_dict["view_id"]))
 
 	if "relationship_id" in link_dict:
-		if RelationshipUtil.relationship_id_exists(link_dict["relationship_id"]) == False:
+		if relationshiputil.relationship_id_exists(link_dict["relationship_id"]) == False:
 			torn.write({"message":"Relationship does not exist"})
 			torn.set_status(404)
 			return False
@@ -51,7 +51,7 @@ def create_link(link_dict, torn):
 		session.add(link)
 		session.commit()
 	except exc.SQLAlchemyError as Error:
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		torn.set_status(500)
 		return False
 
@@ -153,13 +153,13 @@ def change_link(link_id, link_dict, torn):
 			return False
 
 	if "view_id" in link_dict:
-		if ViewUtil.view_id_exists(link_dict["view_id"]) == False:
+		if viewutil.view_id_exists(link_dict["view_id"]) == False:
 			torn.set_status(404)
 			torn.write({'message': "View ID does not exist"})
 			return False
 
 	if "relationship_id" in link_dict:
-		if RelationshipUtil.relationship_id_exists(link_dict["relationship_id"]) == False:
+		if relationshiputil.relationship_id_exists(link_dict["relationship_id"]) == False:
 			torn.set_status(404)
 			torn.write({'message': "Relationship ID does not exist"})
 			return False
@@ -172,7 +172,7 @@ def change_link(link_id, link_dict, torn):
 		session.commit()
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 
 	return True
@@ -208,7 +208,7 @@ def delete_link(link_id, torn):
 		session.commit()
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 	return True
 
@@ -231,7 +231,7 @@ def delete_link_with_node(node_id):
 		session.commit()
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 	return True
 
@@ -250,7 +250,7 @@ def update_link_with_relationship(relationship_id):
 		return True
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 	return True
 
@@ -261,7 +261,7 @@ def check_nodes_exist(node_id_1, node_id_2):
 	Output: True if both nodes exist
 	Caveats: None
 	"""
-	if NodeUtil.node_id_exists(node_id_1) == False or NodeUtil.node_id_exists(node_id_2) == False:
+	if nodeutil.node_id_exists(node_id_1) == False or nodeutil.node_id_exists(node_id_2) == False:
 		return False
 	return True
 

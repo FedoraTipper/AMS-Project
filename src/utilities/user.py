@@ -1,11 +1,10 @@
-import handlers.mysqldb as DBHandler
-import utilities.sql as SQLUtil
+import handlers.mysqldb as dbhandler
 from passlib.hash import pbkdf2_sha256
 import handlers.classes.TableEntities as TableEntities
 from sqlalchemy import update, delete, exc
-import handlers.filelogger as FLHandler
+import handlers.filelogger as flhandler
 
-session = DBHandler.create_session()
+session = dbhandler.create_session()
 
 def compare_password(username, password):
 	"""
@@ -79,7 +78,7 @@ def create_user(user_dict, torn):
 		session.commit()
 	except exc.SQLAlchemyError as Error:
 		torn.set_status(500)
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 	#sanitize variables
 	del user_dict
@@ -100,7 +99,7 @@ def change_password(user_id, new_password):
 		session.commit()
 		return True
 	except exc.SQLAlchemyError as Error:
-		FLHandler.log_error_to_file(Error)
+		flhandler.log_error_to_file(Error)
 		return False
 """
 Function that is able to change user infTableEntitiesation values besides 
@@ -110,7 +109,7 @@ Function that is able to change user infTableEntitiesation values besides
 # 		torn.write({"message":"Username does not exist"})
 # 		return None
 
-# 	conn.execute(SQLUtil.build_update_statement(_table_, user_dict) + " WHERE user_id = {}", (get_uid(user_dict["username"])))
+# 	conn.execute(sqlutil.build_update_statement(_table_, user_dict) + " WHERE user_id = {}", (get_uid(user_dict["username"])))
 # 	return ""
 
 # """
